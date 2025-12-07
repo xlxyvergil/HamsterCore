@@ -35,6 +35,7 @@ public class ArmorConfig {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
                 config.deserialize(json);
             } catch (Exception e) {
+                System.err.println("Error loading armor config: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {
@@ -42,6 +43,7 @@ public class ArmorConfig {
                 Files.createDirectories(configFolderPath);
                 config.createDefaultConfig(configPath);
             } catch (IOException e) {
+                System.err.println("Failed to create armor config directory or file: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -171,8 +173,8 @@ public class ArmorConfig {
             return modDefaultArmors.get(modId);
         }
         
-        // 最后使用全局默认值
-        return defaultArmor;
+        // 返回-1表示未找到配置
+        return -1;
     }
     
     public double getArmorForEntity(EntityType<?> entityType, String faction) {

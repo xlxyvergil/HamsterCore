@@ -1,9 +1,10 @@
 package com.xlxyvergil.hamstercore.content.capability.entity;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
+import com.xlxyvergil.hamstercore.level.LevelSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
@@ -28,6 +29,11 @@ public class EntityLevelCapability implements INBTSerializable<CompoundTag> {
         LOGGER.debug("Setting level to: " + level);
         this.level = level;
         this.initialized = true;
+    }
+    
+    public void initializeLevel(LivingEntity entity) {
+        int level = LevelSystem.calculateEntityLevel(entity);
+        setLevel(level);
     }
 
     public boolean isInitialized() {

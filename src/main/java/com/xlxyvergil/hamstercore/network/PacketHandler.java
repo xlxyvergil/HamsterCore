@@ -21,5 +21,13 @@ public class PacketHandler {
             EntityFactionSyncToClient::toBytes, 
             EntityFactionSyncToClient::new, 
             EntityFactionSyncToClient::handle);
+        NETWORK.registerMessage(id++, EntityLevelSyncToClient.class,
+            EntityLevelSyncToClient::toBytes,
+            EntityLevelSyncToClient::new,
+            EntityLevelSyncToClient::handle);
+        NETWORK.registerMessage(id++, EntityArmorSyncToClient.class,
+            EntityArmorSyncToClient::toBytes,
+            EntityArmorSyncToClient::new,
+            EntityArmorSyncToClient::handle);
     }
 }

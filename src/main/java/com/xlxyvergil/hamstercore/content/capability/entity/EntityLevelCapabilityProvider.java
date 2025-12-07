@@ -15,14 +15,9 @@ import javax.annotation.Nullable;
 public class EntityLevelCapabilityProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
     public static final Capability<EntityLevelCapability> CAPABILITY = EntityLevelCapability.CAPABILITY;
 
-    private EntityLevelCapability capability = null;
-    private final LazyOptional<EntityLevelCapability> lazyCapability = LazyOptional.of(this::createCapability);
+    private final LazyOptional<EntityLevelCapability> lazyCapability = LazyOptional.of(EntityLevelCapability::new);
 
-    private EntityLevelCapability createCapability() {
-        if (capability == null) {
-            capability = new EntityLevelCapability();
-        }
-        return capability;
+    public EntityLevelCapabilityProvider() {
     }
 
     @Nonnull
@@ -36,16 +31,16 @@ public class EntityLevelCapabilityProvider implements ICapabilityProvider, INBTS
 
     @Override
     public CompoundTag serializeNBT() {
-        return createCapability().serializeNBT();
+        return lazyCapability.map(EntityLevelCapability::serializeNBT).orElse(new CompoundTag());
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        createCapability().deserializeNBT(nbt);
+        lazyCapability.ifPresent(cap -> cap.deserializeNBT(nbt));
     }
 
     public void initializeLevel(LivingEntity entity) {
         int level = LevelSystem.calculateEntityLevel(entity);
-        createCapability().setLevel(level);
+        lazyCapability.ifPresent(cap -> cap.setLevel(level));
     }
 }

@@ -6,6 +6,9 @@ import com.xlxyvergil.hamstercore.faction.Faction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_faction");
+    public static final Capability<EntityFactionCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
     private Faction faction = null;
     private EntityType<?> entityType = null;

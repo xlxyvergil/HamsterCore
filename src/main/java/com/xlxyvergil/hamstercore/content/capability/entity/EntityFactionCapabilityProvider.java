@@ -1,28 +1,22 @@
 package com.xlxyvergil.hamstercore.content.capability.entity;
 
+import com.xlxyvergil.hamstercore.faction.Faction;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.Direction;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class EntityFactionCapabilityProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-    public static Capability<EntityFactionCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>(){});
+    public static final Capability<EntityFactionCapability> CAPABILITY = EntityFactionCapability.CAPABILITY;
 
-    private EntityFactionCapability capability = null;
-    private final LazyOptional<EntityFactionCapability> lazyCapability = LazyOptional.of(this::createCapability);
-
-    private EntityFactionCapability createCapability() {
-        if (capability == null) {
-            capability = new EntityFactionCapability();
-        }
-        return capability;
-    }
+    private final LazyOptional<EntityFactionCapability> lazyCapability = LazyOptional.of(EntityFactionCapability::new);
+    private EntityType<?> entityType;
 
     @Nonnull
     @Override
@@ -35,11 +29,16 @@ public class EntityFactionCapabilityProvider implements ICapabilityProvider, INB
 
     @Override
     public CompoundTag serializeNBT() {
-        return createCapability().serializeNBT();
+        return lazyCapability.map(EntityFactionCapability::serializeNBT).orElse(new CompoundTag());
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        createCapability().deserializeNBT(nbt);
+        lazyCapability.ifPresent(cap -> cap.deserializeNBT(nbt));
+    }
+    
+    public void setEntityType(EntityType<?> entityType) {
+        this.entityType = entityType;
+        lazyCapability.ifPresent(cap -> cap.setEntityType(entityType));
     }
 }

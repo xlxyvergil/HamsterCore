@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.level;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.LevelConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,8 +24,72 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class LevelSystem {
     
+    /**
+     * 计算基于距离的等级部分
+     * @param entity 实体
+     * @return 基于距离计算的等级增加值
+     */
+    private static int calculateDistanceBasedLevel(LivingEntity entity) {
+        if (levelConfig == null) return 0;
+        
+        // 获取实体与出生点的距离
+        double distance = getDistanceToSpawn(entity);
+        
+        // 1000格内的基础等级为配置值
+        int distanceBasedLevel = levelConfig.getDistanceBaseLevel();
+        
+        if (distance > levelConfig.getDistanceThreshold()) {
+            double extraDistance = distance - levelConfig.getDistanceThreshold();
+            // 每100格增加指定等级
+            int extraLevels = (int) (extraDistance / 100) * levelConfig.getDistanceLevelPer100Blocks();
+            distanceBasedLevel += extraLevels;
+        }
+        
+        return distanceBasedLevel;
+    }
+    
+    /**
+     * 获取实体与出生点的距离
+     * @param entity 实体
+     * @return 实体与出生点的水平距离
+     */
+    private static double getDistanceToSpawn(LivingEntity entity) {
+        // 获取世界的出生点位置
+        BlockPos spawnPoint = entity.level().getSharedSpawnPos();
+        // 如果出生点坐标为0，则尝试从世界数据中获取
+        if (spawnPoint.getX() == 0 && spawnPoint.getZ() == 0) {
+            spawnPoint = new BlockPos(entity.level().getLevelData().getXSpawn(), 
+                                      entity.level().getLevelData().getYSpawn(), 
+                                      entity.level().getLevelData().getZSpawn());
+        }
+        BlockPos entityPos = entity.blockPosition();
+        
+        // 输出调试日志
+        HamsterCore.LOGGER.info("Entity position: {}", entityPos);
+        HamsterCore.LOGGER.info("Spawn position: {}", spawnPoint);
+        
+        // 计算实体与出生点的水平距离（忽略Y轴），参考ScalingHealth的实现
+        double distance = Math.sqrt(entityPos.distSqr(spawnPoint));
+        HamsterCore.LOGGER.info("Distance to spawn: {}", distance);
+        
+        return distance;
+    }
+    
+    /**
+     * 获取服务器游戏天数
+     * @param server 服务器对象
+     * @return 天数
+     */
+    private static int getDays(MinecraftServer server) {
+        if (levelConfig == null) return 0;
+        
+        // 使用主世界游戏天数
+        ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+        return overworld != null ? (int) (overworld.getDayTime() / 24000L) : 0;
+    }
+    
     private static LevelConfig levelConfig;
-    private static Map<Level, Integer> cachedDaysMap = new HashMap<>();
+    // 移除不需要的缓存变量
     
     public static void init() {
         levelConfig = LevelConfig.load();
@@ -44,57 +109,18 @@ public class LevelSystem {
         MinecraftServer server = serverLevel.getServer();
         
         // 计算基于天数的等级部分
-        int days = 0;
-        if (levelConfig.isUsePlayerDays()) {
-            // 使用玩家生存天数
-            days = getHighestPlayerDays(server);
-        } else {
-            // 使用服务器游戏天数
-            days = (int) (serverLevel.getDayTime() / 24000L);
-        }
-        
+        int days = getDays(server);
         int dayBasedLevel = days * levelConfig.getBaseLevelPerDay();
         
         // 计算基于距离的等级部分
-        Vec3 position = entity.position();
-        // 使用世界坐标计算距离，而不是仅仅使用X和Z坐标
-        double distance = Math.sqrt(position.x * position.x + position.z * position.z);
+        int distanceBasedLevel = calculateDistanceBasedLevel(entity);
         
-        int distanceBasedLevel = levelConfig.getDistanceBaseLevel();
-        if (distance > levelConfig.getDistanceThreshold()) {
-            double extraDistance = distance - levelConfig.getDistanceThreshold();
-            // 改进计算逻辑：每100格增加指定等级
-            int extraLevels = (int) (extraDistance / 100) * levelConfig.getDistanceLevelPer100Blocks();
-            distanceBasedLevel += extraLevels;
-        }
+        // 总等级 = 基础等级 + 天数等级 + 距离等级
+        int totalLevel = levelConfig.getDistanceBaseLevel() + dayBasedLevel + distanceBasedLevel;
         
-        // 确保等级至少为基础等级
-        return Math.max(levelConfig.getDistanceBaseLevel(), dayBasedLevel + distanceBasedLevel);
+        return totalLevel;
     }
     
-    private static int getHighestPlayerDays(MinecraftServer server) {
-        int maxDays = 0;
-        
-        for (ServerLevel level : server.getAllLevels()) {
-            // 检查缓存
-            if (cachedDaysMap.containsKey(level) && level.getGameTime() % 1200 != 0) { // 每分钟更新一次缓存
-                maxDays = Math.max(maxDays, cachedDaysMap.get(level));
-                continue;
-            }
-            
-            int levelMaxDays = 0;
-            for (ServerPlayer player : level.players()) {
-                // 使用PLAY_TIME统计来获取玩家游戏时间
-                int playerDays = (int) (player.getStats().getValue(Stats.CUSTOM.get(Stats.PLAY_TIME)) / 24000L);
-                levelMaxDays = Math.max(levelMaxDays, playerDays);
-            }
-            
-            cachedDaysMap.put(level, levelMaxDays);
-            maxDays = Math.max(maxDays, levelMaxDays);
-        }
-        
-        return maxDays;
-    }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {

@@ -19,9 +19,9 @@ public class LevelConfig {
     
     // 等级配置参数
     private boolean usePlayerDays = true; // true表示使用玩家生存天数，false表示使用服务器游戏天数
-    private int baseLevelPerDay = 1; // 每天增加的基础等级
-    private int distanceBaseLevel = 20; // 1000格内的基础等级
-    private int distanceLevelPer100Blocks = 10; // 每100格增加的等级
+    private int baseLevelPerDay = 5; // 每天增加的基础等级
+    private int distanceBaseLevel = 50; // 1000格内的基础等级
+    private int distanceLevelPer100Blocks = 25; // 每100格增加的等级
     private int distanceThreshold = 1000; // 距离阈值
     
     public static LevelConfig load() {

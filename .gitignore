@@ -1,6 +1,5 @@
 .gradle
-ck
 build
-libs
 bin
 run
+ck

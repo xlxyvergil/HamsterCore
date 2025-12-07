@@ -2,53 +2,74 @@ package com.xlxyvergil.hamstercore.content.capability.entity;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
-import com.xlxyvergil.hamstercore.faction.Faction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_armor");
+    public static final Capability<EntityArmorCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
-    private double armor = 0;
-    private boolean initialized = false;
+    private Double armor = null; // 使用Double包装类型，null表示未计算
+    private EntityType<?> entityType;
 
     public double getArmor() {
-        LOGGER.debug("Getting armor value: " + armor);
+        if (armor == null) {
+            armor = calculateArmor();
+        }
         return armor;
     }
-
+    
     public void setArmor(double armor) {
-        LOGGER.debug("Setting armor to: " + armor);
         this.armor = armor;
-        this.initialized = true;
     }
 
-    public boolean isInitialized() {
-        LOGGER.debug("Armor capability initialized: " + initialized);
-        return initialized;
+    private double calculateArmor() {
+        if (entityType == null) {
+            return 0.0;
+        }
+        
+        // 获取配置
+        ArmorConfig config = ArmorConfig.load();
+        if (config == null) {
+            return 20.0; // 默认护甲值
+        }
+        
+        // 获取基础护甲值
+        double baseArmor = config.getArmorForEntity(entityType);
+        if (baseArmor < 0) {
+            baseArmor = config.getDefaultArmor();
+        }
+        
+        LOGGER.debug("Base armor for entity {}: {}", entityType.getDescriptionId(), baseArmor);
+        return baseArmor;
     }
-
+    
+    public void setEntityType(EntityType<?> entityType) {
+        this.entityType = entityType;
+    }
+    
     /**
      * 根据基础护甲值和等级计算实际护甲值
      * 护甲系数=1+0.4×(当前怪物等级-基础等级)^0.75
      * 当前护甲值(AR)=基础护甲×护甲系数
-     * 
-     * @param baseArmor 基础护甲值
-     * @param level 怪物等级
+     *
      * @param baseLevel 基础等级（通常为20）
+     * @param level 怪物等级
      */
-    public void calculateAndSetArmor(double baseArmor, int level, int baseLevel) {
-        // 即使基础护甲为0，也应该根据等级计算护甲值
+    public void initializeEntityCapabilities(int baseLevel, int level) {
+        double baseArmor = calculateArmor();
         
         // 护甲系数=1+0.4×(当前怪物等级-基础等级)^0.75
-        // 修复：当等级低于基础等级时，应该为0而不是负数
         double levelDiff = Math.max(0, level - baseLevel);
         double armorMultiplier = 1 + 0.4 * Math.pow(levelDiff, 0.75);
         
@@ -57,63 +78,26 @@ public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
         
         // 当前护甲值(AR)=基础护甲×护甲系数
         this.armor = baseArmor * armorMultiplier;
-        this.initialized = true;
         
-        // 调试信息：打印计算过程
-        LOGGER.debug("calculateAndSetArmor: baseArmor=" + baseArmor + ", level=" + level + ", baseLevel=" + baseLevel + ", levelDiff=" + levelDiff + ", armorMultiplier=" + armorMultiplier + ", final armor=" + this.armor);
-    }
-    
-    /**
-     * 获取指定实体类型的基础护甲值
-     * @param entity 实体
-     * @return 基础护甲值
-     */
-    public static double getBaseArmorForEntity(LivingEntity entity) {
-        ArmorConfig armorConfig = ArmorConfig.load();
-        if (armorConfig == null) {
-            return 20.0; // 默认返回20.0而不是0
-        }
-        
-        EntityType<?> entityType = entity.getType();
-        
-        LOGGER.debug("Getting armor for entity: " + entityType.getDescriptionId());
-        
-        double armor = armorConfig.getArmorForEntity(entityType);
-        LOGGER.debug("Config returned armor value: " + armor + " for entity: " + entityType.getDescriptionId());
-        // 如果没有配置，则返回配置文件中的默认值
-        double finalArmor = armor >= 0 ? armor : armorConfig.getDefaultArmor();
-        LOGGER.debug("Final base armor value: " + finalArmor + " (config default: " + armorConfig.getDefaultArmor() + ")");
-        return finalArmor;
-    }
-    
-    /**
-     * 获取指定实体类型的基础护甲值
-     * @param entityType 实体类型
-     * @param faction 派系
-     * @return 基础护甲值
-     */
-    public static double getBaseArmorForEntity(EntityType<?> entityType, String faction) {
-        ArmorConfig armorConfig = ArmorConfig.load();
-        if (armorConfig == null) {
-            return 20.0; // 默认返回20.0而不是0
-        }
-        
-        double armor = armorConfig.getArmorForEntity(entityType, faction);
-        // 如果没有配置，则返回配置文件中的默认值
-        return armor >= 0 ? armor : armorConfig.getDefaultArmor();
+        LOGGER.debug("Calculated armor: baseArmor={}, level={}, baseLevel={}, levelDiff={}, armorMultiplier={}, final armor={}",
+                baseArmor, level, baseLevel, levelDiff, armorMultiplier, this.armor);
     }
 
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putDouble("Armor", armor);
-        tag.putBoolean("Initialized", initialized);
+        if (armor != null) {
+            tag.putDouble("Armor", armor);
+        }
         return tag;
     }
 
     @Override
     public void deserializeNBT(CompoundTag tag) {
-        armor = tag.getDouble("Armor");
-        initialized = tag.getBoolean("Initialized");
+        if (tag.contains("Armor")) {
+            armor = tag.getDouble("Armor");
+        } else {
+            armor = null; // 未序列化的标记，下次访问时重新计算
+        }
     }
 }
