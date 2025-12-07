@@ -1,11 +1,14 @@
 package com.xlxyvergil.hamstercore;
 
+import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
+import com.xlxyvergil.hamstercore.config.ElementConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
 import com.xlxyvergil.hamstercore.content.capability.EntityCapabilityAttacher;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +35,7 @@ public class HamsterCore {
         // 初始化配置
         FactionConfig.load();
         ArmorConfig.load();
+        ElementConfig.load();
         LevelSystem.init();
         
         // 初始化网络包
@@ -40,6 +44,17 @@ public class HamsterCore {
 
     private void setup(final FMLCommonSetupEvent event) {
         // 初始化派系注册表
+        
+        // 初始化元素系统
+        ElementRegistry.init();
+        LOGGER.info("Element system initialized");
+        
+        // 初始化元素配置
+        LOGGER.info("Weapon configuration initialized with " + 
+                   ElementConfig.getInstance().getAllWeaponConfigs().size() + " weapons");
+                   
+        // 注册客户端事件
+        WeaponAttributeRenderer.registerEvents();
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {

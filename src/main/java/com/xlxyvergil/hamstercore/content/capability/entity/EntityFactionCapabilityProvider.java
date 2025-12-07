@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.content.capability.entity;
 
-import com.xlxyvergil.hamstercore.faction.Faction;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;

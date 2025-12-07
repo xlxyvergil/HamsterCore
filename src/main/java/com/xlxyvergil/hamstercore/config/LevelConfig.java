@@ -9,8 +9,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class LevelConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

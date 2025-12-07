@@ -1,24 +1,41 @@
 package com.xlxyvergil.hamstercore.events;
 
+import com.xlxyvergil.hamstercore.config.DisplayConfig;
+import com.xlxyvergil.hamstercore.config.ElementConfig;
+import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
+import com.xlxyvergil.hamstercore.element.ElementInstance;
+import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.List;
+import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class EntityInfoDisplayHandler {
 
     @SubscribeEvent
     public static void onEntityHurt(LivingHurtEvent event) {
+        // 检查配置是否启用了攻击时显示实体信息
+        if (!DisplayConfig.getInstance().isShowEntityInfoOnDamage()) {
+            return;
+        }
+        
         // 只有玩家攻击怪物时才显示信息
         if (event.getSource().getEntity() instanceof Player player) {
             LivingEntity target = event.getEntity();
+            ItemStack weapon = player.getMainHandItem();
             
             // 获取怪物的等级、护甲和派系信息
             int level = target.getCapability(EntityLevelCapabilityProvider.CAPABILITY)
@@ -52,16 +69,48 @@ public class EntityInfoDisplayHandler {
                 inflictedDamage = 0;
             }
             
-            // 构造消息并发送给玩家
-            String message = String.format("%s [等级:%d 护甲:%.2f 派系:%s] 伤害:%.2f -> %.2f", 
-                    target.getName().getString(), 
-                    level, 
-                    armor, 
-                    factionName,
-                    baseDamage,
-                    inflictedDamage);
+            // 构造实体信息消息
+            MutableComponent message = Component.literal("")
+                .append(target.getName())
+                .append(Component.translatable("hamstercore.ui.level_prefix"))
+                .append(Component.literal("" + level).withStyle(ChatFormatting.WHITE))
+                .append(Component.translatable("hamstercore.ui.armor_prefix"))
+                .append(Component.literal(String.format("%.2f", armor)).withStyle(ChatFormatting.WHITE))
+                .append(Component.translatable("hamstercore.ui.faction_prefix"))
+                .append(Component.literal(factionName + "]").withStyle(ChatFormatting.WHITE))
+                .append(Component.translatable("hamstercore.ui.damage_prefix"))
+                .append(Component.literal(String.format("%.2f", baseDamage)).withStyle(ChatFormatting.RED))
+                .append(Component.literal(" -> ").withStyle(ChatFormatting.GOLD))
+                .append(Component.literal(String.format("%.2f", inflictedDamage)).withStyle(ChatFormatting.GOLD));
             
-            player.sendSystemMessage(Component.literal(message).withStyle(ChatFormatting.GOLD));
+            // 添加武器属性信息
+            if (!weapon.isEmpty()) {
+                WeaponConfig weaponConfig = WeaponConfig.createWeaponConfig(weapon);
+                
+                message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
+                message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", weaponConfig.getCriticalChance() * 100)).withStyle(ChatFormatting.YELLOW));
+                message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.0f%%", weaponConfig.getCriticalDamage() * 100)).withStyle(ChatFormatting.YELLOW));
+                message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", weaponConfig.getTriggerChance() * 100)).withStyle(ChatFormatting.YELLOW));
+                
+                // 添加武器元素倍率信息
+                Map<String, Double> elementRatios = weaponConfig.getElementRatios();
+                if (!elementRatios.isEmpty()) {
+                    message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
+                                        
+                    for (Map.Entry<String, Double> entry : elementRatios.entrySet()) {
+                        String elementName = entry.getKey();
+                        double ratio = entry.getValue();
+                        ElementType elementType = ElementType.byName(elementName);
+                                            
+                        if (elementType != null) {
+                            message.append(Component.literal(" " + elementType.getColoredName().getString()).withStyle(elementType.getColor()));
+                            message.append(Component.literal(":" + String.format("%.0f%%", ratio * 100)).withStyle(ChatFormatting.WHITE));
+                        }
+                    }
+                }
+            }
+            
+            player.sendSystemMessage(message);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.compat.jade;
 
-import com.xlxyvergil.hamstercore.HamsterCore;
 import net.minecraft.world.entity.LivingEntity;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaPlugin;

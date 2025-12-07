@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.HamsterCore;
+import com.xlxyvergil.hamstercore.config.DisplayConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
@@ -23,6 +24,11 @@ public class ClientEvents {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void renderNamePlate(RenderNameTagEvent event) {
+        // 检查配置是否启用了名称标签信息显示
+        if (!DisplayConfig.getInstance().isShowNameTagInfo()) {
+            return;
+        }
+        
         if (event.getEntity() instanceof LivingEntity livingEntity) {
             // 检查实体是否有派系Capability
             livingEntity.getCapability(EntityFactionCapabilityProvider.CAPABILITY).ifPresent(factionCap -> {
