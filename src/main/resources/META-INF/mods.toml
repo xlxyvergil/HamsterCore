@@ -1,0 +1,24 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="hamstercore"
+version="1.0.0"
+displayName="HamsterCore"
+description="Core functionality for the Hamster mod suite"
+authors="xlxyvergil"
+
+[[dependencies.hamstercore]]
+modId="forge"
+mandatory=true
+versionRange="[47.3,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.hamstercore]]
+modId="jade"
+mandatory=false
+versionRange="[11.13,)"
+ordering="AFTER"
+side="CLIENT"

@@ -1,0 +1,9 @@
+{
+  "hamstercore.faction.grineer": "Grineer",
+  "hamstercore.faction.infested": "Infested",
+  "hamstercore.faction.corpus": "Corpus",
+  "hamstercore.faction.orokin": "Orokin",
+  "hamstercore.faction.sentient": "Sentient",
+  "hamstercore.faction.murmur": "Murmur",
+  "hamstercore.hud.faction_prefix": "Faction: "
+}
