@@ -1,14 +1,12 @@
 package com.xlxyvergil.hamstercore.events;
 
 import com.xlxyvergil.hamstercore.config.DisplayConfig;
-import com.xlxyvergil.hamstercore.config.ElementConfig;
-import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementHelper;
-import com.xlxyvergil.hamstercore.element.ElementInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,7 +17,6 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
@@ -85,26 +82,36 @@ public class EntityInfoDisplayHandler {
             
             // 添加武器属性信息
             if (!weapon.isEmpty()) {
-                WeaponConfig weaponConfig = WeaponConfig.createWeaponConfig(weapon);
-                
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
-                message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", weaponConfig.getCriticalChance() * 100)).withStyle(ChatFormatting.YELLOW));
-                message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.0f%%", weaponConfig.getCriticalDamage() * 100)).withStyle(ChatFormatting.YELLOW));
-                message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", weaponConfig.getTriggerChance() * 100)).withStyle(ChatFormatting.YELLOW));
                 
-                // 添加武器元素倍率信息
-                Map<String, Double> elementRatios = weaponConfig.getElementRatios();
-                if (!elementRatios.isEmpty()) {
+                // 显示暴击率
+                double critChance = ElementHelper.getCriticalChance(weapon);
+                message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
+                
+                // 显示暴击伤害
+                double critDamage = ElementHelper.getCriticalDamage(weapon);
+                message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f", critDamage)).withStyle(ChatFormatting.YELLOW));
+                
+                // 显示触发率
+                double triggerChance = ElementHelper.getTriggerChance(weapon);
+                message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
+                
+                // 添加武器元素属性信息
+                // 使用ElementHelper获取实际生效的元素
+                Map<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> elements = ElementHelper.getElementAttributes(weapon);
+                
+                if (!elements.isEmpty()) {
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
-                                        
-                    for (Map.Entry<String, Double> entry : elementRatios.entrySet()) {
-                        String elementName = entry.getKey();
-                        double ratio = entry.getValue();
-                        ElementType elementType = ElementType.byName(elementName);
-                                            
-                        if (elementType != null) {
+                    
+                    for (Map.Entry<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> entry : elements.entrySet()) {
+                        ElementType elementType = entry.getKey();
+                        com.xlxyvergil.hamstercore.element.ElementInstance elementInstance = entry.getValue();
+                        
+                        // 只显示物理元素、基础元素和复合元素，不显示特殊属性
+                        if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
+                            // 元素属性数值不以百分比形式展示
                             message.append(Component.literal(" " + elementType.getColoredName().getString()).withStyle(elementType.getColor()));
-                            message.append(Component.literal(":" + String.format("%.0f%%", ratio * 100)).withStyle(ChatFormatting.WHITE));
+                            message.append(Component.literal(":" + String.format("%.2f", elementInstance.value())).withStyle(ChatFormatting.WHITE));
                         }
                     }
                 }

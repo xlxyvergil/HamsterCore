@@ -120,14 +120,27 @@ public enum ElementType {
             return null;
         }
         
-        // 检查所有可能的组合
-        for (ElementType complex : values()) {
-            if (complex.isComplex() && complex.getComposition().contains(element1) && complex.getComposition().contains(element2)) {
-                return complex;
-            }
+        // 精确匹配复合元素组合
+        if ((element1 == HEAT && element2 == COLD) || (element1 == COLD && element2 == HEAT)) {
+            return BLAST; // 爆炸（火焰+冰冻）
+        }
+        if ((element1 == ELECTRICITY && element2 == TOXIN) || (element1 == TOXIN && element2 == ELECTRICITY)) {
+            return CORROSIVE; // 腐蚀（电击+毒素）
+        }
+        if ((element1 == HEAT && element2 == TOXIN) || (element1 == TOXIN && element2 == HEAT)) {
+            return GAS; // 毒气（火焰+毒素）
+        }
+        if ((element1 == COLD && element2 == ELECTRICITY) || (element1 == ELECTRICITY && element2 == COLD)) {
+            return MAGNETIC; // 磁力（冰冻+电击）
+        }
+        if ((element1 == HEAT && element2 == ELECTRICITY) || (element1 == ELECTRICITY && element2 == HEAT)) {
+            return RADIATION; // 辐射（火焰+电击）
+        }
+        if ((element1 == COLD && element2 == TOXIN) || (element1 == TOXIN && element2 == COLD)) {
+            return VIRAL; // 病毒（冰冻+毒素）
         }
         
-        return null;
+        return null; // 没有匹配的复合元素
     }
     
     /**

@@ -1,182 +1,190 @@
 package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.faction.FactionDamageHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
+/**
+ * 元素触发效果处理器
+ * 负责处理元素触发的异常状态效果
+ */
 public class ElementTriggerHandler {
-    private static final Logger LOGGER = LogManager.getLogger();
+    
+    private static final Random RANDOM = new Random();
     
     /**
-     * 处理武器元素触发
+     * 处理元素触发效果
      * @param attacker 攻击者
      * @param target 目标实体
      */
     public static void handleElementTriggers(LivingEntity attacker, LivingEntity target) {
-        if (attacker instanceof Player player) {
-            // 获取攻击者使用的物品
-            ItemStack weapon = player.getMainHandItem();
-            
-            // 检查物品是否有元素属性
-            if (ElementHelper.hasElementAttributes(weapon)) {
-                // 使用WeaponTriggerHandler处理元素触发
-                List<ElementType> triggeredElements = WeaponTriggerHandler.processWeaponTrigger(weapon);
-                
-                // 保存触发信息到FactionDamageHandler
-                FactionDamageHandler.lastTriggeredElements = triggeredElements;
-                
-                // 如果有任何元素被触发
-                if (!triggeredElements.isEmpty()) {
-                    LOGGER.info("Weapon triggered " + triggeredElements.size() + " elements");
-                    
-                    // 遍历所有触发的元素
-                    for (ElementType elementType : triggeredElements) {
-                        LOGGER.info("Triggered element effect: " + elementType.getName());
-                        // 向玩家发送触发信息
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("触发元素效果: " + elementType.getName()).withStyle(net.minecraft.ChatFormatting.GREEN));
-                        // 触发元素效果
-                        triggerElementEffect(elementType, attacker, target);
+        // 只处理玩家攻击的情况
+        if (!(attacker instanceof Player)) {
+            return;
+        }
+        
+        Player player = (Player) attacker;
+        ItemStack weapon = player.getMainHandItem();
+        
+        // 获取武器上的元素属性（只获取实际生效的元素）
+        Map<ElementType, ElementInstance> elements = new HashMap<>();
+        
+        // 使用ElementNBTUtils获取实际生效的元素
+        for (ElementType type : ElementNBTUtils.getAllElementTypes(weapon)) {
+                if (type.isPhysical() || type.isBasic() || type.isComplex()) {
+                    double value = ElementNBTUtils.getElementValue(weapon, type);
+                    ElementAttribute attribute = ElementRegistry.getAttribute(type);
+                    if (attribute != null) {
+                        elements.put(type, new ElementInstance(type, value, 0));
                     }
-                } else {
-                    LOGGER.info("No elements were triggered");
                 }
-            }
+        }
+        
+        if (elements.isEmpty()) {
+            return;
+        }
+        
+        // 计算元素总触发值（不包括特殊属性）
+        double totalElementValue = 0.0;
+        for (ElementInstance element : elements.values()) {
+            totalElementValue += element.getValue();
+        }
+        
+        if (totalElementValue <= 0.0) {
+            return;
+        }
+        
+        // 获取触发率
+        double triggerChance = ElementNBTUtils.getTriggerChance(weapon);
+        
+        // 判断是否触发
+        if (RANDOM.nextDouble() > triggerChance) {
+            return; // 没有触发
+        }
+        
+        // 计算触发等级
+        double chancePercent = triggerChance * 100;
+        int guaranteedTriggerLevel = (int) Math.floor((chancePercent + 100) / 100) - 1; // 保底触发等级
+        int maxTriggerLevel = (int) Math.floor((chancePercent + 100) / 100); // 最大可能触发等级
+        
+        // 确保触发等级至少为0
+        if (guaranteedTriggerLevel < 0) {
+            guaranteedTriggerLevel = 0;
+        }
+        
+        if (maxTriggerLevel < 0) {
+            maxTriggerLevel = 0;
+        }
+        
+        // 判断是否能达到更高的触发等级
+        int triggerLevel = guaranteedTriggerLevel;
+        double extraChance = chancePercent - (guaranteedTriggerLevel * 100); // 超出保底等级的部分
+        
+        if (RANDOM.nextDouble() * 100 < extraChance) {
+            triggerLevel = maxTriggerLevel;
+        }
+        
+        // 触发等级为0时，也要至少触发一个效果
+        if (triggerLevel == 0 && triggerChance > 0) {
+            triggerLevel = 1;
+        }
+        
+        // 计算每个元素的触发概率
+        Map<ElementType, Double> elementProbabilities = new HashMap<>();
+        for (Map.Entry<ElementType, ElementInstance> entry : elements.entrySet()) {
+            double probability = entry.getValue().getValue() / totalElementValue;
+            elementProbabilities.put(entry.getKey(), probability);
+        }
+        
+        // 根据触发等级和概率触发效果
+        for (int i = 0; i < triggerLevel; i++) {
+            triggerRandomElementEffect(elementProbabilities, attacker, target);
         }
     }
     
     /**
-     * 触发特定元素的效果
-     * @param elementType 元素类型
+     * 根据概率随机触发一个元素效果
+     * @param elementProbabilities 元素概率映射
      * @param attacker 攻击者
-     * @param target 目标
+     * @param target 目标实体
      */
-    private static void triggerElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target) {
-        // TODO: 实现各种元素的具体触发效果
-        switch (elementType) {
-            case IMPACT:
-                // 冲击效果：使敌人蹒跚后退
-                triggerImpactEffect(target);
+    private static void triggerRandomElementEffect(Map<ElementType, Double> elementProbabilities, 
+                                              LivingEntity attacker, LivingEntity target) {
+        // 根据概率随机选择一个元素
+        double random = RANDOM.nextDouble();
+        double cumulative = 0.0;
+        
+        ElementType selectedElement = null;
+        for (Map.Entry<ElementType, Double> entry : elementProbabilities.entrySet()) {
+            cumulative += entry.getValue();
+            if (random <= cumulative) {
+                selectedElement = entry.getKey();
                 break;
-            case PUNCTURE:
-                // 穿刺效果：减少敌人伤害输出
-                triggerPunctureEffect(target);
-                break;
-            case SLASH:
-                // 切割效果：造成流血伤害
-                triggerSlashEffect(target);
-                break;
-            case COLD:
-                // 冰冻效果：减速目标
-                triggerColdEffect(target);
-                break;
-            case ELECTRICITY:
-                // 电击效果：造成电击伤害并可能眩晕
-                triggerElectricityEffect(target);
-                break;
-            case HEAT:
-                // 火焰效果：减少目标护甲
-                triggerHeatEffect(target);
-                break;
-            case TOXIN:
-                // 毒素效果：造成毒素伤害
-                triggerToxinEffect(target);
-                break;
-            case BLAST:
-                // 爆炸效果：范围伤害
-                triggerBlastEffect(target);
-                break;
-            case CORROSIVE:
-                // 腐蚀效果：削减护甲
-                triggerCorrosiveEffect(target);
-                break;
-            case GAS:
-                // 毒气效果：范围毒素伤害
-                triggerGasEffect(target);
-                break;
-            case MAGNETIC:
-                // 磁力效果：对护盾造成额外伤害
-                triggerMagneticEffect(target);
-                break;
-            case RADIATION:
-                // 辐射效果：使目标攻击友军
-                triggerRadiationEffect(target);
-                break;
-            case VIRAL:
-                // 病毒效果：对生命值造成额外伤害
-                triggerViralEffect(target);
-                break;
+            }
+        }
+        
+        // 如果由于浮点数精度问题没有选中，返回最后一个元素
+        if (selectedElement == null && !elementProbabilities.isEmpty()) {
+            selectedElement = elementProbabilities.keySet().iterator().next();
+        }
+        
+        if (selectedElement != null) {
+            applyElementEffect(selectedElement, attacker, target);
         }
     }
     
-    private static void triggerImpactEffect(LivingEntity target) {
-        // TODO: 实现冲击效果
-        LOGGER.info("Triggering Impact effect on " + target.getName().getString());
-    }
-    
-    private static void triggerPunctureEffect(LivingEntity target) {
-        // TODO: 实现穿刺效果
-        LOGGER.info("Triggering Puncture effect on " + target.getName().getString());
-    }
-    
-    private static void triggerSlashEffect(LivingEntity target) {
-        // TODO: 实现切割效果
-        LOGGER.info("Triggering Slash effect on " + target.getName().getString());
-    }
-    
-    private static void triggerColdEffect(LivingEntity target) {
-        // TODO: 实现冰冻效果
-        LOGGER.info("Triggering Cold effect on " + target.getName().getString());
-    }
-    
-    private static void triggerElectricityEffect(LivingEntity target) {
-        // TODO: 实现电击效果
-        LOGGER.info("Triggering Electricity effect on " + target.getName().getString());
-    }
-    
-    private static void triggerHeatEffect(LivingEntity target) {
-        // TODO: 实现火焰效果
-        LOGGER.info("Triggering Heat effect on " + target.getName().getString());
-    }
-    
-    private static void triggerToxinEffect(LivingEntity target) {
-        // TODO: 实现毒素效果
-        LOGGER.info("Triggering Toxin effect on " + target.getName().getString());
-    }
-    
-    private static void triggerBlastEffect(LivingEntity target) {
-        // TODO: 实现爆炸效果
-        LOGGER.info("Triggering Blast effect on " + target.getName().getString());
-    }
-    
-    private static void triggerCorrosiveEffect(LivingEntity target) {
-        // TODO: 实现腐蚀效果
-        LOGGER.info("Triggering Corrosive effect on " + target.getName().getString());
-    }
-    
-    private static void triggerGasEffect(LivingEntity target) {
-        // TODO: 实现毒气效果
-        LOGGER.info("Triggering Gas effect on " + target.getName().getString());
-    }
-    
-    private static void triggerMagneticEffect(LivingEntity target) {
-        // TODO: 实现磁力效果
-        LOGGER.info("Triggering Magnetic effect on " + target.getName().getString());
-    }
-    
-    private static void triggerRadiationEffect(LivingEntity target) {
-        // TODO: 实现辐射效果
-        LOGGER.info("Triggering Radiation effect on " + target.getName().getString());
-    }
-    
-    private static void triggerViralEffect(LivingEntity target) {
-        // TODO: 实现病毒效果
-        LOGGER.info("Triggering Viral effect on " + target.getName().getString());
+    /**
+     * 应用元素效果
+     * @param elementType 元素类型
+     * @param attacker 攻击者
+     * @param target 目标实体
+     */
+    private static void applyElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target) {
+        // 根据元素类型应用不同的效果
+        switch (elementType) {
+            case IMPACT:
+                // 冲击效果：待设计
+                break;
+            case PUNCTURE:
+                // 穿刺效果：待设计
+                break;
+            case SLASH:
+                // 切割效果：待设计
+                break;
+            case COLD:
+                // 冰冻效果：待设计
+                break;
+            case ELECTRICITY:
+                // 电击效果：待设计
+                break;
+            case HEAT:
+                // 火焰效果：待设计
+                break;
+            case TOXIN:
+                // 毒素效果：待设计
+                break;
+            case BLAST:
+                // 爆炸效果：待设计
+                break;
+            case CORROSIVE:
+                // 腐蚀效果：待设计
+                break;
+            case GAS:
+                // 毒气效果：待设计
+                break;
+            case MAGNETIC:
+                // 磁力效果：待设计
+                break;
+            case RADIATION:
+                // 辐射效果：待设计
+                break;
+            case VIRAL:
+                // 病毒效果：待设计
+                break;
+            default:
+                break;
+        }
     }
 }

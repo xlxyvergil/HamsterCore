@@ -4,6 +4,7 @@ import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -35,18 +36,15 @@ public class WeaponAttributeRenderer {
             return;
         }
         
-        // 获取或创建武器配置
-        WeaponConfig config = WeaponConfig.createWeaponConfig(stack);
-        double baseDamage = WeaponConfig.getBaseAttackDamage(stack);
-        
         // 获取现有的工具提示行
         List<Component> tooltipElements = event.getToolTip();
         
-        // 添加基础属性到工具提示
-        addBasicAttributesToTooltip(tooltipElements, config);
+        // 只使用ElementNBTUtils获取元素数据
+        // 添加基础属性到工具提示（使用ElementNBTUtils）
+        addBasicAttributesFromNBT(tooltipElements, stack);
         
-        // 添加元素配比到工具提示
-        addElementRatiosToTooltip(tooltipElements, config, baseDamage);
+        // 添加元素属性到工具提示（使用ElementNBTUtils）
+        addElementAttributesFromNBT(tooltipElements, stack);
     }
     
     /**
@@ -62,69 +60,70 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 添加基础属性到工具提示
+     * 添加基础属性到工具提示（使用ElementHelper直接获取）
      */
-    private static void addBasicAttributesToTooltip(List<Component> tooltipElements, WeaponConfig config) {
+    private static void addBasicAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
         
         // 添加暴击率
+        double criticalChance = ElementHelper.getCriticalChance(stack);
         String criticalChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.critical_chance").getString(), 
-            config.getCriticalChance() * 100);
+            criticalChance * 100);
         tooltipElements.add(Component.literal(criticalChanceText));
         
         // 添加暴击伤害
-        String criticalDamageText = String.format("%s: %.0f%%", 
+        double criticalDamage = ElementHelper.getCriticalDamage(stack);
+        String criticalDamageText = String.format("%s: %.1f", 
             Component.translatable("hamstercore.ui.critical_damage").getString(), 
-            config.getCriticalDamage() * 100);
+            criticalDamage);
         tooltipElements.add(Component.literal(criticalDamageText));
         
         // 添加触发率
+        double triggerChance = ElementHelper.getTriggerChance(stack);
         String triggerChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.trigger_chance").getString(), 
-            config.getTriggerChance() * 100);
+            triggerChance * 100);
         tooltipElements.add(Component.literal(triggerChanceText));
     }
     
     /**
-     * 添加元素倍率到工具提示
+     * 添加元素属性到工具提示
      */
-    private static void addElementRatiosToTooltip(List<Component> tooltipElements, WeaponConfig config, double baseDamage) {
-        Map<String, Double> elementRatios = config.getElementRatios();
+    private static void addElementAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
+        // 使用ElementHelper获取实际生效的元素
+        Map<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> elements = ElementHelper.getElementAttributes(stack);
         
-        if (elementRatios.isEmpty()) {
+        if (elements.isEmpty()) {
             return;
         }
         
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
         
-        // 添加元素倍率标题
+        // 添加元素属性标题
         tooltipElements.add(
             Component.translatable("hamstercore.ui.element_ratios").append(":")
         );
         
-        // 添加每个元素的倍率
-        for (Map.Entry<String, Double> entry : elementRatios.entrySet()) {
-            String elementName = entry.getKey();
-            double ratio = entry.getValue();
+        // 添加每个元素的属性值（不以百分比形式展示）
+        for (Map.Entry<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> entry : elements.entrySet()) {
+            ElementType elementType = entry.getKey();
+            com.xlxyvergil.hamstercore.element.ElementInstance elementInstance = entry.getValue();
             
-            // 获取元素类型
-            ElementType elementType = ElementType.byName(elementName);
-            if (elementType == null) {
-                continue;
+            // 只显示物理元素、基础元素和复合元素，不显示特殊属性
+            if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
+                // 创建元素名称和数值的文本组件，使用元素颜色
+                String elementText = String.format("  %s: %.2f", 
+                    Component.translatable("element." + elementType.getName() + ".name").getString(), 
+                    elementInstance.value());
+                
+                Component elementComponent = Component.literal(elementText)
+                    .withStyle(style -> style.withColor(elementType.getColor().getColor()));
+                
+                tooltipElements.add(elementComponent);
             }
-            
-            // 创建元素名称和倍率的文本组件，使用元素颜色
-            String elementText = String.format("  %s: %.0f%%", 
-                Component.translatable("element." + elementName + ".name").getString(), 
-                ratio * 100);
-            
-            Component elementComponent = Component.literal(elementText)
-                .withStyle(style -> style.withColor(elementType.getColor().getColor()));
-            
-            tooltipElements.add(elementComponent);
         }
     }
 }
