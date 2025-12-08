@@ -92,7 +92,11 @@ public class FactionDamageHandler {
         // 获取武器上的元素属性
         Map<ElementType, ElementInstance> elements = 
             ElementHelper.hasElementAttributes(weapon) ? 
-            ElementHelper.getElementAttributes(weapon) : 
+            ElementHelper.getActiveElements(weapon).stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            com.xlxyvergil.hamstercore.element.ElementInstance::getType,
+                            java.util.function.Function.identity()
+                    )) : 
             new java.util.HashMap<>();
         
         // 计算克制系数
@@ -188,7 +192,12 @@ public class FactionDamageHandler {
             // 检查物品是否有元素属性
             if (ElementHelper.hasElementAttributes(weapon)) {
                 // 从武器NBT中获取元素属性以计算元素总倍率
-                Map<ElementType, ElementInstance> elements = ElementHelper.getElementAttributes(weapon);
+                java.util.List<ElementInstance> elementList = ElementHelper.getActiveElements(weapon);
+                Map<ElementType, ElementInstance> elements = elementList.stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                ElementInstance::getType,
+                                java.util.function.Function.identity()
+                        ));
                 
                 // 计算元素总倍率（所有元素倍率之和，除了暴击相关属性和触发率）
                 double elementTotalRatio = 0.0;
@@ -200,7 +209,7 @@ public class FactionDamageHandler {
                     if (elementType != ElementType.CRITICAL_CHANCE && 
                         elementType != ElementType.CRITICAL_DAMAGE &&
                         elementType != ElementType.TRIGGER_CHANCE) {
-                        elementTotalRatio += elementInstance.value();
+                        elementTotalRatio += elementInstance.getValue();
                     }
                 }
                 
@@ -227,18 +236,23 @@ public class FactionDamageHandler {
             // 检查物品是否有元素属性
             if (ElementHelper.hasElementAttributes(weapon)) {
                 // 从武器NBT中获取元素属性
-                Map<ElementType, ElementInstance> elements = ElementHelper.getElementAttributes(weapon);
+                java.util.List<ElementInstance> elementList = ElementHelper.getActiveElements(weapon);
+                Map<ElementType, ElementInstance> elements = elementList.stream()
+                        .collect(java.util.stream.Collectors.toMap(
+                                ElementInstance::getType,
+                                java.util.function.Function.identity()
+                        ));
                 
                 // 获取暴击率和暴击伤害
                 double criticalChance = 0.0;
                 double criticalDamage = 1.0; // 默认暴击伤害倍率
                 
                 if (elements.containsKey(ElementType.CRITICAL_CHANCE)) {
-                    criticalChance = elements.get(ElementType.CRITICAL_CHANCE).value();
+                    criticalChance = elements.get(ElementType.CRITICAL_CHANCE).getValue();
                 }
                 
                 if (elements.containsKey(ElementType.CRITICAL_DAMAGE)) {
-                    criticalDamage = elements.get(ElementType.CRITICAL_DAMAGE).value();
+                    criticalDamage = elements.get(ElementType.CRITICAL_DAMAGE).getValue();
                 }
                 
                 // 使用Random判断是否暴击

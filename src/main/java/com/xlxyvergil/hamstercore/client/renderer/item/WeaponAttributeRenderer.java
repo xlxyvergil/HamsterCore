@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
-import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
@@ -31,8 +30,8 @@ public class WeaponAttributeRenderer {
     public void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         
-        // 检查物品是否可以应用元素属性
-        if (!canApplyElementAttributes(stack)) {
+        // 检查物品是否具有元素数据
+        if (!ElementNBTUtils.hasAnyElements(stack)) {
             return;
         }
         
@@ -40,48 +39,38 @@ public class WeaponAttributeRenderer {
         List<Component> tooltipElements = event.getToolTip();
         
         // 只使用ElementNBTUtils获取元素数据
-        // 添加基础属性到工具提示（使用ElementNBTUtils）
+        // 添加基础属性到工具提示
         addBasicAttributesFromNBT(tooltipElements, stack);
         
-        // 添加元素属性到工具提示（使用ElementNBTUtils）
+        // 添加元素属性到工具提示
         addElementAttributesFromNBT(tooltipElements, stack);
     }
     
-    /**
-     * 棜查物品是否可以应用元素属性
-     */
-    private static boolean canApplyElementAttributes(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        
-        // 使用ElementHelper中的方法检查
-        return ElementHelper.canApplyElementAttributes(stack);
-    }
+
     
     /**
-     * 添加基础属性到工具提示（使用ElementHelper直接获取）
+     * 添加基础属性到工具提示
      */
     private static void addBasicAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
         
         // 添加暴击率
-        double criticalChance = ElementHelper.getCriticalChance(stack);
+        double criticalChance = ElementNBTUtils.getCriticalChance(stack);
         String criticalChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.critical_chance").getString(), 
             criticalChance * 100);
         tooltipElements.add(Component.literal(criticalChanceText));
         
         // 添加暴击伤害
-        double criticalDamage = ElementHelper.getCriticalDamage(stack);
+        double criticalDamage = ElementNBTUtils.getCriticalDamage(stack);
         String criticalDamageText = String.format("%s: %.1f", 
             Component.translatable("hamstercore.ui.critical_damage").getString(), 
             criticalDamage);
         tooltipElements.add(Component.literal(criticalDamageText));
         
         // 添加触发率
-        double triggerChance = ElementHelper.getTriggerChance(stack);
+        double triggerChance = ElementNBTUtils.getTriggerChance(stack);
         String triggerChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.trigger_chance").getString(), 
             triggerChance * 100);
@@ -92,10 +81,10 @@ public class WeaponAttributeRenderer {
      * 添加元素属性到工具提示
      */
     private static void addElementAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
-        // 使用ElementHelper获取实际生效的元素
-        Map<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> elements = ElementHelper.getElementAttributes(stack);
+        // 直接从NBT获取元素类型
+        java.util.Set<ElementType> elementTypes = ElementNBTUtils.getAllElementTypes(stack);
         
-        if (elements.isEmpty()) {
+        if (elementTypes.isEmpty()) {
             return;
         }
         
@@ -108,16 +97,16 @@ public class WeaponAttributeRenderer {
         );
         
         // 添加每个元素的属性值（不以百分比形式展示）
-        for (Map.Entry<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> entry : elements.entrySet()) {
-            ElementType elementType = entry.getKey();
-            com.xlxyvergil.hamstercore.element.ElementInstance elementInstance = entry.getValue();
+        for (ElementType elementType : elementTypes) {
+            // 获取元素值
+            double elementValue = ElementNBTUtils.getElementValue(stack, elementType);
             
             // 只显示物理元素、基础元素和复合元素，不显示特殊属性
             if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
                 // 创建元素名称和数值的文本组件，使用元素颜色
                 String elementText = String.format("  %s: %.2f", 
                     Component.translatable("element." + elementType.getName() + ".name").getString(), 
-                    elementInstance.value());
+                    elementValue);
                 
                 Component elementComponent = Component.literal(elementText)
                     .withStyle(style -> style.withColor(elementType.getColor().getColor()));

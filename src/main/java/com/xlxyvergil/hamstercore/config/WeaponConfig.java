@@ -101,7 +101,7 @@ public class WeaponConfig {
             ItemStack stack = new ItemStack(item);
             
             // 检查物品是否可以应用元素属性
-            if (ElementHelper.canApplyElementAttributes(stack)) {
+            if (ElementHelper.canApplyElements(stack)) {
                 WeaponData weaponData = createWeaponData(stack, itemKey);
                 if (weaponData != null) {
                     weaponConfigs.put(itemKey, weaponData);

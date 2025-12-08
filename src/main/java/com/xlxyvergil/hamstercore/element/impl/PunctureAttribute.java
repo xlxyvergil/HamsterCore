@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 public class PunctureAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("e3a5c5d3-5c3a-5c6c-9c2a-9d0b3b4c0a0d");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7e");
     
     public PunctureAttribute() {
         super(ElementType.PUNCTURE, 0.0, AttributeModifier.Operation.ADDITION);
@@ -27,17 +28,11 @@ public class PunctureAttribute extends ElementAttribute {
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Puncture element modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
 }

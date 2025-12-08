@@ -1,40 +1,36 @@
 package com.xlxyvergil.hamstercore.element;
 
+import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.*;
+import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-/**
- * 元素属性工具类，提供元素属性的常用操作方法
- * 参考Apotheosis的AffixHelper实现
- */
 public class ElementHelper {
     
-    public static final String ELEMENT_DATA = "element_data";
-    public static final String ELEMENTS = "elements";
-    public static final String LAST_POSITION = "last_position";
-    public static final String CRITICAL_CHANCE = "critical_chance";
-    public static final String CRITICAL_DAMAGE = "critical_damage";
+    // 元素数据NBT键名常量
+    public static final String ELEMENT_DATA = "ElementData";
+    public static final String ELEMENTS = "Elements";
+    public static final String CRITICAL_CHANCE = "CriticalChance";
+    public static final String CRITICAL_DAMAGE = "CriticalDamage";
+    
+    // 自定义缓存
+    private static final ElementCache<List<ElementInstance>> ELEMENTS_CACHE = new ElementCache<>(ElementHelper::getElementsImpl);
+    private static final ElementCache<List<ElementInstance>> ACTIVE_ELEMENTS_CACHE = new ElementCache<>(ElementHelper::getActiveElementsImpl);
     
     /**
-     * 添加元素属性到物品
+     * 向物品添加元素属性
      */
     public static void addElement(ItemStack stack, ElementInstance element) {
         List<ElementInstance> elements = getElements(stack);
@@ -46,27 +42,46 @@ public class ElementHelper {
      * 设置物品的所有元素属性
      */
     public static void setElements(ItemStack stack, List<ElementInstance> elements) {
-        if (stack.isEmpty() || elements.isEmpty()) {
+        if (elements.isEmpty()) {
+            // 如果没有元素，移除NBT数据
+            CompoundTag tag = stack.getTag();
+            if (tag != null) {
+                tag.remove(ELEMENT_DATA);
+                if (tag.isEmpty()) {
+                    stack.setTag(null);
+                }
+            }
+            // 使缓存失效
+            invalidateCache(stack);
             return;
         }
         
         CompoundTag elementData = stack.getOrCreateTagElement(ELEMENT_DATA);
         ListTag elementsList = new ListTag();
         
-        int maxPosition = -1;
         for (ElementInstance element : elements) {
             elementsList.add(element.toNBT());
-            maxPosition = Math.max(maxPosition, element.getPosition());
         }
         
         elementData.put(ELEMENTS, elementsList);
-        elementData.putInt(LAST_POSITION, maxPosition);
+        // 使缓存失效
+        invalidateCache(stack);
     }
     
     /**
-     * 获取物品的所有元素属性
+     * 获取物品的所有元素属性（带缓存）
      */
     public static List<ElementInstance> getElements(ItemStack stack) {
+        if (!stack.hasTag()) return new ArrayList<>();
+        
+        LazyOptional<List<ElementInstance>> cached = ELEMENTS_CACHE.get(stack);
+        return cached.orElse(new ArrayList<>());
+    }
+    
+    /**
+     * 获取物品的所有元素属性（实际实现）
+     */
+    private static List<ElementInstance> getElementsImpl(ItemStack stack) {
         if (stack.isEmpty()) {
             return new ArrayList<>();
         }
@@ -91,19 +106,36 @@ public class ElementHelper {
     }
     
     /**
-     * 获取物品的所有生效元素属性
+     * 获取物品的所有生效元素属性（带缓存）
      */
     public static List<ElementInstance> getActiveElements(ItemStack stack) {
+        LazyOptional<List<ElementInstance>> cached = ACTIVE_ELEMENTS_CACHE.get(stack);
+        return cached.orElse(new ArrayList<>());
+    }
+    
+    /**
+     * 获取物品的所有生效元素属性（实际实现）
+     */
+    private static List<ElementInstance> getActiveElementsImpl(ItemStack stack) {
         List<ElementInstance> elements = getElements(stack);
-        List<ElementInstance> activeElements = new ArrayList<>();
+        // 处理元素组合逻辑
+        List<ElementInstance> processedElements = ElementCombinationProcessor.processElementCombinations(elements, stack);
         
-        for (ElementInstance element : elements) {
+        List<ElementInstance> activeElements = new ArrayList<>();
+        for (ElementInstance element : processedElements) {
             if (element.isActive()) {
                 activeElements.add(element);
             }
         }
-        
         return activeElements;
+    }
+    
+    /**
+     * 使指定物品的缓存失效
+     */
+    public static void invalidateCache(ItemStack stack) {
+        ELEMENTS_CACHE.invalidate(stack);
+        ACTIVE_ELEMENTS_CACHE.invalidate(stack);
     }
     
     /**
@@ -130,13 +162,13 @@ public class ElementHelper {
      */
     public static void applyElementAttributes(ItemStack stack, EquipmentSlot slot, 
                                              java.util.function.BiConsumer<Attribute, AttributeModifier> addModifier) {
-        if (slot.getType() != EquipmentSlot.Type.HUMANOID_ARMOR) {
+        if (slot.getType() == EquipmentSlot.Type.ARMOR) {
             List<ElementInstance> elements = getActiveElements(stack);
             for (ElementInstance element : elements) {
-                ElementAttribute attribute = element.getType().getAttribute();
+                ElementAttribute attribute = ElementRegistry.getAttribute(element.getType());
                 if (attribute != null && attribute.canApplyTo(stack)) {
                     AttributeModifier modifier = attribute.createModifier(stack, element.getValue());
-                    addModifier.accept(Attribute.ATTACK_DAMAGE, modifier);
+                    addModifier.accept(Attributes.ATTACK_DAMAGE, modifier);
                 }
             }
         }
@@ -227,6 +259,8 @@ public class ElementHelper {
     public static void setTriggerChance(ItemStack stack, double triggerChance) {
         CompoundTag elementData = stack.getOrCreateTagElement(ELEMENT_DATA);
         elementData.putDouble(ElementNBTUtils.TRIGGER_CHANCE, triggerChance);
+        // 使缓存失效
+        invalidateCache(stack);
     }
     
     /**
@@ -250,6 +284,8 @@ public class ElementHelper {
     public static void setCriticalChance(ItemStack stack, double criticalChance) {
         CompoundTag elementData = stack.getOrCreateTagElement(ELEMENT_DATA);
         elementData.putDouble(CRITICAL_CHANCE, criticalChance);
+        // 使缓存失效
+        invalidateCache(stack);
     }
     
     /**
@@ -273,5 +309,7 @@ public class ElementHelper {
     public static void setCriticalDamage(ItemStack stack, double criticalDamage) {
         CompoundTag elementData = stack.getOrCreateTagElement(ELEMENT_DATA);
         elementData.putDouble(CRITICAL_DAMAGE, criticalDamage);
+        // 使缓存失效
+        invalidateCache(stack);
     }
 }

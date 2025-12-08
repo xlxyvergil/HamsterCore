@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 public class ToxinAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("d8f0e8a8-0b8c-0b1a-4a7b-4c5b8a9b5c");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a8b");
     
     public ToxinAttribute() {
         super(ElementType.TOXIN, 0.0, AttributeModifier.Operation.ADDITION);
@@ -27,17 +28,11 @@ public class ToxinAttribute extends ElementAttribute {
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Toxin element modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
 }

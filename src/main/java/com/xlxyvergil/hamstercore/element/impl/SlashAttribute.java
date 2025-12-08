@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 public class SlashAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("f4b6d6e4-6d4a-6d7d-0d3a-0e1c4c5d1b0c");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a8a");
     
     public SlashAttribute() {
         super(ElementType.SLASH, 0.0, AttributeModifier.Operation.ADDITION);
@@ -22,22 +23,16 @@ public class SlashAttribute extends ElementAttribute {
     
     @Override
     public MutableComponent getDescription(ItemStack stack) {
-        return Component.translatable("element.slash.desc");
+        return Component.translatable("element.slash.desc", formatValue(0));
     }
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Slash element modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
 }

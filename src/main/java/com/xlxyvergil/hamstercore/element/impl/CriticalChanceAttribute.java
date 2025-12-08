@@ -1,12 +1,14 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
+import java.text.DecimalFormat;
 import java.util.UUID;
 
 /**
@@ -14,7 +16,7 @@ import java.util.UUID;
  */
 public class CriticalChanceAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("b5c7d5a5-7a5b-7a8d-1d4c-1a2b7a2a2b");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a6d");
     
     public CriticalChanceAttribute() {
         super(ElementType.CRITICAL_CHANCE, 0.05, AttributeModifier.Operation.ADDITION); // 默认5%暴击率
@@ -22,28 +24,25 @@ public class CriticalChanceAttribute extends ElementAttribute {
     
     @Override
     public MutableComponent getDescription(ItemStack stack) {
-        return Component.translatable("element.critical_chance.desc", formatValue(defaultValue * 100));
+        // 暴击率以百分比显示
+        return Component.translatable("element.critical_chance.desc", formatPercentage(getDefaultValue()));
     }
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Critical chance modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
     
-    @Override
-    public String formatValue(double value) {
-        // 暴击率以百分比显示
-        return String.format("%.1f%%", value * 100);
+    /**
+     * 格式化百分比显示
+     */
+    public String formatPercentage(double value) {
+        DecimalFormat df = new DecimalFormat("#.##");
+        return df.format(value * 100) + "%";
     }
 }

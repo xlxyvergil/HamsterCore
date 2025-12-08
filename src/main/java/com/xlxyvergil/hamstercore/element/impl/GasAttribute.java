@@ -10,11 +10,11 @@ import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
 
 /**
- * 毒气元素属性 (火焰 + 毒素)
+ * 毒气元素属性(火焰 + 毒素)
  */
 public class GasAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("a1b3c1d1-3a1b-3a4d-7d0a-7b8a2b3d8b");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7a");
     
     public GasAttribute() {
         super(ElementType.GAS, 0.0, AttributeModifier.Operation.ADDITION);
@@ -37,7 +37,7 @@ public class GasAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        // 使用ElementHelper统一的属性检查逻辑
+        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
     }
 }

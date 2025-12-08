@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public class ElectricityAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("b6d8c6f6-8e6a-8e9f-2f5a-2a3e6f7a3d1a");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a6f");
     
     public ElectricityAttribute() {
         super(ElementType.ELECTRICITY, 0.0, AttributeModifier.Operation.ADDITION);
@@ -37,7 +37,7 @@ public class ElectricityAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        // 使用ElementHelper统一的属性检查逻辑
+        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
     }
 }

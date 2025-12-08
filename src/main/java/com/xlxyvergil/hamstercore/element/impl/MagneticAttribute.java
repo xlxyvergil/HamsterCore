@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -10,11 +11,11 @@ import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
 
 /**
- * 磁力元素属性 (冰冻 + 电击)
+ * 磁力元素属性(冰冻 + 电击)
  */
 public class MagneticAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("a2b4c2d2-4a2b-4a5d-8d1a-8b9a4d9b9a");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7d");
     
     public MagneticAttribute() {
         super(ElementType.MAGNETIC, 0.0, AttributeModifier.Operation.ADDITION);
@@ -27,17 +28,11 @@ public class MagneticAttribute extends ElementAttribute {
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Magnetic element modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
 }

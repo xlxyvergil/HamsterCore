@@ -1,51 +1,66 @@
 package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.Lazy;
+import net.minecraftforge.common.util.LazyOptional;
 
-import java.util.List;
+import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
- * 元素缓存类，用于提高元素数据的访问性能
+ * 自定义元素缓存系统，用于替代Placebo的CachedObject机制
+ * 提供线程安全的缓存功能，避免重复计算元素属性
  */
-public class ElementCache {
+public class ElementCache<T> {
+    // 使用WeakHashMap防止内存泄漏，当ItemStack被垃圾回收时自动清理
+    private final Map<ItemStack, LazyOptional<T>> cache = new WeakHashMap<>();
+    // 使用ConcurrentHashMap保证线程安全
+    private final Map<ItemStack, LazyOptional<T>> concurrentCache = new ConcurrentHashMap<>();
     
-    // 使用弱引用避免内存泄漏
-    private static final WeakHashMap<ItemStack, Lazy<List<ElementInstance>>> ELEMENTS_CACHE = new WeakHashMap<>();
-    private static final WeakHashMap<ItemStack, Lazy<List<ElementInstance>>> ACTIVE_ELEMENTS_CACHE = new WeakHashMap<>();
+    private final Function<ItemStack, T> computer;
     
-    /**
-     * 获取元素列表的缓存值，如果缓存不存在则重新计算
-     */
-    public static List<ElementInstance> getCachedElements(ItemStack stack) {
-        return ELEMENTS_CACHE.computeIfAbsent(stack, s -> 
-            Lazy.of(() -> ElementHelper.getElements(s))
-        ).get();
+    public ElementCache(Function<ItemStack, T> computer) {
+        this.computer = computer;
     }
     
     /**
-     * 获取生效元素列表的缓存值，如果缓存不存在则重新计算
+     * 获取指定物品栈的缓存值
+     * @param stack 物品栈
+     * @return 缓存的值
      */
-    public static List<ElementInstance> getCachedActiveElements(ItemStack stack) {
-        return ACTIVE_ELEMENTS_CACHE.computeIfAbsent(stack, s -> 
-            Lazy.of(() -> ElementHelper.getActiveElements(s))
-        ).get();
+    public LazyOptional<T> get(ItemStack stack) {
+        // 尝试从WeakHashMap获取
+        LazyOptional<T> cached = cache.get(stack);
+        if (cached != null && cached.isPresent()) {
+            return cached;
+        }
+        
+        // 如果没有缓存或已失效，则重新计算
+        T computed = computer.apply(stack);
+        LazyOptional<T> lazyComputed = LazyOptional.of(() -> computed);
+        
+        // 更新缓存
+        cache.put(stack, lazyComputed);
+        concurrentCache.put(stack, lazyComputed);
+        
+        return lazyComputed;
     }
     
     /**
-     * 使指定物品的缓存失效
+     * 清除指定物品栈的缓存
+     * @param stack 物品栈
      */
-    public static void invalidateCache(ItemStack stack) {
-        ELEMENTS_CACHE.remove(stack);
-        ACTIVE_ELEMENTS_CACHE.remove(stack);
+    public void invalidate(ItemStack stack) {
+        cache.remove(stack);
+        concurrentCache.remove(stack);
     }
     
     /**
-     * 清空所有缓存
+     * 清除所有缓存
      */
-    public static void clearAllCaches() {
-        ELEMENTS_CACHE.clear();
-        ACTIVE_ELEMENTS_CACHE.clear();
+    public void invalidateAll() {
+        cache.clear();
+        concurrentCache.clear();
     }
 }

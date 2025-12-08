@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public class ColdAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("a5c7b5e5-7d5a-7d8e-1e4a-1c2d5a6a2c0a");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a6b");
     
     public ColdAttribute() {
         super(ElementType.COLD, 0.0, AttributeModifier.Operation.ADDITION);
@@ -37,7 +37,7 @@ public class ColdAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        // 使用ElementHelper统一的属性检查逻辑
+        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
     }
 }

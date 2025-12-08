@@ -4,7 +4,7 @@ import com.xlxyvergil.hamstercore.config.DisplayConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
-import com.xlxyvergil.hamstercore.element.ElementHelper;
+
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
@@ -85,33 +85,33 @@ public class EntityInfoDisplayHandler {
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
                 
                 // 显示暴击率
-                double critChance = ElementHelper.getCriticalChance(weapon);
+                double critChance = ElementNBTUtils.getCriticalChance(weapon);
                 message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
                 
                 // 显示暴击伤害
-                double critDamage = ElementHelper.getCriticalDamage(weapon);
+                double critDamage = ElementNBTUtils.getCriticalDamage(weapon);
                 message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f", critDamage)).withStyle(ChatFormatting.YELLOW));
                 
                 // 显示触发率
-                double triggerChance = ElementHelper.getTriggerChance(weapon);
+                double triggerChance = ElementNBTUtils.getTriggerChance(weapon);
                 message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
                 
                 // 添加武器元素属性信息
-                // 使用ElementHelper获取实际生效的元素
-                Map<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> elements = ElementHelper.getElementAttributes(weapon);
+                // 直接从NBT获取元素类型
+                java.util.Set<ElementType> elementTypes = ElementNBTUtils.getAllElementTypes(weapon);
                 
-                if (!elements.isEmpty()) {
+                if (!elementTypes.isEmpty()) {
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
                     
-                    for (Map.Entry<ElementType, com.xlxyvergil.hamstercore.element.ElementInstance> entry : elements.entrySet()) {
-                        ElementType elementType = entry.getKey();
-                        com.xlxyvergil.hamstercore.element.ElementInstance elementInstance = entry.getValue();
+                    for (ElementType elementType : elementTypes) {
+                        // 获取元素值
+                        double elementValue = ElementNBTUtils.getElementValue(weapon, elementType);
                         
                         // 只显示物理元素、基础元素和复合元素，不显示特殊属性
                         if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
                             // 元素属性数值不以百分比形式展示
                             message.append(Component.literal(" " + elementType.getColoredName().getString()).withStyle(elementType.getColor()));
-                            message.append(Component.literal(":" + String.format("%.2f", elementInstance.value())).withStyle(ChatFormatting.WHITE));
+                            message.append(Component.literal(":" + String.format("%.2f", elementValue)).withStyle(ChatFormatting.WHITE));
                         }
                     }
                 }

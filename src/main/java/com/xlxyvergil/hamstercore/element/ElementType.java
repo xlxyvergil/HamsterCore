@@ -171,6 +171,15 @@ public enum ElementType {
     }
     
     /**
+     * 获取所有特殊属性元素
+     */
+    public static List<ElementType> getSpecialElements() {
+        return Arrays.stream(values())
+                .filter(ElementType::isSpecial)
+                .collect(Collectors.toList());
+    }
+    
+    /**
      * 根据名称获取元素类型
      */
     public static ElementType byName(String name) {

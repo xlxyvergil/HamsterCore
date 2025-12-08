@@ -37,7 +37,7 @@ public class ElementTriggerHandler {
                     double value = ElementNBTUtils.getElementValue(weapon, type);
                     ElementAttribute attribute = ElementRegistry.getAttribute(type);
                     if (attribute != null) {
-                        elements.put(type, new ElementInstance(type, value, 0));
+                        elements.put(type, new ElementInstance(type, value, 0, true));
                     }
                 }
         }

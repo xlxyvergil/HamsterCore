@@ -10,11 +10,11 @@ import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
 
 /**
- * 腐蚀元素属性 (电击 + 毒素)
+ * 腐蚀元素属性(电击 + 毒素)
  */
 public class CorrosiveAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("f0a2b0c0-2d0a-2d3c-6e9f-6a7b0c1a7b");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a6c");
     
     public CorrosiveAttribute() {
         super(ElementType.CORROSIVE, 0.0, AttributeModifier.Operation.ADDITION);
@@ -37,7 +37,7 @@ public class CorrosiveAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        // 使用ElementHelper统一的属性检查逻辑
+        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
     }
 }

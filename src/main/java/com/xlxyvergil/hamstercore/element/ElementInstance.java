@@ -4,61 +4,45 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
 /**
- * 元素属性实例类，表示一个具体的元素属性
- * 简化设计，只保留必要信息：数值、类型、位置、是否生效、来源
+ * 元素实例类，表示一个具体的元素及其数值和位置信息
  */
 public class ElementInstance {
-    private final ElementType type;       // 元素类型
+    private final ElementType type;      // 元素类型
     private final double value;          // 元素数值
-    private final int position;           // 在NBT中的位置（顺序）
-    private final boolean isActive;       // 是否生效
-    private final ElementSource source;   // 元素来源
+    private final int position;          // 元素位置
+    private final boolean active;        // 是否生效
     
-    // 构造函数
-    public ElementInstance(ElementType type, double value, int position, 
-                         boolean isActive, ElementSource source) {
+    public ElementInstance(ElementType type, double value, int position, boolean active) {
         this.type = type;
         this.value = value;
         this.position = position;
-        this.isActive = isActive;
-        this.source = source;
-        
-        // 参数范围验证
-        if (value < 0.0) {
-            throw new IllegalArgumentException("Element value must be non-negative");
-        }
+        this.active = active;
     }
     
-    // 便利构造方法
-    public ElementInstance(ElementType type, double value, int position) {
-        this(type, value, position, true, ElementSource.DIRECT);
+    public ElementType getType() {
+        return type;
     }
     
-    // 便利方法
-    public ElementInstance withValue(double newValue) {
-        return new ElementInstance(type, newValue, position, isActive, source);
+    public double getValue() {
+        return value;
     }
     
-    public ElementInstance withActiveState(boolean newActiveState) {
-        return new ElementInstance(type, value, position, newActiveState, source);
+    public int getPosition() {
+        return position;
     }
     
-    // Getters
-    public ElementType getType() { return type; }
-    public double getValue() { return value; }
-    public int getPosition() { return position; }
-    public boolean isActive() { return isActive; }
-    public boolean isInactive() { return !isActive; }
-    public ElementSource getSource() { return source; }
+    public boolean isActive() {
+        return active;
+    }
     
     /**
-     * 检查是否应该触发效果
-     * @param random 随机数生成器
-     * @param triggerChance 武器的触发率
-     * @return 是否触发
+     * 创建一个新的元素实例，仅更改激活状态
      */
-    public boolean shouldTrigger(java.util.Random random, double triggerChance) {
-        return isActive && random.nextDouble() <= triggerChance;
+    public ElementInstance withActiveState(boolean newActiveState) {
+        if (this.active == newActiveState) {
+            return this;
+        }
+        return new ElementInstance(this.type, this.value, this.position, newActiveState);
     }
     
     /**
@@ -74,17 +58,8 @@ public class ElementInstance {
         double value = tag.getDouble("value");
         int position = tag.getInt("position");
         boolean isActive = tag.getBoolean("is_active");
-        String sourceStr = tag.getString("source");
-        ElementSource source;
         
-        try {
-            source = ElementSource.valueOf(sourceStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // 兼容旧版本或错误数据，默认为DIRECT
-            source = ElementSource.DIRECT;
-        }
-        
-        return new ElementInstance(elementType, value, position, isActive, source);
+        return new ElementInstance(elementType, value, position, isActive);
     }
     
     /**
@@ -95,28 +70,13 @@ public class ElementInstance {
         tag.putString("type", type.getName());
         tag.putDouble("value", value);
         tag.putInt("position", position);
-        tag.putBoolean("is_active", isActive);
-        tag.putString("source", source.name().toLowerCase());
+        tag.putBoolean("is_active", active);
         return tag;
     }
     
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        ElementInstance that = (ElementInstance) obj;
-        return position == that.position && type == that.type;
-    }
-    
-    @Override
-    public int hashCode() {
-        return 31 * type.hashCode() + position;
-    }
-    
-    @Override
     public String toString() {
-        return String.format("ElementInstance{type=%s, value=%.2f, position=%d, active=%s, source=%s}",
-                           type, value, position, isActive, source);
+        return String.format("ElementInstance{type=%s, value=%.2f, position=%d, active=%s}", 
+                           type.getName(), value, position, active);
     }
 }

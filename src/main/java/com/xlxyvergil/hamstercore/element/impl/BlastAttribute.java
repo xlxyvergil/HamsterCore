@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
 
 /**
- * 爆炸元素属性 (火焰 + 冰冻)
+ * 爆炸元素属性(火焰 + 冰冻)
  */
 public class BlastAttribute extends ElementAttribute {
     
@@ -37,7 +37,7 @@ public class BlastAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        // 使用ElementHelper统一的属性检查逻辑
+        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
     }
 }

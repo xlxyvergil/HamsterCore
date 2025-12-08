@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 public class ImpactAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("d8a4b4d2-4b2a-4b5b-8b1a-8c9a2a3b9e9c");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7c");
     
     public ImpactAttribute() {
         super(ElementType.IMPACT, 0.0, AttributeModifier.Operation.ADDITION);
@@ -22,22 +23,16 @@ public class ImpactAttribute extends ElementAttribute {
     
     @Override
     public MutableComponent getDescription(ItemStack stack) {
-        return Component.translatable("element.impact.desc");
+        return Component.translatable("element.impact.desc", formatValue(0));
     }
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(
-            MODIFIER_UUID,
-            getIdentifier(),
-            value,
-            getOperation()
-        );
+        return new AttributeModifier(MODIFIER_UUID, "Impact element modifier", value, getOperation());
     }
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper中统一的检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElementAttributes(stack);
+        return ElementHelper.canApplyElements(stack);
     }
 }
