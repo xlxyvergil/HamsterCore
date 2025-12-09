@@ -46,16 +46,21 @@ public class ElementCombinationModifier {
     private static Map<String, Double> collectBasicElementValues(WeaponElementData data) {
         Map<String, Double> result = new HashMap<>();
         
+        DebugLogger.log("收集基础元素值，Basic层总数: %d", data.getAllBasicElements().size());
+        
         // 收集Basic层的基础元素
         for (String type : data.getAllBasicElements().keySet()) {
             BasicEntry entry = data.getBasicElement(type);
             if (entry != null && isBasicElementType(type)) {
                 double value = entry.getValue();
                 
+                DebugLogger.log("从Basic层获取到基础元素 %s: %.3f", type, value);
+                
                 // 应用Computed层的修正
                 ComputedEntry computedEntry = data.getComputedElement(type);
                 if (computedEntry != null) {
                     value = applyModifier(value, computedEntry);
+                    DebugLogger.log("应用Computed层修正后 %s: %.3f", type, value);
                 }
                 
                 result.put(type, value);
@@ -68,6 +73,7 @@ public class ElementCombinationModifier {
                 ComputedEntry computedEntry = data.getComputedElement(type);
                 if (computedEntry != null) {
                     result.put(type, computedEntry.getValue());
+                    DebugLogger.log("从Computed层获取到独有基础元素 %s: %.3f", type, computedEntry.getValue());
                 }
             }
         }
@@ -79,12 +85,21 @@ public class ElementCombinationModifier {
      * 检查是否为基础元素类型
      */
     private static boolean isBasicElementType(String type) {
+        // 先检查是否为预定义的元素类型
         try {
             ElementType elementType = ElementType.byName(type);
-            return elementType != null && elementType.isBasic();
+            if (elementType != null) {
+                return elementType.isBasic();
+            }
         } catch (Exception e) {
-            return false;
+            // 忽略异常，继续检查其他条件
         }
+        
+        // 如果不是预定义的元素类型，根据名称判断是否为基础元素
+        // 基础元素包括三类：物理元素、元素属性、特殊属性
+        return "slash".equals(type) || "puncture".equals(type) || "impact".equals(type) ||  // 物理元素
+               "heat".equals(type) || "cold".equals(type) || "electricity".equals(type) || "toxin".equals(type) || // 元素属性
+               "critical_chance".equals(type) || "critical_damage".equals(type) || "trigger_chance".equals(type); // 特殊属性
     }
     
     /**

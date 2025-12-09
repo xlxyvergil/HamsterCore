@@ -11,7 +11,7 @@ import com.xlxyvergil.hamstercore.util.DebugLogger;
  */
 public class CriticalDamageModifier {
     
-    public static final String CRITICAL_DAMAGE = "criticalDamage";
+    public static final String CRITICAL_DAMAGE = "critical_damage";
     
     /**
      * 计算暴击伤害
@@ -32,21 +32,28 @@ public class CriticalDamageModifier {
     private static double computeSingleCriticalDamage(WeaponElementData data) {
         double baseValue = 0.0;
         
+        DebugLogger.log("正在计算暴击伤害");
+        
         // 获取Basic层的暴击伤害值
         BasicEntry basicEntry = data.getBasicElement(CRITICAL_DAMAGE);
         if (basicEntry != null) {
             baseValue = basicEntry.getValue();
+            DebugLogger.log("从Basic层获取到暴击伤害值: %.3f", baseValue);
+        } else {
+            DebugLogger.log("在Basic层未找到暴击伤害数据");
         }
         
         // 应用Computed层的修正
         ComputedEntry computedEntry = data.getComputedElement(CRITICAL_DAMAGE);
         if (computedEntry != null) {
             baseValue = applyModifier(baseValue, computedEntry);
+            DebugLogger.log("应用Computed层修正后暴击伤害值: %.3f", baseValue);
         }
         
         // 如果Basic和Computed层都没有值，检查是否使用Computed层的独有值
         if (baseValue == 0.0 && computedEntry != null) {
             baseValue = computedEntry.getValue();
+            DebugLogger.log("使用Computed层独有暴击伤害值: %.3f", baseValue);
         }
         
         // 确保暴击伤害为正数

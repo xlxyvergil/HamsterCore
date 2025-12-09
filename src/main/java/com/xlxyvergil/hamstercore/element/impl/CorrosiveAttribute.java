@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ public class CorrosiveAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        // 使用ElementHelper统一的属性检查逻辑
-        return com.xlxyvergil.hamstercore.element.ElementHelper.canApplyElements(stack);
+        // 使用WeaponApplicableItemsChecker统一的属性检查逻辑
+        return WeaponApplicableItemsChecker.canApplyElements(stack);
     }
 }

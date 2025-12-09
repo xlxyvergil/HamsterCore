@@ -1,9 +1,11 @@
 package com.xlxyvergil.hamstercore.element;
 
+import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.element.modifier.*;
 import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -25,42 +27,76 @@ public class WeaponDataManager {
      * 从物品NBT读取武器元素数据
      */
     public static WeaponElementData loadElementData(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty()) {
             return new WeaponElementData();
         }
         
-        CompoundTag elementDataTag = stack.getTagElement(ELEMENT_DATA);
-        if (elementDataTag == null) {
+        // 检查物品是否已有元素数据
+        if (stack.hasTag()) {
+            CompoundTag elementDataTag = stack.getTagElement(ELEMENT_DATA);
+            if (elementDataTag != null) {
+                // 物品已有元素数据，直接加载
+                WeaponElementData data = new WeaponElementData();
+                
+                // 读取Basic数据
+                if (elementDataTag.contains(BASIC_DATA, Tag.TAG_COMPOUND)) {
+                    CompoundTag basicTag = elementDataTag.getCompound(BASIC_DATA);
+                    data.setBasic(readBasicEntryMap(basicTag));
+                }
+                
+                // 读取Computed数据
+                if (elementDataTag.contains(COMPUTED_DATA, Tag.TAG_COMPOUND)) {
+                    CompoundTag computedTag = elementDataTag.getCompound(COMPUTED_DATA);
+                    data.setComputed(readComputedEntryMap(computedTag));
+                }
+                
+                // 读取Usage数据
+                if (elementDataTag.contains(USAGE_DATA, Tag.TAG_COMPOUND)) {
+                    CompoundTag usageTag = elementDataTag.getCompound(USAGE_DATA);
+                    data.setUsage(readDoubleMap(usageTag));
+                }
+                
+                // 读取Extra数据
+                if (elementDataTag.contains(EXTRA_DATA, Tag.TAG_COMPOUND)) {
+                    CompoundTag extraTag = elementDataTag.getCompound(EXTRA_DATA);
+                    data.setExtra(readExtraEntryMap(extraTag));
+                }
+                
+                return data;
+            }
+        }
+        
+        // 物品没有元素数据，从配置文件中加载默认数据
+        return loadDefaultElementData(stack);
+    }
+    
+    /**
+     * 从配置文件加载物品的默认元素数据
+     */
+    private static WeaponElementData loadDefaultElementData(ItemStack stack) {
+        // 获取物品的ResourceLocation
+        ResourceLocation itemKey = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemKey == null) {
             return new WeaponElementData();
         }
         
-        WeaponElementData data = new WeaponElementData();
-        
-        // 读取Basic数据
-        if (elementDataTag.contains(BASIC_DATA, Tag.TAG_COMPOUND)) {
-            CompoundTag basicTag = elementDataTag.getCompound(BASIC_DATA);
-            data.setBasic(readBasicEntryMap(basicTag));
+        // 从配置中获取武器数据
+        WeaponData weaponData = WeaponConfig.getWeaponConfig(stack);
+        if (weaponData == null) {
+            return new WeaponElementData();
         }
         
-        // 读取Computed数据
-        if (elementDataTag.contains(COMPUTED_DATA, Tag.TAG_COMPOUND)) {
-            CompoundTag computedTag = elementDataTag.getCompound(COMPUTED_DATA);
-            data.setComputed(readComputedEntryMap(computedTag));
+        // 获取元素数据
+        WeaponElementData elementData = weaponData.getElementData();
+        if (elementData == null) {
+            return new WeaponElementData();
         }
         
-        // 读取Usage数据
-        if (elementDataTag.contains(USAGE_DATA, Tag.TAG_COMPOUND)) {
-            CompoundTag usageTag = elementDataTag.getCompound(USAGE_DATA);
-            data.setUsage(readDoubleMap(usageTag));
-        }
+        // 计算Usage数据
+        computeUsageData(stack, elementData);
         
-        // 读取Extra数据
-        if (elementDataTag.contains(EXTRA_DATA, Tag.TAG_COMPOUND)) {
-            CompoundTag extraTag = elementDataTag.getCompound(EXTRA_DATA);
-            data.setExtra(readExtraEntryMap(extraTag));
-        }
-        
-        return data;
+        // 返回包含默认数据的元素数据对象
+        return elementData;
     }
     
     /**

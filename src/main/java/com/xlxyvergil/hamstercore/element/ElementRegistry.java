@@ -57,6 +57,14 @@ public class ElementRegistry {
         register(new RadiationAttribute());
         register(new ViralAttribute());
         
+        // 派系元素
+        register(new GrineerAttribute());
+        register(new InfestedAttribute());
+        register(new CorpusAttribute());
+        register(new OrokinAttribute());
+        register(new SentientAttribute());
+        register(new MurmurAttribute());
+        
         // 特殊属性
         register(new CriticalChanceAttribute());
         register(new CriticalDamageAttribute());

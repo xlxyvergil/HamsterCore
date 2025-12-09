@@ -36,7 +36,15 @@ public enum ElementType {
     // 特殊属性
     CRITICAL_CHANCE("critical_chance", "暴击率", ChatFormatting.BOLD),
     CRITICAL_DAMAGE("critical_damage", "暴击伤害", ChatFormatting.BOLD),
-    TRIGGER_CHANCE("trigger_chance", "触发率", ChatFormatting.BOLD);
+    TRIGGER_CHANCE("trigger_chance", "触发率", ChatFormatting.BOLD),
+    
+    // 派系元素
+    GRINEER("grineer", "Grineer派系", ChatFormatting.RED),
+    INFESTED("infested", "Infested派系", ChatFormatting.GREEN),
+    CORPUS("corpus", "Corpus派系", ChatFormatting.BLUE),
+    OROKIN("orokin", "Orokin派系", ChatFormatting.LIGHT_PURPLE),
+    SENTIENT("sentient", "Sentient派系", ChatFormatting.DARK_RED),
+    MURMUR("murmur", "Murmur派系", ChatFormatting.AQUA);
     
     private final String name;
     private final String displayName;
@@ -90,7 +98,9 @@ public enum ElementType {
      * 检查是否为特殊属性
      */
     public boolean isSpecial() {
-        return this == CRITICAL_CHANCE || this == CRITICAL_DAMAGE || this == TRIGGER_CHANCE;
+        return this == CRITICAL_CHANCE || this == CRITICAL_DAMAGE || this == TRIGGER_CHANCE ||
+               this == GRINEER || this == INFESTED || this == CORPUS || 
+               this == OROKIN || this == SENTIENT || this == MURMUR;
     }
     
     /**

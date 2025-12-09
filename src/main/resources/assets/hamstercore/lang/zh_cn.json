@@ -23,6 +23,12 @@
   "element.critical_chance.name": "暴击率",
   "element.critical_damage.name": "暴击伤害",
   "element.trigger_chance.name": "触发率",
+  "element.corpus.name": "科普斯增伤",
+  "element.grineer.name": "克隆尼增伤",
+  "element.infested.name": "感染体增伤",
+  "element.orokin.name": "奥罗金增伤",
+  "element.sentient.name": "灵煞增伤",
+  "element.murmur.name": "低语者增伤",
   
   "element.impact.desc": "造成击退效果",
   "element.puncture.desc": "无视部分护甲",
@@ -40,6 +46,12 @@
   "element.critical_chance.desc": "增加暴击几率",
   "element.critical_damage.desc": "增加暴击伤害",
   "element.trigger_chance.desc": "增加元素触发几率",
+  "element.corpus.desc": "增加对科普斯派系单位的伤害",
+  "element.grineer.desc": "增加对克隆尼派系单位的伤害",
+  "element.infested.desc": "增加对感染体派系单位的伤害",
+  "element.orokin.desc": "增加对奥罗金派系单位的伤害",
+  "element.sentient.desc": "增加对灵煞派系单位的伤害",
+  "element.murmur.desc": "增加对低语者派系单位的伤害",
   
   "hamstercore.ui.critical_chance": "暴击率",
   "hamstercore.ui.critical_damage": "暴击伤害",
@@ -50,6 +62,7 @@
   "hamstercore.ui.armor_prefix": " 护甲:",
   "hamstercore.ui.faction_prefix": " 派系:",
   "hamstercore.ui.damage_prefix": " 伤害:",
+  "hamstercore.ui.faction_damage_bonus": "派系增伤",
   
   "config.jade.plugin_hamstercore.faction": "仓鼠信息"
 }

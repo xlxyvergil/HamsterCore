@@ -95,12 +95,10 @@ public class SlashBladeItemsFetcher {
      */
     private static void loadSlashBladeData(MinecraftServer server) {
         if (!isSlashBladeLoaded()) {
-            DebugLogger.log("拔刀剑模组未加载，跳过数据加载");
             return;
         }
         
         try {
-            DebugLogger.log("开始加载拔刀剑数据...");
             
             // 清空旧数据
             slashBladeIDs.clear();
@@ -115,18 +113,13 @@ public class SlashBladeItemsFetcher {
             }
             
             if (!slashBladeIDs.isEmpty()) {
-                DebugLogger.log("成功加载 %d 个拔刀剑ID", slashBladeIDs.size());
-                DebugLogger.log("成功加载 %d 个拔刀剑translationKey", slashBladeTranslationKeys.size());
                 
                 // 输出所有注册的拔刀剑到日志
                 for (ResourceLocation id : slashBladeIDs) {
-                    DebugLogger.log("发现拔刀剑ID: %s", id.toString());
                 }
             } else {
-                DebugLogger.warn("未能加载任何拔刀剑数据");
             }
         } catch (Exception e) {
-            DebugLogger.error("加载拔刀剑数据时出错: %s", e.toString());
             e.printStackTrace();
             slashBladeIDs.clear();
             slashBladeTranslationKeys.clear();
@@ -150,7 +143,6 @@ public class SlashBladeItemsFetcher {
                         slashBladeTranslationKeys.add(translationKey);
                     }
                 } catch (Exception e) {
-                    DebugLogger.warn("获取拔刀剑 %s 的translationKey失败: %s", registryName, e.getMessage());
                 }
             }
         }
@@ -186,11 +178,9 @@ public class SlashBladeItemsFetcher {
                         }
                     }
                 } catch (Exception e) {
-                    DebugLogger.warn("获取拔刀剑 %s 的translationKey失败: %s", id, e.getMessage());
                 }
             }
         } catch (Exception e) {
-            DebugLogger.warn("通过拔刀剑API获取数据失败: %s", e.getMessage());
         }
     }
     
@@ -201,7 +191,6 @@ public class SlashBladeItemsFetcher {
     public static void setSlashBladeIDs(Set<ResourceLocation> ids) {
         init(); // 确保兼容性检查已完成
         if (!isSlashBladeLoaded) {
-            DebugLogger.warn("拔刀剑模组未加载，设置ID将被忽略");
             return;
         }
         
@@ -212,7 +201,6 @@ public class SlashBladeItemsFetcher {
             // 同步更新translationKey
             updateTranslationKeysFromIDs();
         }
-        DebugLogger.log("设置拔刀剑ID完成，共 %d 个", slashBladeIDs.size());
     }
     
     /**
@@ -230,7 +218,6 @@ public class SlashBladeItemsFetcher {
                     }
                 }
             } catch (Exception e) {
-                DebugLogger.warn("更新拔刀剑 %s 的translationKey失败: %s", id, e.getMessage());
             }
         }
     }
@@ -249,6 +236,5 @@ public class SlashBladeItemsFetcher {
     public static void clearData() {
         slashBladeIDs.clear();
         slashBladeTranslationKeys.clear();
-        DebugLogger.log("清空拔刀剑缓存数据");
     }
 }

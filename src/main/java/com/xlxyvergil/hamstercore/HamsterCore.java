@@ -77,32 +77,27 @@ public class HamsterCore {
      * 在这个阶段，所有模组的物品都已完成注册和初始化，可以安全获取
      */
     private void onServerStarted(ServerStartedEvent event) {
-        DebugLogger.log("服务器启动完成，开始生成武器配置文件");
         
         try {
             net.minecraft.server.MinecraftServer server = event.getServer();
             
             // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
-            DebugLogger.log("初始化模组兼容性检查...");
             SlashBladeItemsFetcher.init();
             
             // 2. 获取普通可应用元素属性的物品
             Set<net.minecraft.resources.ResourceLocation> applicableItems = 
                 com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder.findApplicableItems();
-            DebugLogger.log("找到 %d 个普通可应用元素属性的物品", applicableItems.size());
+        
             
-            // 3. 获取TACZ枪械ID
+            // 4. 获取TACZ枪械ID
             Set<net.minecraft.resources.ResourceLocation> tacZGunIDs = 
                 com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher.getTacZGunIDs();
-            DebugLogger.log("获取到 %d 个TACZ枪械ID", tacZGunIDs.size());
             
             // 4. 获取拔刀剑ID - 在服务器启动时获取，此时所有物品注册已完成
             Set<net.minecraft.resources.ResourceLocation> slashBladeIDs = 
                 SlashBladeItemsFetcher.getSlashBladeIDs(server);
             Set<String> slashBladeTranslationKeys = 
                 SlashBladeItemsFetcher.getSlashBladeTranslationKeys(server);
-            DebugLogger.log("获取到 %d 个拔刀剑ID", slashBladeIDs.size());
-            DebugLogger.log("获取到 %d 个拔刀剑translationKey", slashBladeTranslationKeys.size());
             
             // 5. 使用所有数据生成配置文件
             com.xlxyvergil.hamstercore.config.WeaponConfig.load();
@@ -110,9 +105,7 @@ public class HamsterCore {
             // 6. 应用默认元素属性
             com.xlxyvergil.hamstercore.element.ElementApplier.applyElementsFromConfig();
             
-            DebugLogger.log("武器配置文件生成完成，元素属性应用完成");
         } catch (Exception e) {
-            DebugLogger.log("生成武器配置文件时发生错误: %s", e.toString());
             e.printStackTrace();
         }
     }

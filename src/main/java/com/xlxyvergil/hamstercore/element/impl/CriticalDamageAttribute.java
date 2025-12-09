@@ -1,8 +1,8 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
-import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -35,7 +35,7 @@ public class CriticalDamageAttribute extends ElementAttribute {
     
     @Override
     public boolean canApplyTo(ItemStack stack) {
-        return ElementHelper.canApplyElements(stack);
+        return WeaponApplicableItemsChecker.canApplyElements(stack);
     }
     
     /**

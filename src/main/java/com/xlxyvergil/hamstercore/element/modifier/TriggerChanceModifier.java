@@ -11,7 +11,7 @@ import com.xlxyvergil.hamstercore.util.DebugLogger;
  */
 public class TriggerChanceModifier {
     
-    public static final String TRIGGER_CHANCE = "triggerChance";
+    public static final String TRIGGER_CHANCE = "trigger_chance";
     
     /**
      * 计算触发率
@@ -32,21 +32,28 @@ public class TriggerChanceModifier {
     private static double computeSingleTriggerChance(WeaponElementData data) {
         double baseValue = 0.0;
         
+        DebugLogger.log("正在计算触发率");
+        
         // 获取Basic层的触发率值
         BasicEntry basicEntry = data.getBasicElement(TRIGGER_CHANCE);
         if (basicEntry != null) {
             baseValue = basicEntry.getValue();
+            DebugLogger.log("从Basic层获取到触发率值: %.3f", baseValue);
+        } else {
+            DebugLogger.log("在Basic层未找到触发率数据");
         }
         
         // 应用Computed层的修正
         ComputedEntry computedEntry = data.getComputedElement(TRIGGER_CHANCE);
         if (computedEntry != null) {
             baseValue = applyModifier(baseValue, computedEntry);
+            DebugLogger.log("应用Computed层修正后触发率值: %.3f", baseValue);
         }
         
         // 如果Basic和Computed层都没有值，检查是否使用Computed层的独有值
         if (baseValue == 0.0 && computedEntry != null) {
             baseValue = computedEntry.getValue();
+            DebugLogger.log("使用Computed层独有触发率值: %.3f", baseValue);
         }
         
         // 确保触发率在合理范围内 (0.0 - 1.0)

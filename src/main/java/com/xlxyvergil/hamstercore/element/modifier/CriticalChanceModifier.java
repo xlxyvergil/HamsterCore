@@ -11,7 +11,7 @@ import com.xlxyvergil.hamstercore.util.DebugLogger;
  */
 public class CriticalChanceModifier {
     
-    public static final String CRITICAL_CHANCE = "criticalChance";
+    public static final String CRITICAL_CHANCE = "critical_chance";
     
     /**
      * 计算暴击率
@@ -32,21 +32,28 @@ public class CriticalChanceModifier {
     private static double computeSingleCriticalChance(WeaponElementData data) {
         double baseValue = 0.0;
         
+        DebugLogger.log("正在计算暴击率");
+        
         // 获取Basic层的暴击率值
         BasicEntry basicEntry = data.getBasicElement(CRITICAL_CHANCE);
         if (basicEntry != null) {
             baseValue = basicEntry.getValue();
+            DebugLogger.log("从Basic层获取到暴击率值: %.3f", baseValue);
+        } else {
+            DebugLogger.log("在Basic层未找到暴击率数据");
         }
         
         // 应用Computed层的修正
         ComputedEntry computedEntry = data.getComputedElement(CRITICAL_CHANCE);
         if (computedEntry != null) {
             baseValue = applyModifier(baseValue, computedEntry);
+            DebugLogger.log("应用Computed层修正后暴击率值: %.3f", baseValue);
         }
         
         // 如果Basic和Computed层都没有值，检查是否使用Computed层的独有值
         if (baseValue == 0.0 && computedEntry != null) {
             baseValue = computedEntry.getValue();
+            DebugLogger.log("使用Computed层独有暴击率值: %.3f", baseValue);
         }
         
         // 确保暴击率在合理范围内 (0.0 - 1.0)

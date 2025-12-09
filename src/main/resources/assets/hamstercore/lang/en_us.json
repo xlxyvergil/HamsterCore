@@ -23,6 +23,12 @@
   "element.critical_chance.name": "Critical Chance",
   "element.critical_damage.name": "Critical Damage",
   "element.trigger_chance.name": "Trigger Chance",
+  "element.corpus.name": "Corpus Damage Bonus",
+  "element.grineer.name": "Grineer Damage Bonus",
+  "element.infested.name": "Infested Damage Bonus",
+  "element.orokin.name": "Orokin Damage Bonus",
+  "element.sentient.name": "Sentient Damage Bonus",
+  "element.murmur.name": "Murmur Damage Bonus",
   
   "element.impact.desc": "Causes knockback",
   "element.puncture.desc": "Ignores part of armor",
@@ -40,6 +46,12 @@
   "element.critical_chance.desc": "Increases critical chance",
   "element.critical_damage.desc": "Increases critical damage",
   "element.trigger_chance.desc": "Increases element trigger chance",
+  "element.corpus.desc": "Increases damage against Corpus faction units",
+  "element.grineer.desc": "Increases damage against Grineer faction units",
+  "element.infested.desc": "Increases damage against Infested faction units",
+  "element.orokin.desc": "Increases damage against Orokin faction units",
+  "element.sentient.desc": "Increases damage against Sentient faction units",
+  "element.murmur.desc": "Increases damage against Murmur faction units",
   
   "hamstercore.ui.critical_chance": "Critical Chance",
   "hamstercore.ui.critical_damage": "Critical Damage",
@@ -50,6 +62,7 @@
   "hamstercore.ui.armor_prefix": " Armor:",
   "hamstercore.ui.faction_prefix": " Faction:",
   "hamstercore.ui.damage_prefix": " Damage:",
+  "hamstercore.ui.faction_damage_bonus": "Faction Damage Bonus",
   
   "config.jade.plugin_hamstercore.faction": "Hamster Info"
 }
