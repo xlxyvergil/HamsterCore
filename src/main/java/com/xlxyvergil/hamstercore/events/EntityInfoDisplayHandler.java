@@ -52,21 +52,12 @@ public class EntityInfoDisplayHandler {
             // 获取基础伤害（FactionDamageHandler处理前的伤害）
             float baseDamage = event.getAmount();
             
-            // 手动计算经过阵营修正后的伤害（模拟FactionDamageHandler的计算）
-            double customArmor = target.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
-                .map(cap -> cap.getArmor())
-                .orElse(0.0);
+            // 使用ElementDamageManager计算真实的伤害数据
+            ElementDamageManager.ElementDamageData damageData = 
+                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon);
             
-            // 计算AM = 0.9 × √(AR/2700)
-            double AM = 0.9 * Math.sqrt(customArmor / 2700.0);
-            
-            // 应用公式: ID = BD × (1-AM)
-            float inflictedDamage = (float) (baseDamage * (1.0 - AM));
-            
-            // 确保伤害不会小于0
-            if (inflictedDamage < 0) {
-                inflictedDamage = 0;
-            }
+            // 获取经过完整计算后的实际伤害
+            float inflictedDamage = damageData.getFinalDamage();
             
             // 构造实体信息消息
             MutableComponent message = Component.literal("")

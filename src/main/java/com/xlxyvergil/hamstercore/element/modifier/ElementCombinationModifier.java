@@ -24,20 +24,46 @@ public class ElementCombinationModifier {
         // 收集所有基础元素数据
         Map<String, Double> basicElementValues = collectBasicElementValues(data);
         
-        // 按顺序计算复合元素组合
-        Map<String, Double> complexElementValues = computeComplexCombinations(basicElementValues);
+        // 分离基础元素和复合元素
+        Map<String, Double> basicElementsOnly = new HashMap<>();
+        Map<String, Double> complexElementsOnly = new HashMap<>();
+        
+        for (Map.Entry<String, Double> entry : basicElementValues.entrySet()) {
+            String type = entry.getKey();
+            double value = entry.getValue();
+            
+            if (isComplexElementType(type)) {
+                // 复合元素直接加入complexElementsOnly
+                complexElementsOnly.put(type, value);
+            } else if (isBasicElementType(type)) {
+                // 基础元素加入basicElementsOnly用于计算新的复合元素
+                basicElementsOnly.put(type, value);
+            } else {
+                // 其他元素（如特殊属性）也直接加入complexElementsOnly
+                complexElementsOnly.put(type, value);
+            }
+        }
+        
+        // 按顺序计算复合元素组合（只基于基础元素）
+        Map<String, Double> computedComplexElements = computeComplexCombinations(basicElementsOnly);
         
         // 将所有元素值写入Usage层
-        for (Map.Entry<String, Double> entry : basicElementValues.entrySet()) {
+        // 先写入复合元素（包括已存在的和新计算的）
+        for (Map.Entry<String, Double> entry : complexElementsOnly.entrySet()) {
             data.setUsageValue(entry.getKey(), entry.getValue());
         }
         
-        for (Map.Entry<String, Double> entry : complexElementValues.entrySet()) {
+        for (Map.Entry<String, Double> entry : computedComplexElements.entrySet()) {
+            data.setUsageValue(entry.getKey(), entry.getValue());
+        }
+        
+        // 再写入基础元素
+        for (Map.Entry<String, Double> entry : basicElementsOnly.entrySet()) {
             data.setUsageValue(entry.getKey(), entry.getValue());
         }
         
         DebugLogger.log("元素复合计算完成，基础元素: %d个，复合元素: %d个", 
-                       basicElementValues.size(), complexElementValues.size());
+                       basicElementsOnly.size(), (complexElementsOnly.size() + computedComplexElements.size()));
     }
     
     /**
@@ -48,19 +74,22 @@ public class ElementCombinationModifier {
         
         DebugLogger.log("收集基础元素值，Basic层总数: %d", data.getAllBasicElements().size());
         
-        // 收集Basic层的基础元素
+        // 收集Basic层的所有元素（包括基础元素和复合元素）
         for (String type : data.getAllBasicElements().keySet()) {
             BasicEntry entry = data.getBasicElement(type);
-            if (entry != null && isBasicElementType(type)) {
+            if (entry != null) {
                 double value = entry.getValue();
                 
-                DebugLogger.log("从Basic层获取到基础元素 %s: %.3f", type, value);
+                DebugLogger.log("从Basic层获取到元素 %s: %.3f", type, value);
                 
-                // 应用Computed层的修正
-                ComputedEntry computedEntry = data.getComputedElement(type);
-                if (computedEntry != null) {
-                    value = applyModifier(value, computedEntry);
-                    DebugLogger.log("应用Computed层修正后 %s: %.3f", type, value);
+                // 如果是基础元素，应用Computed层的修正
+                if (isBasicElementType(type)) {
+                    // 应用Computed层的修正
+                    ComputedEntry computedEntry = data.getComputedElement(type);
+                    if (computedEntry != null) {
+                        value = applyModifier(value, computedEntry);
+                        DebugLogger.log("应用Computed层修正后 %s: %.3f", type, value);
+                    }
                 }
                 
                 result.put(type, value);
@@ -85,6 +114,11 @@ public class ElementCombinationModifier {
      * 检查是否为基础元素类型
      */
     private static boolean isBasicElementType(String type) {
+        // 复合元素不能作为基础元素参与复合
+        if (isComplexElementType(type)) {
+            return false;
+        }
+        
         // 先检查是否为预定义的元素类型
         try {
             ElementType elementType = ElementType.byName(type);
@@ -100,6 +134,14 @@ public class ElementCombinationModifier {
         return "slash".equals(type) || "puncture".equals(type) || "impact".equals(type) ||  // 物理元素
                "heat".equals(type) || "cold".equals(type) || "electricity".equals(type) || "toxin".equals(type) || // 元素属性
                "critical_chance".equals(type) || "critical_damage".equals(type) || "trigger_chance".equals(type); // 特殊属性
+    }
+    
+    /**
+     * 检查是否为复合元素类型
+     */
+    private static boolean isComplexElementType(String type) {
+        return "blast".equals(type) || "corrosive".equals(type) || "gas".equals(type) ||
+               "magnetic".equals(type) || "radiation".equals(type) || "viral".equals(type);
     }
     
     /**
