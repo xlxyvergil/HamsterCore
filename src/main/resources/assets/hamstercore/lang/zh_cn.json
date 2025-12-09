@@ -49,5 +49,7 @@
   "hamstercore.ui.level_prefix": " [等级:",
   "hamstercore.ui.armor_prefix": " 护甲:",
   "hamstercore.ui.faction_prefix": " 派系:",
-  "hamstercore.ui.damage_prefix": " 伤害:"
+  "hamstercore.ui.damage_prefix": " 伤害:",
+  
+  "config.jade.plugin_hamstercore.faction": "仓鼠信息"
 }

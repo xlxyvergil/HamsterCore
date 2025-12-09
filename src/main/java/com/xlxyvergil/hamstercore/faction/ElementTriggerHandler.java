@@ -1,5 +1,8 @@
-package com.xlxyvergil.hamstercore.element;
+package com.xlxyvergil.hamstercore.faction;
 
+import com.xlxyvergil.hamstercore.element.ElementHelper;
+import com.xlxyvergil.hamstercore.element.ElementInstance;
+import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

@@ -115,18 +115,58 @@ public class ElementHelper {
     
     /**
      * 获取物品的所有生效元素属性（实际实现）
+     * 使用新的四层数据结构
      */
     private static List<ElementInstance> getActiveElementsImpl(ItemStack stack) {
-        List<ElementInstance> elements = getElements(stack);
-        // 处理元素组合逻辑
-        List<ElementInstance> processedElements = ElementCombinationProcessor.processElementCombinations(elements, stack);
+        // 使用新的四层数据结构
+        WeaponElementData data = WeaponDataManager.loadElementData(stack);
         
+        // 计算Usage层数据
+        WeaponDataManager.computeUsageData(stack, data);
+        
+        // 将Usage层数据转换为ElementInstance列表
         List<ElementInstance> activeElements = new ArrayList<>();
-        for (ElementInstance element : processedElements) {
-            if (element.isActive()) {
-                activeElements.add(element);
+        int position = 0;
+        
+        // 添加物理元素
+        String[] physicalTypes = {"slash", "puncture", "impact"};
+        for (String type : physicalTypes) {
+            Double value = data.getUsageValue(type);
+            if (value != null && value > 0) {
+                ElementType elementType = ElementType.byName(type);
+                if (elementType != null) {
+                    activeElements.add(new ElementInstance(elementType, value, position++, true));
+                }
             }
         }
+        
+        // 添加基础元素（未被复合的）
+        String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
+        for (String type : basicTypes) {
+            Double value = data.getUsageValue(type);
+            if (value != null && value > 0) {
+                ElementType elementType = ElementType.byName(type);
+                if (elementType != null) {
+                    activeElements.add(new ElementInstance(elementType, value, position++, true));
+                }
+            }
+        }
+        
+        // 添加复合元素
+        String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
+        for (String type : complexTypes) {
+            Double value = data.getUsageValue(type);
+            if (value != null && value > 0) {
+                ElementType elementType = ElementType.byName(type);
+                if (elementType != null) {
+                    activeElements.add(new ElementInstance(elementType, value, position++, true));
+                }
+            }
+        }
+        
+        // 添加特殊属性（暴击率等不需要显示为元素）
+        // 这些通过其他方法获取，这里不添加到元素列表中
+        
         return activeElements;
     }
     
@@ -269,11 +309,16 @@ public class ElementHelper {
      * @return 暴击率 (0.0 - 1.0)
      */
     public static double getCriticalChance(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return 0.0;
+        }
+        
         CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
-        if (elementData != null && elementData.contains(CRITICAL_CHANCE, Tag.TAG_ANY_NUMERIC)) {
+        if (elementData != null && elementData.contains(CRITICAL_CHANCE, Tag.TAG_DOUBLE)) {
             return elementData.getDouble(CRITICAL_CHANCE);
         }
-        return 0.0; // 默认无暴击率
+        
+        return 0.0; // 默认值
     }
     
     /**
@@ -294,11 +339,16 @@ public class ElementHelper {
      * @return 暴击伤害倍数
      */
     public static double getCriticalDamage(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return 0.0;
+        }
+        
         CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
-        if (elementData != null && elementData.contains(CRITICAL_DAMAGE, Tag.TAG_ANY_NUMERIC)) {
+        if (elementData != null && elementData.contains(CRITICAL_DAMAGE, Tag.TAG_DOUBLE)) {
             return elementData.getDouble(CRITICAL_DAMAGE);
         }
-        return 0.0; // 默认无暴击伤害加成
+        
+        return 0.0; // 默认值
     }
     
     /**

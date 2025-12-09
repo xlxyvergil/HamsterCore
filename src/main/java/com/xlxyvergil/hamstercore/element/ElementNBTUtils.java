@@ -12,7 +12,8 @@ import java.util.*;
  */
 public class ElementNBTUtils {
     
-    public static final String ELEMENT_TAG_KEY = "ElementProperties";
+    public static final String ELEMENT_DATA = "ElementData";
+    public static final String ELEMENTS = "Elements";
     public static final String TRIGGER_CHANCE = "TriggerChance";
     
     /**
@@ -23,16 +24,16 @@ public class ElementNBTUtils {
             return new ArrayList<>();
         }
         
-        CompoundTag itemTag = stack.getTag();
-        if (!itemTag.contains(ELEMENT_TAG_KEY, Tag.TAG_LIST)) {
+        CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
+        if (elementData == null || !elementData.contains(ELEMENTS, Tag.TAG_LIST)) {
             return new ArrayList<>();
         }
         
-        ListTag elementListTag = itemTag.getList(ELEMENT_TAG_KEY, Tag.TAG_COMPOUND);
+        ListTag elementsList = elementData.getList(ELEMENTS, Tag.TAG_COMPOUND);
         List<ElementInstance> elements = new ArrayList<>();
         
-        for (int i = 0; i < elementListTag.size(); i++) {
-            CompoundTag elementTag = elementListTag.getCompound(i);
+        for (int i = 0; i < elementsList.size(); i++) {
+            CompoundTag elementTag = elementsList.getCompound(i);
             ElementInstance element = ElementInstance.fromNBT(elementTag);
             if (element != null) {
                 elements.add(element);
@@ -50,14 +51,14 @@ public class ElementNBTUtils {
             return;
         }
         
-        CompoundTag itemTag = stack.getOrCreateTag();
-        ListTag elementListTag = new ListTag();
+        CompoundTag elementData = stack.getOrCreateTagElement(ELEMENT_DATA);
+        ListTag elementsList = new ListTag();
         
         for (ElementInstance element : elements) {
-            elementListTag.add(element.toNBT());
+            elementsList.add(element.toNBT());
         }
         
-        itemTag.put(ELEMENT_TAG_KEY, elementListTag);
+        elementData.put(ELEMENTS, elementsList);
     }
     
     /**
@@ -68,21 +69,24 @@ public class ElementNBTUtils {
             return false;
         }
         
-        CompoundTag itemTag = stack.getTag();
-        return itemTag.contains(ELEMENT_TAG_KEY, Tag.TAG_LIST) && 
-               !itemTag.getList(ELEMENT_TAG_KEY, Tag.TAG_COMPOUND).isEmpty();
+        CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
+        return elementData != null && elementData.contains(ELEMENTS, Tag.TAG_LIST) && 
+               !elementData.getList(ELEMENTS, Tag.TAG_COMPOUND).isEmpty();
     }
     
     /**
      * 获取暴击率
      */
     public static double getCriticalChance(ItemStack stack) {
-        List<ElementInstance> elements = readElementsFromItem(stack);
-        for (ElementInstance element : elements) {
-            if (element.getType() == ElementType.CRITICAL_CHANCE) {
-                return element.getValue();
-            }
+        if (stack.isEmpty()) {
+            return 0.0;
         }
+        
+        CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
+        if (elementData != null && elementData.contains("CriticalChance", Tag.TAG_DOUBLE)) {
+            return elementData.getDouble("CriticalChance");
+        }
+        
         return 0.0; // 默认值
     }
     
@@ -90,26 +94,29 @@ public class ElementNBTUtils {
      * 获取暴击伤害
      */
     public static double getCriticalDamage(ItemStack stack) {
-        List<ElementInstance> elements = readElementsFromItem(stack);
-        for (ElementInstance element : elements) {
-            if (element.getType() == ElementType.CRITICAL_DAMAGE) {
-                return element.getValue();
-            }
+        if (stack.isEmpty()) {
+            return 0.0;
         }
-        return 1.0; // 默认值（无暴击时为1.0倍）
+        
+        CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
+        if (elementData != null && elementData.contains("CriticalDamage", Tag.TAG_DOUBLE)) {
+            return elementData.getDouble("CriticalDamage");
+        }
+        
+        return 0.0; // 默认值
     }
     
     /**
      * 获取触发率
      */
     public static double getTriggerChance(ItemStack stack) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty()) {
             return 0.0;
         }
         
-        CompoundTag itemTag = stack.getTag();
-        if (itemTag.contains(TRIGGER_CHANCE, Tag.TAG_DOUBLE)) {
-            return itemTag.getDouble(TRIGGER_CHANCE);
+        CompoundTag elementData = stack.getTagElement(ELEMENT_DATA);
+        if (elementData != null && elementData.contains(TRIGGER_CHANCE, Tag.TAG_DOUBLE)) {
+            return elementData.getDouble(TRIGGER_CHANCE);
         }
         
         return 0.0; // 默认值

@@ -5,8 +5,9 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 
+import com.xlxyvergil.hamstercore.element.ElementHelper;
+import com.xlxyvergil.hamstercore.element.ElementInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,7 +18,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.Map;
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class EntityInfoDisplayHandler {
@@ -84,28 +85,27 @@ public class EntityInfoDisplayHandler {
             if (!weapon.isEmpty()) {
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
                 
-                // 显示暴击率
-                double critChance = ElementNBTUtils.getCriticalChance(weapon);
+                // 显示暴击率（使用缓存中的计算数据）
+                double critChance = ElementHelper.getCriticalChance(weapon);
                 message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
                 
-                // 显示暴击伤害
-                double critDamage = ElementNBTUtils.getCriticalDamage(weapon);
+                // 显示暴击伤害（使用缓存中的计算数据）
+                double critDamage = ElementHelper.getCriticalDamage(weapon);
                 message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f", critDamage)).withStyle(ChatFormatting.YELLOW));
                 
-                // 显示触发率
-                double triggerChance = ElementNBTUtils.getTriggerChance(weapon);
+                // 显示触发率（使用缓存中的计算数据）
+                double triggerChance = ElementHelper.getTriggerChance(weapon);
                 message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
                 
-                // 添加武器元素属性信息
-                // 直接从NBT获取元素类型
-                java.util.Set<ElementType> elementTypes = ElementNBTUtils.getAllElementTypes(weapon);
+                // 添加武器元素属性信息（使用缓存中的计算数据）
+                List<ElementInstance> elementInstances = ElementHelper.getActiveElements(weapon);
                 
-                if (!elementTypes.isEmpty()) {
+                if (!elementInstances.isEmpty()) {
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
                     
-                    for (ElementType elementType : elementTypes) {
-                        // 获取元素值
-                        double elementValue = ElementNBTUtils.getElementValue(weapon, elementType);
+                    for (ElementInstance elementInstance : elementInstances) {
+                        ElementType elementType = elementInstance.getType();
+                        double elementValue = elementInstance.getValue();
                         
                         // 只显示物理元素、基础元素和复合元素，不显示特殊属性
                         if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {

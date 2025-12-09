@@ -11,15 +11,26 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilit
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
+import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
+import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import com.xlxyvergil.hamstercore.util.DebugLogger;
+
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
@@ -33,6 +44,9 @@ public class HamsterCore {
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::registerCapabilities);
         
+        // 注册客户端渲染器
+        com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer.registerEvents();
+        
         // 初始化配置
         FactionConfig.load();
         ArmorConfig.load();
@@ -42,36 +56,67 @@ public class HamsterCore {
         ElementRegistry.init();
         LOGGER.info("Element system initialized");
         
+        
         // 初始化网络包
         PacketHandler.init();
     }
 
     private void setup(final FMLCommonSetupEvent event) {
         // 注册服务器启动事件监听器
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+        MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
         
         // 注册客户端事件
         WeaponAttributeRenderer.registerEvents();
     }
     
+    
+    
+    
     /**
-     * 服务器启动事件处理
+     * 服务器启动完成事件处理
+     * 在这个阶段，所有模组的物品都已完成注册和初始化，可以安全获取
      */
-    private void onServerStarting(ServerStartingEvent event) {
-        HamsterCore.LOGGER.info("服务器启动，开始初始化武器配置和元素属性");
+    private void onServerStarted(ServerStartedEvent event) {
+        DebugLogger.log("服务器启动完成，开始生成武器配置文件");
         
         try {
-            // 初始化武器配置
-            WeaponConfig.load();
+            net.minecraft.server.MinecraftServer server = event.getServer();
             
-            // 应用默认元素属性
-            ElementApplier.applyElementsFromConfig();
+            // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
+            DebugLogger.log("初始化模组兼容性检查...");
+            SlashBladeItemsFetcher.init();
             
-            HamsterCore.LOGGER.info("武器配置和元素属性初始化完成");
+            // 2. 获取普通可应用元素属性的物品
+            Set<net.minecraft.resources.ResourceLocation> applicableItems = 
+                com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder.findApplicableItems();
+            DebugLogger.log("找到 %d 个普通可应用元素属性的物品", applicableItems.size());
+            
+            // 3. 获取TACZ枪械ID
+            Set<net.minecraft.resources.ResourceLocation> tacZGunIDs = 
+                com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher.getTacZGunIDs();
+            DebugLogger.log("获取到 %d 个TACZ枪械ID", tacZGunIDs.size());
+            
+            // 4. 获取拔刀剑ID - 在服务器启动时获取，此时所有物品注册已完成
+            Set<net.minecraft.resources.ResourceLocation> slashBladeIDs = 
+                SlashBladeItemsFetcher.getSlashBladeIDs(server);
+            Set<String> slashBladeTranslationKeys = 
+                SlashBladeItemsFetcher.getSlashBladeTranslationKeys(server);
+            DebugLogger.log("获取到 %d 个拔刀剑ID", slashBladeIDs.size());
+            DebugLogger.log("获取到 %d 个拔刀剑translationKey", slashBladeTranslationKeys.size());
+            
+            // 5. 使用所有数据生成配置文件
+            com.xlxyvergil.hamstercore.config.WeaponConfig.load();
+            
+            // 6. 应用默认元素属性
+            com.xlxyvergil.hamstercore.element.ElementApplier.applyElementsFromConfig();
+            
+            DebugLogger.log("武器配置文件生成完成，元素属性应用完成");
         } catch (Exception e) {
-            HamsterCore.LOGGER.error("初始化过程中发生错误", e);
+            DebugLogger.log("生成武器配置文件时发生错误: %s", e.toString());
+            e.printStackTrace();
         }
     }
+    
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.register(EntityFactionCapabilityProvider.class);

@@ -1,73 +1,76 @@
 package com.xlxyvergil.hamstercore.compat;
 
+import com.tacz.guns.api.item.IGun;
+import com.tacz.guns.api.DefaultAssets;
+import mods.flammpfeil.slashblade.item.ItemSlashBlade;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 
 /**
- * 兼容性工具类，用于检查可选mod是否加载
- * 参考TACZ的kubejs兼容实现
+ * 兼容性工具类，基于ck目录中其他模组的最佳实践
+ * 使用直接API调用，避免反射
  */
 public class ModCompat {
+    
+    private static final String TACZ_MOD_ID = "tacz";
+    private static final String SLASHBLADE_MOD_ID = "slashblade";
     
     /**
      * 检查TACZ是否已加载
      */
     public static boolean isTACZLoaded() {
-        return ModList.get().isLoaded("tacz");
+        return ModList.get().isLoaded(TACZ_MOD_ID);
     }
     
     /**
      * 检查SlashBlade是否已加载
      */
     public static boolean isSlashBladeLoaded() {
-        return ModList.get().isLoaded("slashblade");
+        return ModList.get().isLoaded(SLASHBLADE_MOD_ID);
     }
     
     /**
      * 检查物品是否为TACZ枪械
-     * 使用API检查
+     * 直接调用API，参考ck目录中其他模组的做法
      */
     public static boolean isGun(ItemStack stack) {
         if (!isTACZLoaded()) {
             return false;
         }
         
-        // 使用API检查
         try {
-            Class<?> iGunClass = Class.forName("com.tacz.guns.api.item.IGun");
-            Method getIGunOrNull = iGunClass.getMethod("getIGunOrNull", ItemStack.class);
-            Object iGun = getIGunOrNull.invoke(null, stack);
-            return iGun != null;
+            // 直接调用API，不使用反射
+            return IGun.getIGunOrNull(stack) != null;
         } catch (Exception e) {
+            // API调用失败，返回false
             return false;
         }
     }
     
     /**
      * 检查物品是否为SlashBlade拔刀剑
-     * 使用API检查
+     * 直接调用API，参考ck目录中其他模组的做法
      */
     public static boolean isSlashBlade(ItemStack stack) {
         if (!isSlashBladeLoaded()) {
             return false;
         }
         
-        // 使用API检查
         try {
-            Class<?> itemSlashBladeClass = Class.forName("mods.flammpfeil.slashblade.item.ItemSlashBlade");
-            return itemSlashBladeClass.isInstance(stack.getItem());
+            // 直接调用API，不使用反射
+            return stack.getItem() instanceof ItemSlashBlade;
         } catch (Exception e) {
+            // API调用失败，返回false
             return false;
         }
     }
     
     /**
      * 获取TACZ枪械的ID
-     * 使用API获取，如果不是TACZ枪械或TACZ未加载，返回null
+     * 直接调用API获取，如果不是TACZ枪械或TACZ未加载，返回null
      */
     @Nullable
     public static String getGunId(ItemStack stack) {
@@ -75,25 +78,13 @@ public class ModCompat {
             return null;
         }
         
-        // 使用API获取，参考TaczAttributeAdd的实现
         try {
-            // 获取IGun实例
-            Class<?> iGunClass = Class.forName("com.tacz.guns.api.item.IGun");
-            Method getIGunOrNull = iGunClass.getMethod("getIGunOrNull", ItemStack.class);
-            Object iGun = getIGunOrNull.invoke(null, stack);
-            
+            // 直接调用API，不使用反射
+            IGun iGun = IGun.getIGunOrNull(stack);
             if (iGun != null) {
-                // 调用getGunId方法
-                Method getGunId = iGunClass.getMethod("getGunId", ItemStack.class);
-                Object gunIdObj = getGunId.invoke(iGun, stack);
-                
-                if (gunIdObj instanceof ResourceLocation) {
-                    ResourceLocation gunId = (ResourceLocation) gunIdObj;
-                    
-                    // 检查是否为空枪ID
-                    if (!isGunIdEmpty(gunId)) {
-                        return gunId.toString();
-                    }
+                ResourceLocation gunId = iGun.getGunId(stack);
+                if (gunId != null && !isGunIdEmpty(gunId)) {
+                    return gunId.toString();
                 }
             }
         } catch (Exception e) {
@@ -105,23 +96,21 @@ public class ModCompat {
     
     /**
      * 检查枪械ID是否为空
+     * 直接使用API常量，不使用反射
      */
     private static boolean isGunIdEmpty(ResourceLocation gunId) {
         try {
-            // 获取EMPTY_GUN_ID常量进行比较
-            Class<?> defaultAssetsClass = Class.forName("com.tacz.guns.api.DefaultAssets");
-            Object emptyGunId = defaultAssetsClass.getField("EMPTY_GUN_ID").get(null);
-            
-            return gunId.equals(emptyGunId);
+            // 直接使用API常量，不使用反射
+            return gunId.equals(DefaultAssets.EMPTY_GUN_ID);
         } catch (Exception e) {
-            // 如果比较失败，使用字符串比较
+            // 如果API访问失败，使用字符串比较作为备用
             return "tacz:empty".equals(gunId.toString());
         }
     }
     
     /**
      * 获取SlashBlade的translationKey
-     * 使用API获取，如果不是SlashBlade或SlashBlade未加载，返回null
+     * 使用Minecraft原版方法，参考ck目录中其他模组的做法
      */
     @Nullable
     public static String getSlashBladeTranslationKey(ItemStack stack) {
@@ -129,25 +118,13 @@ public class ModCompat {
             return null;
         }
         
-        // 直接使用API获取
         try {
-            // 检查物品是否是ItemSlashBlade实例
-            Class<?> itemSlashBladeClass = Class.forName("mods.flammpfeil.slashblade.item.ItemSlashBlade");
-            
-            // 如果是ItemSlashBlade实例，直接调用getDescriptionId方法
-            if (itemSlashBladeClass.isInstance(stack.getItem())) {
-                Method getDescriptionId = itemSlashBladeClass.getMethod("getDescriptionId", ItemStack.class);
-                Object translationKey = getDescriptionId.invoke(stack.getItem(), stack);
-                
-                if (translationKey instanceof String && !((String) translationKey).isEmpty()) {
-                    return (String) translationKey;
-                }
-            }
+            // 使用Minecraft原版方法获取translationKey，更安全稳定
+            return stack.getItem().getDescriptionId();
         } catch (Exception e) {
             // API调用失败，返回null
+            return null;
         }
-        
-        return null;
     }
     
     /**

@@ -4,7 +4,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.element.ElementHelper;
 import com.xlxyvergil.hamstercore.element.ElementInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.ElementTriggerHandler;
+import com.xlxyvergil.hamstercore.faction.ElementTriggerHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.Entity;

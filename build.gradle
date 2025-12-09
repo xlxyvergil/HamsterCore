@@ -13,7 +13,19 @@ base {
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+// 强制使用 Java 17 工具链，即使系统安装了 Java 21
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// 确保编译时使用 Java 17
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    options.release = 17
+}
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
@@ -151,6 +163,14 @@ dependencies {
 
     // Jade dependency
     implementation fg.deobf("curse.maven:jade-324717:4654448")
+    
+    // TACZ dependency (local file for compile only)
+    // 将 tacz-1.20.1-1.1.7.jar 放在 libs 目录下
+    compileOnly files('libs/tacz-1.20.1-1.1.7.jar')
+    
+    // SlashBlade Resharped dependency (local file for compile only)
+    // 将 SlashBladeResharped-1.20.1-1.8.61.jar 放在 libs 目录下
+    compileOnly files('libs/SlashBladeResharped-1.20.1-1.8.61.jar')
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime

@@ -49,5 +49,7 @@
   "hamstercore.ui.level_prefix": " [Level:",
   "hamstercore.ui.armor_prefix": " Armor:",
   "hamstercore.ui.faction_prefix": " Faction:",
-  "hamstercore.ui.damage_prefix": " Damage:"
+  "hamstercore.ui.damage_prefix": " Damage:",
+  
+  "config.jade.plugin_hamstercore.faction": "Hamster Info"
 }

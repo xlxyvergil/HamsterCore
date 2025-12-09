@@ -2,6 +2,8 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.element.ElementHelper;
+import com.xlxyvergil.hamstercore.element.ElementInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
@@ -38,39 +40,37 @@ public class WeaponAttributeRenderer {
         // 获取现有的工具提示行
         List<Component> tooltipElements = event.getToolTip();
         
-        // 只使用ElementNBTUtils获取元素数据
+        // 使用ElementHelper获取经过计算的元素数据
         // 添加基础属性到工具提示
-        addBasicAttributesFromNBT(tooltipElements, stack);
+        addBasicAttributesFromCalculatedData(tooltipElements, stack);
         
         // 添加元素属性到工具提示
-        addElementAttributesFromNBT(tooltipElements, stack);
+        addElementAttributesFromCalculatedData(tooltipElements, stack);
     }
     
-
-    
     /**
-     * 添加基础属性到工具提示
+     * 添加基础属性到工具提示（使用计算后的数据）
      */
-    private static void addBasicAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
+    private static void addBasicAttributesFromCalculatedData(List<Component> tooltipElements, ItemStack stack) {
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
         
         // 添加暴击率
-        double criticalChance = ElementNBTUtils.getCriticalChance(stack);
+        double criticalChance = ElementHelper.getCriticalChance(stack);
         String criticalChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.critical_chance").getString(), 
             criticalChance * 100);
         tooltipElements.add(Component.literal(criticalChanceText));
         
         // 添加暴击伤害
-        double criticalDamage = ElementNBTUtils.getCriticalDamage(stack);
+        double criticalDamage = ElementHelper.getCriticalDamage(stack);
         String criticalDamageText = String.format("%s: %.1f", 
             Component.translatable("hamstercore.ui.critical_damage").getString(), 
             criticalDamage);
         tooltipElements.add(Component.literal(criticalDamageText));
         
         // 添加触发率
-        double triggerChance = ElementNBTUtils.getTriggerChance(stack);
+        double triggerChance = ElementHelper.getTriggerChance(stack);
         String triggerChanceText = String.format("%s: %.1f%%", 
             Component.translatable("hamstercore.ui.trigger_chance").getString(), 
             triggerChance * 100);
@@ -78,13 +78,13 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 添加元素属性到工具提示
+     * 添加元素属性到工具提示（使用计算后的数据）
      */
-    private static void addElementAttributesFromNBT(List<Component> tooltipElements, ItemStack stack) {
-        // 直接从NBT获取元素类型
-        java.util.Set<ElementType> elementTypes = ElementNBTUtils.getAllElementTypes(stack);
+    private static void addElementAttributesFromCalculatedData(List<Component> tooltipElements, ItemStack stack) {
+        // 从ElementHelper获取经过计算的元素实例
+        List<ElementInstance> elementInstances = ElementHelper.getActiveElements(stack);
         
-        if (elementTypes.isEmpty()) {
+        if (elementInstances.isEmpty()) {
             return;
         }
         
@@ -97,9 +97,9 @@ public class WeaponAttributeRenderer {
         );
         
         // 添加每个元素的属性值（不以百分比形式展示）
-        for (ElementType elementType : elementTypes) {
-            // 获取元素值
-            double elementValue = ElementNBTUtils.getElementValue(stack, elementType);
+        for (ElementInstance elementInstance : elementInstances) {
+            ElementType elementType = elementInstance.getType();
+            double elementValue = elementInstance.getValue();
             
             // 只显示物理元素、基础元素和复合元素，不显示特殊属性
             if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
