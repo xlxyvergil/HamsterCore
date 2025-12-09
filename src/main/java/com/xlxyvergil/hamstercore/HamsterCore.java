@@ -44,9 +44,6 @@ public class HamsterCore {
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::registerCapabilities);
         
-        // 注册客户端渲染器
-        com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer.registerEvents();
-        
         // 初始化配置
         FactionConfig.load();
         ArmorConfig.load();
