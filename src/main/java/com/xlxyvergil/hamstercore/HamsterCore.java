@@ -77,32 +77,21 @@ public class HamsterCore {
      */
     private void onServerStarted(ServerStartedEvent event) {
         
-        try {
-            net.minecraft.server.MinecraftServer server = event.getServer();
-            
+        try {            
             // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
             SlashBladeItemsFetcher.init();
         
-            // 2. 获取普通可应用元素属性的物品
-            Set<net.minecraft.resources.ResourceLocation> applicableItems = 
-                com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder.findApplicableItems();
-        
-            
-            // 4. 获取TACZ枪械ID
-            Set<net.minecraft.resources.ResourceLocation> tacZGunIDs = 
-                com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher.getTacZGunIDs();
-            
-            // 4. 获取拔刀剑ID - 在服务器启动时获取，此时所有物品注册已完成
-            Set<net.minecraft.resources.ResourceLocation> slashBladeIDs = 
-                SlashBladeItemsFetcher.getSlashBladeIDs(server);
-            Set<String> slashBladeTranslationKeys = 
-                SlashBladeItemsFetcher.getSlashBladeTranslationKeys(server);
-            
-            // 5. 使用所有数据生成配置文件
+            // 2. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
             com.xlxyvergil.hamstercore.config.WeaponConfig.load();
             
-            // 6. 应用默认元素属性
-            com.xlxyvergil.hamstercore.element.ElementApplier.applyElementsFromConfig();
+            // 3. 应用普通物品元素属性
+            int normalAppliedCount = com.xlxyvergil.hamstercore.element.NormalItemElementApplier.applyNormalItemsElements();
+            
+            // 4. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
+            int modSpecialAppliedCount = com.xlxyvergil.hamstercore.element.ElementApplier.applyModSpecialItemsElements();
+            
+            DebugLogger.log("元素属性应用完成，普通物品: %d, MOD特殊物品: %d", 
+                           normalAppliedCount, modSpecialAppliedCount);
             
         } catch (Exception e) {
             e.printStackTrace();

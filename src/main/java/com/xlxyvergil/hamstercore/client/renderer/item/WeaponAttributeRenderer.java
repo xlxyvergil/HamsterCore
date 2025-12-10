@@ -1,22 +1,20 @@
 package com.xlxyvergil.hamstercore.client.renderer.item;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
  * 武器属性渲染器
@@ -43,11 +41,12 @@ public class WeaponAttributeRenderer {
         // 检查是否应该显示Usage层数据
         if (shouldShowUsageLayer(stack)) {
             // 添加Usage层属性到工具提示（特殊属性+元素属性+派系增伤）
+             addUsageAttributes(tooltipElements, stack);             
              addBasicAttributes(tooltipElements, stack);           
         } else {
             // 添加Basic层属性到工具提示（特殊属性+元素属性）
 
-            addUsageAttributes(tooltipElements, stack);
+
         }
     }
     

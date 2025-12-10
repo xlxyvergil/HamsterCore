@@ -77,6 +77,9 @@ public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
         // 当前护甲值(AR)=基础护甲×护甲系数
         this.armor = baseArmor * armorMultiplier;
         
+        // 限制护甲值上限为2700
+        this.armor = Math.min(this.armor, 2700.0);
+        
         LOGGER.debug("Calculated armor: baseArmor={}, level={}, baseLevel={}, levelDiff={}, armorMultiplier={}, final armor={}",
                 baseArmor, level, baseLevel, levelDiff, armorMultiplier, this.armor);
     }

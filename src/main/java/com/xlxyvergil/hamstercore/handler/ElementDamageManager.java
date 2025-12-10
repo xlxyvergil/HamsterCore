@@ -36,28 +36,34 @@ public class ElementDamageManager {
     // 元素列表缓存
     private static final ElementCache<ItemStack, List<Map.Entry<ElementType, Double>>> ACTIVE_ELEMENTS_CACHE = new ElementCache<>(ElementDamageManager::getActiveElementsImpl);
     
+
+    
     /**
      * 计算元素伤害
      * @param attacker 攻击者
      * @param target 目标实体
      * @param baseDamage 基础伤害
      * @param weapon 武器物品
+     * @param targetFaction 目标派系
+     * @param targetArmor 目标护甲值
      * @return 元素伤害数据
      */
-    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon) {
+    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
         // 构建缓存键
-        ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon);
+        ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         
         try {
             // 尝试从缓存中获取结果
             ElementCache.CacheValue<ElementDamageData> cached = DAMAGE_CACHE.get(key);
-            return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon));
+            return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor));
         } catch (Exception e) {
             LOGGER.error("Error calculating element damage", e);
             // 如果缓存出错，则直接计算而不使用缓存
-            return calculateElementDamageInternal(attacker, target, baseDamage, weapon);
+            return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         }
     }
+    
+
     
     /**
      * 计算元素伤害的核心逻辑
@@ -65,25 +71,31 @@ public class ElementDamageManager {
      * @param target 目标实体
      * @param baseDamage 基础伤害
      * @param weapon 武器物品
+     * @param targetFaction 目标派系
+     * @param targetArmor 目标护甲值
      * @return 元素伤害数据
      */
-    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon) {
+    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
-        
-        // 如果武器没有元素属性，则直接返回基础伤害
-        if (!ElementNBTUtils.hasAnyElements(weapon)) {
-            return damageData;
-        }
         
         // 获取武器数据
         WeaponElementData data = WeaponDataManager.loadElementData(weapon);
-        WeaponDataManager.computeUsageData(weapon, data);
+        if (data != null) {
+            WeaponDataManager.computeUsageData(weapon, data);
+        }
         
         // 计算各部分的伤害修正系数
-        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(attacker, target, data); // HM
+        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(attacker, target, data, targetFaction); // HM
         damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker); // 元素总倍率
         damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker); // 暴击伤害
-        damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target); // (1-AM)
+        damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
+        
+        // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
+        if (!ElementNBTUtils.hasAnyElements(weapon)) {
+            // 无元素武器：只应用护甲减免
+            damageData.finalDamage = (float) (baseDamage * damageData.armorReduction);
+            return damageData;
+        }
         
         // 设置激活的元素列表
         damageData.setActiveElements(getActiveElements(weapon));
@@ -188,8 +200,10 @@ public class ElementDamageManager {
         LivingEntity target = key.getTarget();
         float baseDamage = key.getBaseDamage();
         ItemStack weapon = key.getWeapon();
+        String targetFaction = key.getTargetFaction();
+        Double targetArmor = key.getTargetArmor();
         
-        return calculateElementDamageInternal(attacker, target, baseDamage, weapon);
+        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
     }
     
     /**
@@ -281,12 +295,16 @@ public class ElementDamageManager {
         private final LivingEntity target;
         private final float baseDamage;
         private final ItemStack weapon;
+        private final String targetFaction;
+        private final Double targetArmor;
         
-        public ElementDamageKey(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon) {
+        public ElementDamageKey(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
             this.attacker = attacker;
             this.target = target;
             this.baseDamage = baseDamage;
             this.weapon = weapon;
+            this.targetFaction = targetFaction;
+            this.targetArmor = targetArmor;
         }
         
         public LivingEntity getAttacker() {
@@ -305,6 +323,14 @@ public class ElementDamageManager {
             return weapon;
         }
         
+        public String getTargetFaction() {
+            return targetFaction;
+        }
+        
+        public Double getTargetArmor() {
+            return targetArmor;
+        }
+        
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -315,7 +341,9 @@ public class ElementDamageManager {
             if (Float.compare(that.baseDamage, baseDamage) != 0) return false;
             if (!attacker.equals(that.attacker)) return false;
             if (!target.equals(that.target)) return false;
-            return ItemStack.matches(weapon, that.weapon);
+            if (!ItemStack.matches(weapon, that.weapon)) return false;
+            if (targetFaction != null ? !targetFaction.equals(that.targetFaction) : that.targetFaction != null) return false;
+            return targetArmor != null ? targetArmor.equals(that.targetArmor) : that.targetArmor == null;
         }
         
         @Override
@@ -324,6 +352,8 @@ public class ElementDamageManager {
             result = 31 * result + target.hashCode();
             result = 31 * result + (baseDamage != 0.0f ? Float.floatToIntBits(baseDamage) : 0);
             result = 31 * result + (weapon.isEmpty() ? 0 : weapon.getItem().hashCode());
+            result = 31 * result + (targetFaction != null ? targetFaction.hashCode() : 0);
+            result = 31 * result + (targetArmor != null ? targetArmor.hashCode() : 0);
             return result;
         }
     }

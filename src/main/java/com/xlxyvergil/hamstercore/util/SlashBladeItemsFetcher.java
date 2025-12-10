@@ -101,44 +101,40 @@ public class SlashBladeItemsFetcher {
             // 清空旧数据
             slashBladeIDs.clear();
             slashBladeTranslationKeys.clear();
+        
             
-            // 方法1: 通过注册表获取拔刀剑物品（兼容性更好）
-            loadSlashBladeFromRegistry();
-            
-            // 方法2: 如果方法1没有获取到数据，尝试通过拔刀剑API获取
-            if (slashBladeIDs.isEmpty()) {
-                loadSlashBladeFromAPI(server);
-            }
+            // 方法2: 总是通过拔刀剑API获取，以确保获取到所有刀剑定义
+            loadSlashBladeFromAPI(server);
             
             if (!slashBladeIDs.isEmpty()) {
+                // 输出获取到的拔刀剑ID数量和部分ID
+                System.out.println("[HamsterCore] 获取到拔刀剑ID数量: " + slashBladeIDs.size());
+                System.out.println("[HamsterCore] 获取到translationKey数量: " + slashBladeTranslationKeys.size());
+                
+                // 输出前5个ID用于调试
+                int count = 0;
+                for (ResourceLocation id : slashBladeIDs) {
+                    if (count < 5) {
+                        System.out.println("[HamsterCore] 拔刀剑ID示例: " + id);
+                        count++;
+                    }
+                }
+                
+                // 输出前5个translationKey用于调试
+                count = 0;
+                for (String key : slashBladeTranslationKeys) {
+                    if (count < 5) {
+                        System.out.println("[HamsterCore] translationKey示例: " + key);
+                        count++;
+                    }
+                }
             } else {
+                System.out.println("[HamsterCore] 未获取到任何拔刀剑ID");
             }
         } catch (Exception e) {
             e.printStackTrace();
             slashBladeIDs.clear();
             slashBladeTranslationKeys.clear();
-        }
-    }
-    
-    /**
-     * 通过物品注册表获取拔刀剑数据
-     * 这种方法更加稳定，不依赖拔刀剑的具体API
-     */
-    private static void loadSlashBladeFromRegistry() {
-        for (Item item : ForgeRegistries.ITEMS) {
-            ResourceLocation registryName = ForgeRegistries.ITEMS.getKey(item);
-            if (registryName != null && registryName.getNamespace().equals(SLASHBLADE_MOD_ID)) {
-                slashBladeIDs.add(registryName);
-                
-                // 使用Minecraft原版提供的Util方法获取translationKey
-                try {
-                    String translationKey = item.getDescriptionId();
-                    if (translationKey != null && !translationKey.isEmpty()) {
-                        slashBladeTranslationKeys.add(translationKey);
-                    }
-                } catch (Exception e) {
-                }
-            }
         }
     }
     
@@ -158,19 +154,12 @@ public class SlashBladeItemsFetcher {
                 ResourceLocation id = entry.key().location();
                 slashBladeIDs.add(id);
                 
-                // 尝试获取对应的translationKey
+                // 构建正确的translationKey
                 try {
-                    // 通过物品注册表找到对应的物品并获取translationKey
-                    for (Item item : ForgeRegistries.ITEMS) {
-                        ResourceLocation itemName = ForgeRegistries.ITEMS.getKey(item);
-                        if (itemName != null && itemName.equals(id)) {
-                            String translationKey = item.getDescriptionId();
-                            if (translationKey != null && !translationKey.isEmpty()) {
-                                slashBladeTranslationKeys.add(translationKey);
-                            }
-                            break;
-                        }
-                    }
+                    // 拔刀剑的translationKey格式是：item.slashblade.{刀剑名称}
+                    String bladeName = id.getPath();
+                    String translationKey = "item.slashblade." + bladeName;
+                    slashBladeTranslationKeys.add(translationKey);
                 } catch (Exception e) {
                 }
             }
@@ -199,19 +188,19 @@ public class SlashBladeItemsFetcher {
     
     /**
      * 根据ID更新translationKey
+     * 使用SlashBlade的registry直接构建translationKey，而不是通过Forge注册表
      */
     private static void updateTranslationKeysFromIDs() {
         slashBladeTranslationKeys.clear();
         for (ResourceLocation id : slashBladeIDs) {
             try {
-                Item item = ForgeRegistries.ITEMS.getValue(id);
-                if (item != null) {
-                    String translationKey = item.getDescriptionId();
-                    if (translationKey != null && !translationKey.isEmpty()) {
-                        slashBladeTranslationKeys.add(translationKey);
-                    }
-                }
+                // 直接构建translationKey，格式为：item.slashblade.{刀剑名称}
+                String bladeName = id.getPath();
+                String translationKey = "item.slashblade." + bladeName;
+                slashBladeTranslationKeys.add(translationKey);
+                DebugLogger.log("构建translationKey: %s", translationKey);
             } catch (Exception e) {
+                DebugLogger.log("构建translationKey失败: %s, 错误: %s", id, e.getMessage());
             }
         }
     }

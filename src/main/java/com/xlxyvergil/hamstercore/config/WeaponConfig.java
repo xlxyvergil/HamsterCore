@@ -410,13 +410,13 @@ public class WeaponConfig {
         weaponConfigs.clear();
         
         try {
-            // 加载普通武器配置
-            loadConfigFile(NORMAL_WEAPONS_FILE, false);
+            // 加载普通武器配置（使用对象格式）
+            loadNormalWeaponsConfig();
             
-            // 加载TACZ武器配置
+            // 加载TACZ武器配置（使用数组格式）
             loadConfigFile(TACZ_WEAPONS_FILE, true);
             
-            // 加载拔刀剑配置
+            // 加载拔刀剑配置（使用数组格式）
             loadConfigFile(SLASHBLADE_WEAPONS_FILE, false);
             
         } catch (Exception e) {
@@ -426,7 +426,39 @@ public class WeaponConfig {
     }
     
     /**
-     * 加载单个配置文件
+     * 加载普通武器配置文件（对象格式）
+     */
+    private static void loadNormalWeaponsConfig() {
+        File configFile = new File(NORMAL_WEAPONS_FILE);
+        if (!configFile.exists()) {
+            return;
+        }
+        
+        try {
+            Gson gson = new Gson();
+            try (FileReader reader = new FileReader(configFile)) {
+                JsonObject loadedConfigs = gson.fromJson(reader, JsonObject.class);
+                
+                if (loadedConfigs != null) {
+                    for (Map.Entry<String, JsonElement> entry : loadedConfigs.entrySet()) {
+                        String itemKey = entry.getKey();
+                        JsonObject itemJson = entry.getValue().getAsJsonObject();
+                        
+                        // 直接处理对象格式的配置
+                        processNormalWeaponConfig(itemJson, itemKey);
+                    }
+                }
+            }
+            
+            DebugLogger.log("已加载配置文件: %s", NORMAL_WEAPONS_FILE);
+            
+        } catch (Exception e) {
+            DebugLogger.log("加载配置文件失败: %s, 错误: %s", NORMAL_WEAPONS_FILE, e.getMessage());
+        }
+    }
+    
+    /**
+     * 加载单个配置文件（数组格式，用于TACZ和拔刀剑）
      */
     private static void loadConfigFile(String filePath, boolean isTacZ) {
         File configFile = new File(filePath);
@@ -461,7 +493,46 @@ public class WeaponConfig {
     }
     
     /**
-     * 处理单个武器配置
+     * 处理普通武器配置（对象格式）
+     */
+    private static void processNormalWeaponConfig(JsonObject itemJson, String itemKey) {
+        // 创建WeaponData对象
+        WeaponData weaponData = new WeaponData();
+        
+        // 解析物品ID
+        ResourceLocation itemResourceKey = ResourceLocation.tryParse(itemKey);
+        if (itemResourceKey != null) {
+            weaponData.modid = itemResourceKey.getNamespace();
+            weaponData.itemId = itemResourceKey.getPath();
+        }
+        
+        // 读取elementData
+        if (itemJson.has("elementData")) {
+            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+            
+            // 读取Basic层
+            if (elementDataJson.has("Basic")) {
+                JsonObject basicJson = elementDataJson.getAsJsonObject("Basic");
+                for (Map.Entry<String, JsonElement> basicEntry : basicJson.entrySet()) {
+                    JsonObject elementJson = basicEntry.getValue().getAsJsonObject();
+                    
+                    String type = elementJson.get("type").getAsString();
+                    double value = elementJson.get("value").getAsDouble();
+                    String source = elementJson.get("source").getAsString();
+                    
+                    weaponData.getElementData().addBasicElement(type, value, source);
+                }
+            }
+        }
+        
+        // 使用物品ID作为键
+        if (itemResourceKey != null) {
+            weaponConfigs.put(itemResourceKey, weaponData);
+        }
+    }
+    
+    /**
+     * 处理单个武器配置（数组格式，用于TACZ和拔刀剑）
      */
     private static void processWeaponConfig(JsonObject itemJson, String configKey, boolean isTacZ) {
         // 创建WeaponData对象

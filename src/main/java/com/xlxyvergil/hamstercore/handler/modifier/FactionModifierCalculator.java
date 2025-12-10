@@ -24,17 +24,10 @@ public class FactionModifierCalculator {
      * @param attacker 攻击者
      * @param target 目标实体
      * @param data 武器元素数据
+     * @param targetFaction 目标派系
      * @return 派系伤害修饰符
      */
-    public static double calculateFactionModifier(LivingEntity attacker, LivingEntity target, WeaponElementData data) {
-        // 获取目标实体的派系
-        String targetFaction = target.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
-            .map(factionCap -> {
-                Faction faction = factionCap.getFaction();
-                return faction != null ? faction.name() : "OROKIN";
-            })
-            .orElse("OROKIN");
-
+    public static double calculateFactionModifier(LivingEntity attacker, LivingEntity target, WeaponElementData data, String targetFaction) {
         // 计算克制系数
         double modifier = 0.0;
         

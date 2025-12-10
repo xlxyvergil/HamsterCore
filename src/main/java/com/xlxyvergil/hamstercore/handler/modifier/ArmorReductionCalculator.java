@@ -10,26 +10,16 @@ import org.apache.logging.log4j.Logger;
  * 参考TACZ的DamageModifier设计模式
  */
 public class ArmorReductionCalculator {
-    private static final Logger LOGGER = LogManager.getLogger();
     
     /**
      * 计算护甲减免系数 (1-AM)
      * @param target 目标实体
+     * @param targetArmor 目标护甲值
      * @return 护甲减免系数
      */
-    public static double calculateArmorReduction(LivingEntity target) {
-        // 获取我们自定义的护甲值
-        double customArmor = target.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
-            .map(armorCap -> {
-                LOGGER.debug("Getting armor from capability for entity: " + target.getType().getDescriptionId());
-                double armor = armorCap.getArmor();
-                LOGGER.debug("Got armor value: " + armor);
-                return armor;
-            })
-            .orElse(0.0);
-        
+    public static double calculateArmorReduction(LivingEntity target, Double targetArmor) {
         // 计算AM = 0.9 × √(AR/2700)
-        double AM = 0.9 * Math.sqrt(customArmor / 2700.0);
+        double AM = 0.9 * Math.sqrt(targetArmor / 2700.0);
         
         return 1.0 - AM;
     }

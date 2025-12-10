@@ -60,13 +60,21 @@ public class FactionDamageHandler {
                 })
                 .orElse("OROKIN");
             
+            // 获取目标实体的护甲值
+            Double targetArmor = target.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
+                .map(armorCap -> armorCap.getArmor())
+                .orElse(0.0);
+            
+            // 限制护甲值上限为2700
+            targetArmor = Math.min(targetArmor, 2700.0);
+            
             // 使用公式 ID = BD × (1+HM) × 元素总倍率 × 暴击伤害 × (1-AM)
             // BD = 基础伤害
             float baseDamage = event.getAmount();
             
             // 使用元素伤害管理器计算最终伤害
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon);
+                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor);
             
             // 设置最终伤害
             event.setAmount(damageData.getFinalDamage());

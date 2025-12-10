@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.element;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.element.modifier.*;
 import com.xlxyvergil.hamstercore.util.DebugLogger;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -74,12 +75,6 @@ public class WeaponDataManager {
      * 从配置文件加载物品的默认元素数据
      */
     private static WeaponElementData loadDefaultElementData(ItemStack stack) {
-        // 获取物品的ResourceLocation
-        ResourceLocation itemKey = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
-        if (itemKey == null) {
-            return new WeaponElementData();
-        }
-        
         // 从配置中获取武器数据
         WeaponData weaponData = WeaponConfig.getWeaponConfig(stack);
         if (weaponData == null) {
@@ -94,6 +89,14 @@ public class WeaponDataManager {
         
         // 计算Usage数据
         computeUsageData(stack, elementData);
+        
+        // 将数据保存到NBT，确保下次直接从NBT读取
+        saveElementData(stack, elementData);
+        
+        ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        DebugLogger.log("为普通物品 %s 应用默认元素属性并保存到NBT，Basic层数据: %d项", 
+                      itemKey != null ? itemKey.toString() : "unknown", 
+                      elementData.getAllBasicElements().size());
         
         // 返回包含默认数据的元素数据对象
         return elementData;

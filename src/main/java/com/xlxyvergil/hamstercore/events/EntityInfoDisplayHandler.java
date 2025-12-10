@@ -44,7 +44,15 @@ public class EntityInfoDisplayHandler {
             double armor = target.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
                     .map(cap -> cap.getArmor())
                     .orElse(0.0);
+            
+            // 限制护甲值上限为2700（用于显示）
+            armor = Math.min(armor, 2700.0);
                     
+            // 获取目标实体的派系名称（用于ElementDamageManager）
+            String targetFaction = target.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
+                    .map(cap -> cap.getFaction() != null ? cap.getFaction().name() : "OROKIN")
+                    .orElse("OROKIN");
+            
             String factionName = target.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
                     .map(cap -> cap.getFaction().getDisplayName())
                     .orElse("Unknown");
@@ -54,7 +62,7 @@ public class EntityInfoDisplayHandler {
             
             // 使用ElementDamageManager计算真实的伤害数据
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon);
+                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor);
             
             // 获取经过完整计算后的实际伤害
             float inflictedDamage = damageData.getFinalDamage();

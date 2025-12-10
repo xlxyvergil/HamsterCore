@@ -110,7 +110,7 @@ public class ModCompat {
     
     /**
      * 获取SlashBlade的translationKey
-     * 使用Minecraft原版方法，参考ck目录中其他模组的做法
+     * 使用SlashBlade的Capability API获取真实的translationKey
      */
     @Nullable
     public static String getSlashBladeTranslationKey(ItemStack stack) {
@@ -119,12 +119,20 @@ public class ModCompat {
         }
         
         try {
-            // 使用Minecraft原版方法获取translationKey，更安全稳定
-            return stack.getItem().getDescriptionId();
+            // 使用SlashBlade的Capability API
+            var bladeState = stack.getCapability(mods.flammpfeil.slashblade.item.ItemSlashBlade.BLADESTATE);
+            if (bladeState.isPresent()) {
+                String translationKey = bladeState.resolve().get().getTranslationKey();
+                if (translationKey != null && !translationKey.isBlank()) {
+                    return translationKey;
+                }
+            }
+            
         } catch (Exception e) {
             // API调用失败，返回null
-            return null;
         }
+        
+        return null;
     }
     
     /**
