@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,11 @@ import java.util.UUID;
 public class CorpusAttribute extends ElementAttribute {
     
     private static final UUID MODIFIER_UUID = UUID.fromString("a08f4810-3e5f-6c0f-bc3f-3d3c34ae1b2c");
+    
+    // 静态初始化块，在类加载时自动注册
+    static {
+        ElementRegistry.register(new CorpusAttribute());
+    }
     
     public CorpusAttribute() {
         super(ElementType.CORPUS, 0.0, AttributeModifier.Operation.ADDITION);

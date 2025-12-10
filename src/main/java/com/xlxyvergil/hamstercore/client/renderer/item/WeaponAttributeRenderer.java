@@ -43,10 +43,11 @@ public class WeaponAttributeRenderer {
         // 检查是否应该显示Usage层数据
         if (shouldShowUsageLayer(stack)) {
             // 添加Usage层属性到工具提示（特殊属性+元素属性+派系增伤）
-            addUsageAttributes(tooltipElements, stack);
+             addBasicAttributes(tooltipElements, stack);           
         } else {
             // 添加Basic层属性到工具提示（特殊属性+元素属性）
-            addBasicAttributes(tooltipElements, stack);
+
+            addUsageAttributes(tooltipElements, stack);
         }
     }
     

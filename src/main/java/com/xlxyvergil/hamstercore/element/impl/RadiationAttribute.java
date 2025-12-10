@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,11 @@ import java.util.UUID;
 public class RadiationAttribute extends ElementAttribute {
     
     private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7f");
+    
+    // 静态初始化块，在类加载时自动注册
+    static {
+        ElementRegistry.register(new RadiationAttribute());
+    }
     
     public RadiationAttribute() {
         super(ElementType.RADIATION, 0.0, AttributeModifier.Operation.ADDITION);

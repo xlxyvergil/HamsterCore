@@ -1,7 +1,5 @@
 package com.xlxyvergil.hamstercore.util;
 
-import com.xlxyvergil.hamstercore.HamsterCore;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
@@ -113,10 +111,6 @@ public class SlashBladeItemsFetcher {
             }
             
             if (!slashBladeIDs.isEmpty()) {
-                
-                // 输出所有注册的拔刀剑到日志
-                for (ResourceLocation id : slashBladeIDs) {
-                }
             } else {
             }
         } catch (Exception e) {

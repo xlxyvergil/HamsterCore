@@ -47,8 +47,6 @@ public class ModSpecialItemsFetcher {
             if (ModList.get().isLoaded("tacz")) {
                 loadTacZGunIDsDirectAPI();
                 if (tacZGunIDs != null && !tacZGunIDs.isEmpty()) {
-                    for (ResourceLocation id : tacZGunIDs) {
-                    }
                 } else {
                 }
             } else {
@@ -72,7 +70,6 @@ public class ModSpecialItemsFetcher {
         tacZGunIDs = new HashSet<>();
         
         
-        int validGunCount = 0;
         for (Map.Entry<ResourceLocation, ?> entry : gunEntries) {
             ResourceLocation gunId = entry.getKey();
             
@@ -80,7 +77,6 @@ public class ModSpecialItemsFetcher {
             if (TimelessAPI.getCommonGunIndex(gunId).isPresent()) {
                 // 添加所有有效的枪械ID，包括其他枪械包的枪械
                 tacZGunIDs.add(gunId);
-                validGunCount++;
             } else {
             }
         }

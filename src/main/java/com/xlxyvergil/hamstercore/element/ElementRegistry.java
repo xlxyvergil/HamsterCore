@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.element.impl.*;
+import com.xlxyvergil.hamstercore.api.element.ElementAttributeAPI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,48 +35,22 @@ public class ElementRegistry {
     }
     
     /**
-     * 初始化默认元素属性
-     */
-    public static void init() {
-        // 物理元素
-        register(new ImpactAttribute());
-        register(new PunctureAttribute());
-        register(new SlashAttribute());
-        
-        // 基础元素
-        register(new ColdAttribute());
-        register(new ElectricityAttribute());
-        register(new HeatAttribute());
-        register(new ToxinAttribute());
-        
-        // 复合元素
-        register(new BlastAttribute());
-        register(new CorrosiveAttribute());
-        register(new GasAttribute());
-        register(new MagneticAttribute());
-        register(new RadiationAttribute());
-        register(new ViralAttribute());
-        
-        // 派系元素
-        register(new GrineerAttribute());
-        register(new InfestedAttribute());
-        register(new CorpusAttribute());
-        register(new OrokinAttribute());
-        register(new SentientAttribute());
-        register(new MurmurAttribute());
-        
-        // 特殊属性
-        register(new CriticalChanceAttribute());
-        register(new CriticalDamageAttribute());
-        register(new TriggerChanceAttribute());
-        
-        LOGGER.info("ElementRegistry initialized with " + REGISTRY.size() + " element attributes");
-    }
-    
-    /**
      * 获取所有注册的元素属性
      */
     public static Map<ElementType, ElementAttribute> getAllAttributes() {
         return new HashMap<>(REGISTRY);
+    }
+    
+    /**
+     * 移除指定的元素属性
+     * @param type 要移除的元素类型
+     */
+    public static void unregister(ElementType type) {
+        ElementAttribute removed = REGISTRY.remove(type);
+        if (removed != null) {
+            LOGGER.info("Unregistered element attribute: " + type.getName());
+        } else {
+            LOGGER.warn("Attempted to unregister non-existent element attribute: " + type.getName());
+        }
     }
 }

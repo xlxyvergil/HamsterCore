@@ -118,6 +118,28 @@ public class WeaponElementData {
         this.Extra = extra != null ? new HashMap<>(extra) : new HashMap<>(); 
     }
     
+    /**
+     * 创建当前元素数据的深拷贝
+     * @return 新的WeaponElementData对象，包含所有数据的副本
+     */
+    public WeaponElementData copy() {
+        WeaponElementData copy = new WeaponElementData();
+        
+        // 深拷贝Basic层数据
+        copy.setBasic(new HashMap<>(this.Basic));
+        
+        // 深拷贝Computed层数据
+        copy.setComputed(new HashMap<>(this.Computed));
+        
+        // 深拷贝Usage层数据
+        copy.setUsage(new HashMap<>(this.Usage));
+        
+        // 深拷贝Extra层数据
+        copy.setExtra(new HashMap<>(this.Extra));
+        
+        return copy;
+    }
+    
     @Override
     public String toString() {
         return String.format("WeaponElementData{Basic=%s, Computed=%s, Usage=%s, Extra=%s}", 

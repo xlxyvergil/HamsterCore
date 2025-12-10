@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,11 @@ import java.util.UUID;
 public class GrineerAttribute extends ElementAttribute {
     
     private static final UUID MODIFIER_UUID = UUID.fromString("8e6d26fe-1c3d-4a8d-9a1d-1b1a128cf90a");
+    
+    // 静态初始化块，在类加载时自动注册
+    static {
+        ElementRegistry.register(new GrineerAttribute());
+    }
     
     public GrineerAttribute() {
         super(ElementType.GRINEER, 0.0, AttributeModifier.Operation.ADDITION);

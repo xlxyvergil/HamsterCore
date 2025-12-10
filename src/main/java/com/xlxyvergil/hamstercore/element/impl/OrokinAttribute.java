@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.impl;
 
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,11 @@ import java.util.UUID;
 public class OrokinAttribute extends ElementAttribute {
     
     private static final UUID MODIFIER_UUID = UUID.fromString("b1905921-4f60-7d10-cd40-4e4d45bf2c3d");
+    
+    // 静态初始化块，在类加载时自动注册
+    static {
+        ElementRegistry.register(new OrokinAttribute());
+    }
     
     public OrokinAttribute() {
         super(ElementType.OROKIN, 0.0, AttributeModifier.Operation.ADDITION);
