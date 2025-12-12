@@ -36,6 +36,11 @@ public class BasicEntry {
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
     
+    // 添加getOperation方法，默认返回"add"
+    public String getOperation() { 
+        return "add"; 
+    }
+    
     @Override
     public String toString() {
         return String.format("[%s, %.3f, %s]", type, value, source);

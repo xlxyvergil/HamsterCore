@@ -3,21 +3,19 @@ package com.xlxyvergil.hamstercore.element.impl;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
-import java.text.DecimalFormat;
 import java.util.UUID;
 
 /**
- * 暴击率属性
+ * 暴击几率属性
  */
 public class CriticalChanceAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a6d");
+    private static final UUID MODIFIER_UUID = UUID.fromString("1D685E4A-7C94-4F3E-B9E5-9E1D9C9E8F7A");
     
     // 静态初始化块，在类加载时自动注册
     static {
@@ -25,30 +23,21 @@ public class CriticalChanceAttribute extends ElementAttribute {
     }
     
     public CriticalChanceAttribute() {
-        super(ElementType.CRITICAL_CHANCE, 0.05, AttributeModifier.Operation.ADDITION); // 默认5%暴击率
+        super(ElementType.CRITICAL_CHANCE, 0.0, AttributeModifier.Operation.MULTIPLY_BASE);
     }
     
     @Override
     public MutableComponent getDescription(ItemStack stack) {
-        // 暴击率以百分比显示
-        return Component.translatable("element.critical_chance.desc", formatPercentage(getDefaultValue()));
+        return Component.translatable("element.critical_chance.desc", formatValue(0));
     }
     
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
-        return new AttributeModifier(MODIFIER_UUID, "Critical chance modifier", value, getOperation());
-    }
-    
-    @Override
-    public boolean canApplyTo(ItemStack stack) {
-        return WeaponApplicableItemsChecker.canApplyElements(stack);
-    }
-    
-    /**
-     * 格式化百分比显示
-     */
-    public String formatPercentage(double value) {
-        DecimalFormat df = new DecimalFormat("#.##");
-        return df.format(value * 100) + "%";
+        return new AttributeModifier(
+            MODIFIER_UUID,
+            getIdentifier(),
+            value,
+            getOperation()
+        );
     }
 }

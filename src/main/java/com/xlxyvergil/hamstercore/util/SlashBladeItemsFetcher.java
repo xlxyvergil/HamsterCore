@@ -31,7 +31,6 @@ public class SlashBladeItemsFetcher {
         if (!initialized) {
             isSlashBladeLoaded = ModList.get().isLoaded(SLASHBLADE_MOD_ID);
             initialized = true;
-            DebugLogger.log("拔刀剑兼容性检查完成: %s", isSlashBladeLoaded ? "已加载" : "未加载");
         }
     }
     
@@ -103,34 +102,9 @@ public class SlashBladeItemsFetcher {
             slashBladeTranslationKeys.clear();
         
             
-            // 方法2: 总是通过拔刀剑API获取，以确保获取到所有刀剑定义
+            //总是通过拔刀剑API获取，以确保获取到所有刀剑定义
             loadSlashBladeFromAPI(server);
             
-            if (!slashBladeIDs.isEmpty()) {
-                // 输出获取到的拔刀剑ID数量和部分ID
-                System.out.println("[HamsterCore] 获取到拔刀剑ID数量: " + slashBladeIDs.size());
-                System.out.println("[HamsterCore] 获取到translationKey数量: " + slashBladeTranslationKeys.size());
-                
-                // 输出前5个ID用于调试
-                int count = 0;
-                for (ResourceLocation id : slashBladeIDs) {
-                    if (count < 5) {
-                        System.out.println("[HamsterCore] 拔刀剑ID示例: " + id);
-                        count++;
-                    }
-                }
-                
-                // 输出前5个translationKey用于调试
-                count = 0;
-                for (String key : slashBladeTranslationKeys) {
-                    if (count < 5) {
-                        System.out.println("[HamsterCore] translationKey示例: " + key);
-                        count++;
-                    }
-                }
-            } else {
-                System.out.println("[HamsterCore] 未获取到任何拔刀剑ID");
-            }
         } catch (Exception e) {
             e.printStackTrace();
             slashBladeIDs.clear();
@@ -139,7 +113,7 @@ public class SlashBladeItemsFetcher {
     }
     
     /**
-     * 通过拔刀剑API获取数据（备用方法）
+     * 通过拔刀剑API获取数据
      * @param server MinecraftServer实例
      */
     private static void loadSlashBladeFromAPI(MinecraftServer server) {
@@ -198,9 +172,7 @@ public class SlashBladeItemsFetcher {
                 String bladeName = id.getPath();
                 String translationKey = "item.slashblade." + bladeName;
                 slashBladeTranslationKeys.add(translationKey);
-                DebugLogger.log("构建translationKey: %s", translationKey);
             } catch (Exception e) {
-                DebugLogger.log("构建translationKey失败: %s, 错误: %s", id, e.getMessage());
             }
         }
     }

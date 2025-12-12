@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.element.impl;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -16,7 +15,7 @@ import java.util.UUID;
  */
 public class InfestedAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("9f7e370f-2d4e-5b9e-ab2e-2c2b239d0a1b");
+    private static final UUID MODIFIER_UUID = UUID.fromString("a08f4810-3e5f-6c0f-bc3f-3d3c34ae1b2e");
     
     // 静态初始化块，在类加载时自动注册
     static {
@@ -35,10 +34,5 @@ public class InfestedAttribute extends ElementAttribute {
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
         return new AttributeModifier(MODIFIER_UUID, "Infested faction element modifier", value, getOperation());
-    }
-    
-    @Override
-    public boolean canApplyTo(ItemStack stack) {
-        return WeaponApplicableItemsChecker.canApplyElements(stack);
     }
 }

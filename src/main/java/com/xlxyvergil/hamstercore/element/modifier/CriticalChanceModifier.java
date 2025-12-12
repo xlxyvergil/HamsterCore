@@ -3,7 +3,8 @@ package com.xlxyvergil.hamstercore.element.modifier;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.element.BasicEntry;
 import com.xlxyvergil.hamstercore.element.ComputedEntry;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
+
+import java.util.List;
 
 /**
  * 暴击率Modifier
@@ -18,12 +19,10 @@ public class CriticalChanceModifier {
      * 从Basic层和Computed层获取暴击率数据，计算最终值，放入Usage层
      */
     public static void computeCriticalChance(WeaponElementData data) {
-        DebugLogger.log("开始计算暴击率...");
         
         double criticalChance = computeSingleCriticalChance(data);
         data.setUsageValue(CRITICAL_CHANCE, criticalChance);
         
-        DebugLogger.log("暴击率计算完成: %.3f (%.1f%%)", criticalChance, criticalChance * 100);
     }
     
     /**
@@ -32,32 +31,28 @@ public class CriticalChanceModifier {
     private static double computeSingleCriticalChance(WeaponElementData data) {
         double baseValue = 0.0;
         
-        DebugLogger.log("正在计算暴击率");
         
         // 获取Basic层的暴击率值
-        BasicEntry basicEntry = data.getBasicElement(CRITICAL_CHANCE);
-        if (basicEntry != null) {
-            baseValue = basicEntry.getValue();
-            DebugLogger.log("从Basic层获取到暴击率值: %.3f", baseValue);
+        List<BasicEntry> basicEntries = data.getBasicElement(CRITICAL_CHANCE);
+        if (!basicEntries.isEmpty()) {
+            // 累加所有Basic层的暴击率值
+            baseValue = basicEntries.stream()
+                .mapToDouble(BasicEntry::getValue)
+                .sum();
         } else {
-            DebugLogger.log("在Basic层未找到暴击率数据");
         }
         
         // 应用Computed层的修正
-        ComputedEntry computedEntry = data.getComputedElement(CRITICAL_CHANCE);
-        if (computedEntry != null) {
-            baseValue = applyModifier(baseValue, computedEntry);
-            DebugLogger.log("应用Computed层修正后暴击率值: %.3f", baseValue);
+        List<ComputedEntry> computedEntries = data.getComputedElement(CRITICAL_CHANCE);
+        if (!computedEntries.isEmpty()) {
+            // 应用所有Computed层的修正
+            for (ComputedEntry computedEntry : computedEntries) {
+                baseValue = applyModifier(baseValue, computedEntry);
+            }
         }
         
-        // 如果Basic和Computed层都没有值，检查是否使用Computed层的独有值
-        if (baseValue == 0.0 && computedEntry != null) {
-            baseValue = computedEntry.getValue();
-            DebugLogger.log("使用Computed层独有暴击率值: %.3f", baseValue);
-        }
-        
-        // 确保暴击率在合理范围内 (0.0 - 1.0)
-        baseValue = Math.max(0.0, Math.min(1.0, baseValue));
+        // 确保暴击率不低于0
+        baseValue = Math.max(0.0, baseValue);
         
         return baseValue;
     }
@@ -79,7 +74,6 @@ public class CriticalChanceModifier {
             case "div":
                 return value != 0 ? baseValue / value : baseValue;
             default:
-                DebugLogger.log("未知的计算操作: %s", operation);
                 return baseValue;
         }
     }

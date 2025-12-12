@@ -111,7 +111,7 @@ public class EntityInfoDisplayHandler {
                 }
                 // 只有当值大于0时才显示
                 if (critDamage > 0) {
-                    message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f", critDamage)).withStyle(ChatFormatting.YELLOW));
+                    message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", critDamage * 100)).withStyle(ChatFormatting.YELLOW));
                 }
                 
                 // 显示触发率（使用缓存中的计算数据）

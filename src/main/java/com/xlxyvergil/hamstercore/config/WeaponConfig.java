@@ -2,15 +2,17 @@ package com.xlxyvergil.hamstercore.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.BasicEntry;
+import com.xlxyvergil.hamstercore.element.ComputedEntry;
+import com.xlxyvergil.hamstercore.element.ExtraEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
@@ -50,6 +52,7 @@ public class WeaponConfig {
     private static final String NORMAL_WEAPONS_FILE = WEAPON_DIR + "normal_weapons.json";
     private static final String TACZ_WEAPONS_FILE = WEAPON_DIR + "tacz_weapons.json";
     private static final String SLASHBLADE_WEAPONS_FILE = WEAPON_DIR + "slashblade_weapons.json";
+    private static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
     
     // 武器配置映射表
     private static Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
@@ -84,6 +87,8 @@ public class WeaponConfig {
         generateTacZWeaponsConfig();
         generateSlashBladeWeaponsConfig();
         
+        // 生成额外的配置文件
+        createDefaultAdditionalNormalWeaponsConfig();
     }
     
     /**
@@ -328,10 +333,6 @@ public class WeaponConfig {
     
 
     
-
-    
-
-    
     /**
      * 保存配置到指定文件
      */
@@ -351,10 +352,8 @@ public class WeaponConfig {
                 gson.toJson(configJson, writer);
             }
             
-            DebugLogger.log("配置已保存到: %s, 共 %d 个配置项", filePath, configJson.size());
             
         } catch (IOException e) {
-            DebugLogger.log("保存配置文件失败: %s, 错误: %s", filePath, e.getMessage());
         }
     }
     
@@ -377,24 +376,56 @@ public class WeaponConfig {
         JsonObject elementDataJson = new JsonObject();
         
         // 添加Basic层
-        JsonObject basicJson = new JsonObject();
-        for (Map.Entry<String, BasicEntry> basicEntry : weaponData.getElementData().getAllBasicElements().entrySet()) {
-            String elementType = basicEntry.getKey();
-            BasicEntry elementValue = basicEntry.getValue();
-            
-            JsonObject elementJson = new JsonObject();
-            elementJson.addProperty("type", elementValue.getType());
-            elementJson.addProperty("value", elementValue.getValue());
-            elementJson.addProperty("source", elementValue.getSource());
-            
-            basicJson.add(elementType, elementJson);
+        JsonArray basicArray = new JsonArray();
+        for (Map.Entry<String, List<BasicEntry>> basicEntry : weaponData.getElementData().getAllBasicElements().entrySet()) {
+            for (BasicEntry elementValue : basicEntry.getValue()) {
+                JsonArray elementArray = new JsonArray();
+                elementArray.add(elementValue.getType());
+                elementArray.add(elementValue.getValue());
+                elementArray.add(elementValue.getSource());
+                basicArray.add(elementArray);
+            }
         }
-        elementDataJson.add("Basic", basicJson);
+        elementDataJson.add("Basic", basicArray);
         
-        // 添加其他层（空的）
-        elementDataJson.add("Computed", new JsonObject());
-        elementDataJson.add("Usage", new JsonObject());
-        elementDataJson.add("Extra", new JsonObject());
+        // 添加Computed层
+        JsonArray computedArray = new JsonArray();
+        for (Map.Entry<String, List<ComputedEntry>> computedEntry : weaponData.getElementData().getAllComputedElements().entrySet()) {
+            for (ComputedEntry elementValue : computedEntry.getValue()) {
+                JsonArray elementArray = new JsonArray();
+                elementArray.add(elementValue.getType());
+                elementArray.add(elementValue.getValue());
+                elementArray.add(elementValue.getSource());
+                elementArray.add(elementValue.getOperation());
+                computedArray.add(elementArray);
+            }
+        }
+        elementDataJson.add("Computed", computedArray);
+        
+        // 添加Usage层
+        JsonArray usageArray = new JsonArray();
+        for (Map.Entry<String, List<Double>> usageEntry : weaponData.getElementData().getAllUsageValues().entrySet()) {
+            for (Double value : usageEntry.getValue()) {
+                JsonArray elementArray = new JsonArray();
+                elementArray.add(usageEntry.getKey());
+                elementArray.add(value);
+                usageArray.add(elementArray);
+            }
+        }
+        elementDataJson.add("Usage", usageArray);
+        
+        // 添加Extra层
+        JsonArray extraArray = new JsonArray();
+        for (Map.Entry<String, List<ExtraEntry>> extraEntry : weaponData.getElementData().getAllExtraFactions().entrySet()) {
+            for (ExtraEntry elementValue : extraEntry.getValue()) {
+                JsonArray elementArray = new JsonArray();
+                elementArray.add(elementValue.getType());
+                elementArray.add(elementValue.getValue());
+                elementArray.add(elementValue.getOperation());
+                extraArray.add(elementArray);
+            }
+        }
+        elementDataJson.add("Extra", extraArray);
         
         itemJson.add("elementData", elementDataJson);
         
@@ -420,7 +451,6 @@ public class WeaponConfig {
             loadConfigFile(SLASHBLADE_WEAPONS_FILE, false);
             
         } catch (Exception e) {
-            DebugLogger.log("加载武器配置失败: %s", e.getMessage());
             e.printStackTrace();
         }
     }
@@ -450,10 +480,8 @@ public class WeaponConfig {
                 }
             }
             
-            DebugLogger.log("已加载配置文件: %s", NORMAL_WEAPONS_FILE);
             
         } catch (Exception e) {
-            DebugLogger.log("加载配置文件失败: %s, 错误: %s", NORMAL_WEAPONS_FILE, e.getMessage());
         }
     }
     
@@ -485,15 +513,13 @@ public class WeaponConfig {
                 }
             }
             
-            DebugLogger.log("已加载配置文件: %s", filePath);
             
         } catch (Exception e) {
-            DebugLogger.log("加载配置文件失败: %s, 错误: %s", filePath, e.getMessage());
         }
     }
     
     /**
-     * 处理普通武器配置（对象格式）
+     * 处理普通武器配置（数组格式）
      */
     private static void processNormalWeaponConfig(JsonObject itemJson, String itemKey) {
         // 创建WeaponData对象
@@ -512,15 +538,49 @@ public class WeaponConfig {
             
             // 读取Basic层
             if (elementDataJson.has("Basic")) {
-                JsonObject basicJson = elementDataJson.getAsJsonObject("Basic");
-                for (Map.Entry<String, JsonElement> basicEntry : basicJson.entrySet()) {
-                    JsonObject elementJson = basicEntry.getValue().getAsJsonObject();
-                    
-                    String type = elementJson.get("type").getAsString();
-                    double value = elementJson.get("value").getAsDouble();
-                    String source = elementJson.get("source").getAsString();
-                    
+                JsonArray basicArray = elementDataJson.getAsJsonArray("Basic");
+                for (JsonElement element : basicArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String source = elementArray.get(2).getAsString();
                     weaponData.getElementData().addBasicElement(type, value, source);
+                }
+            }
+            
+            // 读取Computed层
+            if (elementDataJson.has("Computed")) {
+                JsonArray computedArray = elementDataJson.getAsJsonArray("Computed");
+                for (JsonElement element : computedArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String source = elementArray.get(2).getAsString();
+                    String operation = elementArray.get(3).getAsString();
+                    weaponData.getElementData().addComputedElement(type, value, source, operation);
+                }
+            }
+            
+            // 读取Usage层
+            if (elementDataJson.has("Usage")) {
+                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
+                for (JsonElement element : usageArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    weaponData.getElementData().setUsageValue(type, value);
+                }
+            }
+            
+            // 读取Extra层
+            if (elementDataJson.has("Extra")) {
+                JsonArray extraArray = elementDataJson.getAsJsonArray("Extra");
+                for (JsonElement element : extraArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String operation = elementArray.get(2).getAsString();
+                    weaponData.getElementData().addExtraFaction(type, value, operation);
                 }
             }
         }
@@ -553,15 +613,49 @@ public class WeaponConfig {
             
             // 读取Basic层
             if (elementDataJson.has("Basic")) {
-                JsonObject basicJson = elementDataJson.getAsJsonObject("Basic");
-                for (Map.Entry<String, JsonElement> basicEntry : basicJson.entrySet()) {
-                    JsonObject elementJson = basicEntry.getValue().getAsJsonObject();
-                    
-                    String type = elementJson.get("type").getAsString();
-                    double value = elementJson.get("value").getAsDouble();
-                    String source = elementJson.get("source").getAsString();
-                    
+                JsonArray basicArray = elementDataJson.getAsJsonArray("Basic");
+                for (JsonElement element : basicArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String source = elementArray.get(2).getAsString();
                     weaponData.getElementData().addBasicElement(type, value, source);
+                }
+            }
+            
+            // 读取Computed层
+            if (elementDataJson.has("Computed")) {
+                JsonArray computedArray = elementDataJson.getAsJsonArray("Computed");
+                for (JsonElement element : computedArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String source = elementArray.get(2).getAsString();
+                    String operation = elementArray.get(3).getAsString();
+                    weaponData.getElementData().addComputedElement(type, value, source, operation);
+                }
+            }
+            
+            // 读取Usage层
+            if (elementDataJson.has("Usage")) {
+                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
+                for (JsonElement element : usageArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    weaponData.getElementData().setUsageValue(type, value);
+                }
+            }
+            
+            // 读取Extra层
+            if (elementDataJson.has("Extra")) {
+                JsonArray extraArray = elementDataJson.getAsJsonArray("Extra");
+                for (JsonElement element : extraArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    String operation = elementArray.get(2).getAsString();
+                    weaponData.getElementData().addExtraFaction(type, value, operation);
                 }
             }
         }
@@ -669,5 +763,45 @@ public class WeaponConfig {
         }
         // 如果没找到具体配置，返回统一的slashblade:slashblade配置
         return weaponConfigs.get(new ResourceLocation("slashblade", "slashblade"));
+    }
+    
+    /**
+     * 创建默认的额外普通武器配置文件
+     */
+    private static void createDefaultAdditionalNormalWeaponsConfig() {
+        try {
+            // 确保目录存在
+            Path weaponDir = Paths.get(WEAPON_DIR);
+            if (!Files.exists(weaponDir)) {
+                Files.createDirectories(weaponDir);
+            }
+            
+            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
+            if (configFile.exists()) {
+                return; // 文件已存在，不需要重新创建
+            }
+            
+            // 创建默认配置内容（只包含注释和示例）
+            JsonObject defaultConfig = new JsonObject();
+            defaultConfig.addProperty("_comment", "在此添加您想要应用元素属性的额外普通物品，格式如下:");
+            defaultConfig.addProperty("_example_full", "{\n"
+                    + "  \"minecraft:diamond_sword\": {\n"
+                    + "    \"elementData\": {\n"
+                    + "      \"Basic\": [\n"
+                    + "        [\"SLASH\", 5.0, \"CONFIG\"],\n"
+                    + "        [\"CRITICAL_CHANCE\", 0.1, \"CONFIG\"]\n"
+                    + "      ],\n"
+                    + "      \"Computed\": [],\n"
+                    + "      \"Usage\": [],\n"
+                    + "      \"Extra\": []\n"
+                    + "    }\n"
+                    + "  }\n"
+                    + "}");
+            
+            // 保存文件
+            saveWeaponConfigToFile(Collections.singletonMap("_comment", defaultConfig), ADDITIONAL_NORMAL_WEAPONS_FILE);
+            
+        } catch (Exception e) {
+        }
     }
 }

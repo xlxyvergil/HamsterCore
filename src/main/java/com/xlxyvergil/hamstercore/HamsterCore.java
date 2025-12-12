@@ -14,6 +14,7 @@ import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
+import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -28,7 +29,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
 
 
 import java.util.Set;
@@ -45,6 +45,9 @@ public class HamsterCore {
         // 注册事件
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::registerCapabilities);
+        
+        // 注册附魔
+        ModEnchantments.register(modEventBus);
         
         // 初始化配置
         FactionConfig.load();
@@ -81,17 +84,23 @@ public class HamsterCore {
             // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
             SlashBladeItemsFetcher.init();
         
-            // 2. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
+            // 2. 让SlashBladeItemsFetcher获取数据
+            if (SlashBladeItemsFetcher.isSlashBladeLoaded()) {
+                SlashBladeItemsFetcher.getSlashBladeTranslationKeys(event.getServer());
+            }
+
+            // 3. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
             com.xlxyvergil.hamstercore.config.WeaponConfig.load();
             
-            // 3. 应用普通物品元素属性
+            // 4. 应用普通物品元素属性
             int normalAppliedCount = com.xlxyvergil.hamstercore.element.NormalItemElementApplier.applyNormalItemsElements();
             
-            // 4. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
+            // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
             int modSpecialAppliedCount = com.xlxyvergil.hamstercore.element.ElementApplier.applyModSpecialItemsElements();
             
-            DebugLogger.log("元素属性应用完成，普通物品: %d, MOD特殊物品: %d", 
-                           normalAppliedCount, modSpecialAppliedCount);
+            // 6. 应用额外的元素属性配置
+            int additionalAppliedCount = com.xlxyvergil.hamstercore.element.AdditionalElementApplier.applyAdditionalElements();
+            
             
         } catch (Exception e) {
             e.printStackTrace();

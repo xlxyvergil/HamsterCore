@@ -6,7 +6,9 @@ package com.xlxyvergil.hamstercore.element;
 public class ExtraEntry {
     private String type;        // 元素类型/派系
     private double value;       // 数值
+    private String source = "def";   // 数据来源 def/user，默认为"def"
     private String operation;   // 计算方法 add/sub
+    private String specificSource = ""; // 特定来源标识符
     
     public ExtraEntry() {}
     
@@ -28,11 +30,17 @@ public class ExtraEntry {
     public double getValue() { return value; }
     public void setValue(double value) { this.value = value; }
     
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+    
     public String getOperation() { return operation; }
     public void setOperation(String operation) { this.operation = operation; }
     
+    public String getSpecificSource() { return specificSource; }
+    public void setSpecificSource(String specificSource) { this.specificSource = specificSource; }
+    
     @Override
     public String toString() {
-        return String.format("[%s, %.3f, %s]", type, value, operation);
+        return String.format("[%s, %.3f, %s, %s]", type, value, source, operation);
     }
 }

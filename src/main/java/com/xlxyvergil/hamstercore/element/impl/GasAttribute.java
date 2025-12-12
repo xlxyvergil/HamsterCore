@@ -7,16 +7,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
-import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 
 import java.util.UUID;
 
 /**
- * 毒气元素属性(火焰 + 毒素)
+ * 毒气元素属性
  */
 public class GasAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7a");
+    private static final UUID MODIFIER_UUID = UUID.fromString("e9f1a9b9-1c9a-1a2b-5b8a-5c6a9a0a7f");
     
     // 静态初始化块，在类加载时自动注册
     static {
@@ -40,11 +39,5 @@ public class GasAttribute extends ElementAttribute {
             value,
             getOperation()
         );
-    }
-    
-    @Override
-    public boolean canApplyTo(ItemStack stack) {
-        // 使用WeaponApplicableItemsChecker统一的属性检查逻辑
-        return WeaponApplicableItemsChecker.canApplyElements(stack);
     }
 }

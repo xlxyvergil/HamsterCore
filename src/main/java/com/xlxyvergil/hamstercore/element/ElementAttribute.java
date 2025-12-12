@@ -61,13 +61,7 @@ public abstract class ElementAttribute {
     public abstract AttributeModifier createModifier(ItemStack stack, double value);
     
     /**
-     * 检查此属性是否可以应用到指定物品上
-     */
-    public abstract boolean canApplyTo(ItemStack stack);
-    
-    /**
-     * 格式化数值显示
-     */
+     * 格式化数值显示     */
     public String formatValue(double value) {
         if (value == (long) value) {
             return String.format("%d", (long) value);

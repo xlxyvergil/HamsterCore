@@ -47,8 +47,9 @@ public class ElementNBTUtils {
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有暴击率数据
-        Double criticalChance = data.getUsageValue("critical_chance");
-        return criticalChance != null ? criticalChance : 0.0;
+        List<Double> criticalChances = data.getUsageValue("critical_chance");
+        double sum = criticalChances.stream().mapToDouble(Double::doubleValue).sum();
+        return sum;
     }
     
     /**
@@ -65,8 +66,9 @@ public class ElementNBTUtils {
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有暴击伤害数据
-        Double criticalDamage = data.getUsageValue("critical_damage");
-        return criticalDamage != null ? criticalDamage : 0.0;
+        List<Double> criticalDamages = data.getUsageValue("critical_damage");
+        double sum = criticalDamages.stream().mapToDouble(Double::doubleValue).sum();
+        return sum;
     }
     
     /**
@@ -83,8 +85,9 @@ public class ElementNBTUtils {
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有触发率数据
-        Double triggerChance = data.getUsageValue("trigger_chance");
-        return triggerChance != null ? triggerChance : 0.0;
+        List<Double> triggerChances = data.getUsageValue("trigger_chance");
+        double sum = triggerChances.stream().mapToDouble(Double::doubleValue).sum();
+        return sum;
     }
     
     /**
@@ -129,8 +132,9 @@ public class ElementNBTUtils {
         WeaponElementData data = WeaponDataManager.loadElementData(stack);
         
         // 检查Basic层是否有指定元素类型的数据
-        BasicEntry entry = data.getBasicElement(elementType);
-        return entry != null ? entry.getValue() : 0.0;
+        List<BasicEntry> entries = data.getBasicElement(elementType);
+        return entries.stream().filter(e -> "user".equals(e.getSource()))
+                     .mapToDouble(BasicEntry::getValue).sum();
     }
     
     /**
@@ -162,8 +166,9 @@ public class ElementNBTUtils {
         WeaponElementData data = WeaponDataManager.loadElementData(stack);
         
         // 检查Computed层是否有指定元素类型的数据
-        ComputedEntry entry = data.getComputedElement(elementType);
-        return entry != null ? entry.getValue() : 0.0;
+        List<ComputedEntry> entries = data.getComputedElement(elementType);
+        return entries.stream().filter(e -> "user".equals(e.getSource()))
+                     .mapToDouble(ComputedEntry::getValue).sum();
     }
     
     /**
@@ -196,8 +201,8 @@ public class ElementNBTUtils {
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有指定元素类型的数据
-        Double value = data.getUsageValue(elementType);
-        return value != null ? value : 0.0;
+        List<Double> values = data.getUsageValue(elementType);
+        return values.stream().mapToDouble(Double::doubleValue).sum();
     }
     
     /**
@@ -230,8 +235,8 @@ public class ElementNBTUtils {
         WeaponElementData data = WeaponDataManager.loadElementData(stack);
         
         // 检查Extra层是否有指定派系的数据
-        ExtraEntry entry = data.getExtraFaction(faction);
-        return entry != null ? entry.getValue() : 0.0;
+        List<ExtraEntry> entries = data.getExtraFaction(faction);
+        return entries.stream().mapToDouble(ExtraEntry::getValue).sum();
     }
     
     /**

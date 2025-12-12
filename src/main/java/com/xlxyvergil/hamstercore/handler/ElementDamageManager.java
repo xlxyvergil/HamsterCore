@@ -78,11 +78,8 @@ public class ElementDamageManager {
     private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
-        // 获取武器数据
-        WeaponElementData data = WeaponDataManager.loadElementData(weapon);
-        if (data != null) {
-            WeaponDataManager.computeUsageData(weapon, data);
-        }
+        // 获取武器数据并重新计算Usage层数据以确保准确性
+        WeaponElementData data = WeaponDataManager.loadElementData(weapon, true);
         
         // 计算各部分的伤害修正系数
         damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(attacker, target, data, targetFaction); // HM
@@ -129,11 +126,8 @@ public class ElementDamageManager {
      * @return 激活的元素实例列表
      */
     private static List<Map.Entry<ElementType, Double>> getActiveElementsImpl(ItemStack weapon) {
-        // 使用新的四层数据结构
-        WeaponElementData data = WeaponDataManager.loadElementData(weapon);
-        
-        // 计算Usage层数据
-        WeaponDataManager.computeUsageData(weapon, data);
+        // 使用新的四层数据结构，但不强制重新计算Usage层数据
+        WeaponElementData data = WeaponDataManager.loadElementData(weapon, false);
         
         // 将Usage层数据转换为ElementType和值的映射列表
         List<Map.Entry<ElementType, Double>> activeElements = new ArrayList<>();
@@ -141,11 +135,12 @@ public class ElementDamageManager {
         // 添加物理元素
         String[] physicalTypes = {"slash", "puncture", "impact"};
         for (String type : physicalTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
+            List<Double> values = data.getUsageValue(type);
+            double sum = values.stream().mapToDouble(Double::doubleValue).sum();
+            if (sum > 0) {
                 ElementType elementType = ElementType.byName(type);
                 if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
+                    activeElements.add(new HashMap.SimpleEntry<>(elementType, sum));
                 }
             }
         }
@@ -153,11 +148,12 @@ public class ElementDamageManager {
         // 添加基础元素（未被复合的）
         String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
         for (String type : basicTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
+            List<Double> values = data.getUsageValue(type);
+            double sum = values.stream().mapToDouble(Double::doubleValue).sum();
+            if (sum > 0) {
                 ElementType elementType = ElementType.byName(type);
                 if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
+                    activeElements.add(new HashMap.SimpleEntry<>(elementType, sum));
                 }
             }
         }
@@ -165,11 +161,12 @@ public class ElementDamageManager {
         // 添加复合元素
         String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
         for (String type : complexTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
+            List<Double> values = data.getUsageValue(type);
+            double sum = values.stream().mapToDouble(Double::doubleValue).sum();
+            if (sum > 0) {
                 ElementType elementType = ElementType.byName(type);
                 if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
+                    activeElements.add(new HashMap.SimpleEntry<>(elementType, sum));
                 }
             }
         }
@@ -178,11 +175,12 @@ public class ElementDamageManager {
         String[] specialTypes = {"critical_chance", "critical_damage", "trigger_chance", 
                                 "grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
         for (String type : specialTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
+            List<Double> values = data.getUsageValue(type);
+            double sum = values.stream().mapToDouble(Double::doubleValue).sum();
+            if (sum > 0) {
                 ElementType elementType = ElementType.byName(type);
                 if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
+                    activeElements.add(new HashMap.SimpleEntry<>(elementType, sum));
                 }
             }
         }

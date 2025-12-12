@@ -2,9 +2,11 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.element.modifier.*;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -28,6 +30,15 @@ public class WeaponDataManager {
      * 从物品NBT读取武器元素数据
      */
     public static WeaponElementData loadElementData(ItemStack stack) {
+        return loadElementData(stack, false);
+    }
+    
+    /**
+     * 从物品NBT读取武器元素数据
+     * @param stack 物品堆
+     * @param recomputeUsage 是否重新计算Usage层数据
+     */
+    public static WeaponElementData loadElementData(ItemStack stack, boolean recomputeUsage) {
         if (stack.isEmpty()) {
             return new WeaponElementData();
         }
@@ -63,6 +74,11 @@ public class WeaponDataManager {
                     data.setExtra(readExtraEntryMap(extraTag));
                 }
                 
+                // 如果需要重新计算Usage数据
+                if (recomputeUsage) {
+                    computeUsageData(stack, data);
+                }
+                
                 return data;
             }
         }
@@ -94,9 +110,6 @@ public class WeaponDataManager {
         saveElementData(stack, elementData);
         
         ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        DebugLogger.log("为普通物品 %s 应用默认元素属性并保存到NBT，Basic层数据: %d项", 
-                      itemKey != null ? itemKey.toString() : "unknown", 
-                      elementData.getAllBasicElements().size());
         
         // 返回包含默认数据的元素数据对象
         return elementData;
@@ -116,24 +129,32 @@ public class WeaponDataManager {
         if (!data.getAllBasicElements().isEmpty()) {
             CompoundTag basicTag = writeBasicEntryMap(data.getAllBasicElements());
             elementDataTag.put(BASIC_DATA, (Tag)basicTag);
+        } else {
+            elementDataTag.remove(BASIC_DATA);
         }
         
         // 写入Computed数据
         if (!data.getAllComputedElements().isEmpty()) {
             CompoundTag computedTag = writeComputedEntryMap(data.getAllComputedElements());
             elementDataTag.put(COMPUTED_DATA, (Tag)computedTag);
+        } else {
+            elementDataTag.remove(COMPUTED_DATA);
         }
         
         // 写入Usage数据
         if (!data.getAllUsageValues().isEmpty()) {
             CompoundTag usageTag = writeDoubleMap(data.getAllUsageValues());
             elementDataTag.put(USAGE_DATA, (Tag)usageTag);
+        } else {
+            elementDataTag.remove(USAGE_DATA);
         }
         
         // 写入Extra数据
         if (!data.getAllExtraFactions().isEmpty()) {
             CompoundTag extraTag = writeExtraEntryMap(data.getAllExtraFactions());
             elementDataTag.put(EXTRA_DATA, (Tag)extraTag);
+        } else {
+            elementDataTag.remove(EXTRA_DATA);
         }
     }
     
@@ -143,6 +164,41 @@ public class WeaponDataManager {
     public static void addComputedElement(ItemStack stack, String name, double value, String operation) {
         WeaponElementData data = loadElementData(stack);
         data.addComputedElement(name, value, operation);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 添加带具体来源标识符的计算数据元素
+     */
+    public static void addComputedElementWithSpecificSource(ItemStack stack, String name, double value, String operation, String specificSource) {
+        WeaponElementData data = loadElementData(stack);
+        data.addComputedElementWithSpecificSource(name, value, operation, specificSource);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 移除计算数据元素
+     */
+    public static void removeComputedElement(ItemStack stack, String name, String source) {
+        WeaponElementData data = loadElementData(stack);
+        data.removeComputedElement(name, source);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 移除指定具体来源标识符的计算数据元素
+     */
+    public static void removeComputedElementBySpecificSource(ItemStack stack, String name, String specificSource) {
+        WeaponElementData data = loadElementData(stack);
+        data.removeComputedElementBySpecificSource(name, specificSource);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
         saveElementData(stack, data);
     }
     
@@ -152,6 +208,41 @@ public class WeaponDataManager {
     public static void addExtraFaction(ItemStack stack, String faction, double value, String operation) {
         WeaponElementData data = loadElementData(stack);
         data.addExtraFaction(faction, value, operation);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 添加带具体来源标识符的派系增伤
+     */
+    public static void addExtraFactionWithSpecificSource(ItemStack stack, String faction, double value, String operation, String specificSource) {
+        WeaponElementData data = loadElementData(stack);
+        data.addExtraFactionWithSpecificSource(faction, value, operation, specificSource);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 移除派系增伤
+     */
+    public static void removeExtraFaction(ItemStack stack, String faction, String source) {
+        WeaponElementData data = loadElementData(stack);
+        data.removeExtraFaction(faction, source);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
+        saveElementData(stack, data);
+    }
+    
+    /**
+     * 移除指定具体来源标识符的派系增伤
+     */
+    public static void removeExtraFactionBySpecificSource(ItemStack stack, String faction, String specificSource) {
+        WeaponElementData data = loadElementData(stack);
+        data.removeExtraFactionBySpecificSource(faction, specificSource);
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
         saveElementData(stack, data);
     }
     
@@ -159,22 +250,26 @@ public class WeaponDataManager {
      * 获取最终使用值
      */
     public static double getUsageValue(ItemStack stack, String name) {
-        WeaponElementData data = loadElementData(stack);
-        Double value = data.getUsageValue(name);
-        return value != null ? value : 0.0;
+        WeaponElementData data = loadElementData(stack, true);
+        List<Double> values = data.getUsageValue(name);
+        return values.stream().mapToDouble(Double::doubleValue).sum();
     }
     
     /**
      * 获取派系增伤值
      */
     public static double getExtraFactionModifier(ItemStack stack, String faction) {
-        WeaponElementData data = loadElementData(stack);
-        ExtraEntry entry = data.getExtraFaction(faction);
-        if (entry == null) return 0.0;
-        
-        // Extra数据只支持add/sub
-        return "add".equals(entry.getOperation()) ? entry.getValue() : 
-               ("sub".equals(entry.getOperation()) ? -entry.getValue() : 0.0);
+        WeaponElementData data = loadElementData(stack, true);
+        List<ExtraEntry> entries = data.getExtraFaction(faction);
+        double total = 0.0;
+        for (ExtraEntry entry : entries) {
+            if (entry != null) {
+                // Extra数据只支持add/sub
+                total += "add".equals(entry.getOperation()) ? entry.getValue() : 
+                         ("sub".equals(entry.getOperation()) ? -entry.getValue() : 0.0);
+            }
+        }
+        return total;
     }
     
     /**
@@ -183,6 +278,8 @@ public class WeaponDataManager {
     public static void clearComputedData(ItemStack stack) {
         WeaponElementData data = loadElementData(stack);
         data.clearComputed();
+        // 重新计算Usage数据以确保一致性
+        computeUsageData(stack, data);
         saveElementData(stack, data);
     }
     
@@ -194,7 +291,6 @@ public class WeaponDataManager {
         // 清空旧的使用数据
         data.clearUsage();
         
-        DebugLogger.log("开始计算 %s 的Usage数据...", stack.getItem().toString());
         
         // 1. 计算物理元素
         PhysicalElementModifier.computePhysicalElements(data);
@@ -212,112 +308,189 @@ public class WeaponDataManager {
         TriggerChanceModifier.computeTriggerChance(data);
         
         int totalUsageValues = data.getAllUsageValues().size();
-        DebugLogger.log("Usage数据计算完成，共 %d 个属性", totalUsageValues);
     }
     
-
     
     // NBT读写辅助方法 - Basic层
-    private static Map<String, BasicEntry> readBasicEntryMap(CompoundTag tag) {
-        Map<String, BasicEntry> map = new HashMap<>();
-        for (String key : tag.getAllKeys()) {
-            if (tag.contains(key, Tag.TAG_COMPOUND)) {
-                CompoundTag entryTag = tag.getCompound(key);
+    private static Map<String, List<BasicEntry>> readBasicEntryMap(CompoundTag tag) {
+        Map<String, List<BasicEntry>> map = new HashMap<>();
+        if (tag.contains("data", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("data", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listTag.size(); i++) {
+                CompoundTag wrapper = (CompoundTag) listTag.get(i);
+                ListTag elementArray = wrapper.getList("data", Tag.TAG_STRING);
+                String type = elementArray.getString(0);
+                double value = Double.parseDouble(elementArray.getString(1));
+                String source = elementArray.getString(2);
+                
                 BasicEntry entry = new BasicEntry();
-                entry.setType(entryTag.getString("type"));
-                entry.setValue(entryTag.getDouble("value"));
-                entry.setSource(entryTag.getString("source"));
-                map.put(key, entry);
+                entry.setType(type);
+                entry.setValue(value);
+                entry.setSource(source);
+                
+                map.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
             }
         }
         return map;
     }
     
-    private static CompoundTag writeBasicEntryMap(Map<String, BasicEntry> map) {
+    private static CompoundTag writeBasicEntryMap(Map<String, List<BasicEntry>> map) {
         CompoundTag tag = new CompoundTag();
-        for (Map.Entry<String, BasicEntry> entry : map.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
-            entryTag.putString("type", entry.getValue().getType());
-            entryTag.putDouble("value", entry.getValue().getValue());
-            entryTag.putString("source", entry.getValue().getSource());
-            tag.put(entry.getKey(), entryTag);
+        ListTag listTag = new ListTag();
+        
+        for (Map.Entry<String, List<BasicEntry>> entry : map.entrySet()) {
+            for (BasicEntry basicEntry : entry.getValue()) {
+                ListTag elementArray = new ListTag();
+                elementArray.add(StringTag.valueOf(basicEntry.getType()));
+                elementArray.add(StringTag.valueOf(Double.toString(basicEntry.getValue())));
+                elementArray.add(StringTag.valueOf(basicEntry.getSource()));
+                CompoundTag wrapper = new CompoundTag();
+                wrapper.put("data", elementArray);
+                listTag.add(wrapper);
+            }
         }
+        
+        tag.put("data", listTag);
         return tag;
     }
     
     // NBT读写辅助方法 - Computed层
-    private static Map<String, ComputedEntry> readComputedEntryMap(CompoundTag tag) {
-        Map<String, ComputedEntry> map = new HashMap<>();
-        for (String key : tag.getAllKeys()) {
-            if (tag.contains(key, Tag.TAG_COMPOUND)) {
-                CompoundTag entryTag = tag.getCompound(key);
+    private static Map<String, List<ComputedEntry>> readComputedEntryMap(CompoundTag tag) {
+        Map<String, List<ComputedEntry>> map = new HashMap<>();
+        if (tag.contains("data", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("data", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listTag.size(); i++) {
+                CompoundTag wrapper = (CompoundTag) listTag.get(i);
+                ListTag elementArray = wrapper.getList("data", Tag.TAG_STRING);
+                String type = elementArray.getString(0);
+                double value = Double.parseDouble(elementArray.getString(1));
+                String source = elementArray.getString(2);
+                String operation = elementArray.getString(3);
+                // 确保specificSource字段正确处理，即使在旧数据中不存在
+                String specificSource = "";
+                if (elementArray.size() > 4) {
+                    specificSource = elementArray.getString(4);
+                }
+                
                 ComputedEntry entry = new ComputedEntry();
-                entry.setType(entryTag.getString("type"));
-                entry.setValue(entryTag.getDouble("value"));
-                entry.setSource(entryTag.getString("source"));
-                entry.setOperation(entryTag.getString("operation"));
-                map.put(key, entry);
+                entry.setType(type);
+                entry.setValue(value);
+                entry.setSource(source);
+                entry.setOperation(operation);
+                entry.setSpecificSource(specificSource);
+                
+                map.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
             }
         }
         return map;
     }
     
-    private static CompoundTag writeComputedEntryMap(Map<String, ComputedEntry> map) {
+    private static CompoundTag writeComputedEntryMap(Map<String, List<ComputedEntry>> map) {
         CompoundTag tag = new CompoundTag();
-        for (Map.Entry<String, ComputedEntry> entry : map.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
-            entryTag.putString("type", entry.getValue().getType());
-            entryTag.putDouble("value", entry.getValue().getValue());
-            entryTag.putString("source", entry.getValue().getSource());
-            entryTag.putString("operation", entry.getValue().getOperation());
-            tag.put(entry.getKey(), entryTag);
+        ListTag listTag = new ListTag();
+        
+        for (Map.Entry<String, List<ComputedEntry>> entry : map.entrySet()) {
+            for (ComputedEntry computedEntry : entry.getValue()) {
+                ListTag elementArray = new ListTag();
+                elementArray.add(StringTag.valueOf(computedEntry.getType()));
+                elementArray.add(StringTag.valueOf(Double.toString(computedEntry.getValue())));
+                elementArray.add(StringTag.valueOf(computedEntry.getSource()));
+                elementArray.add(StringTag.valueOf(computedEntry.getOperation()));
+                // 根据要求，specificSource不能为空，直接保存
+                elementArray.add(StringTag.valueOf(computedEntry.getSpecificSource()));
+                CompoundTag wrapper = new CompoundTag();
+                wrapper.put("data", elementArray);
+                listTag.add(wrapper);
+            }
         }
+        
+        tag.put("data", listTag);
         return tag;
     }
     
     // NBT读写辅助方法 - Extra层
-    private static Map<String, ExtraEntry> readExtraEntryMap(CompoundTag tag) {
-        Map<String, ExtraEntry> map = new HashMap<>();
-        for (String key : tag.getAllKeys()) {
-            if (tag.contains(key, Tag.TAG_COMPOUND)) {
-                CompoundTag entryTag = tag.getCompound(key);
+    private static Map<String, List<ExtraEntry>> readExtraEntryMap(CompoundTag tag) {
+        Map<String, List<ExtraEntry>> map = new HashMap<>();
+        if (tag.contains("data", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("data", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listTag.size(); i++) {
+                CompoundTag wrapper = (CompoundTag) listTag.get(i);
+                ListTag elementArray = wrapper.getList("data", Tag.TAG_STRING);
+                String type = elementArray.getString(0);
+                double value = Double.parseDouble(elementArray.getString(1));
+                String operation = elementArray.getString(2);
+                // 确保specificSource字段正确处理，即使在旧数据中不存在
+                String specificSource = "";
+                if (elementArray.size() > 3) {
+                    specificSource = elementArray.getString(3);
+                }
+                
                 ExtraEntry entry = new ExtraEntry();
-                entry.setType(entryTag.getString("type"));
-                entry.setValue(entryTag.getDouble("value"));
-                entry.setOperation(entryTag.getString("operation"));
-                map.put(key, entry);
+                entry.setType(type);
+                entry.setValue(value);
+                entry.setOperation(operation);
+                entry.setSpecificSource(specificSource);
+                
+                map.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
             }
         }
         return map;
     }
     
-    private static CompoundTag writeExtraEntryMap(Map<String, ExtraEntry> map) {
+    private static CompoundTag writeExtraEntryMap(Map<String, List<ExtraEntry>> map) {
         CompoundTag tag = new CompoundTag();
-        for (Map.Entry<String, ExtraEntry> entry : map.entrySet()) {
-            CompoundTag entryTag = new CompoundTag();
-            entryTag.putString("type", entry.getValue().getType());
-            entryTag.putDouble("value", entry.getValue().getValue());
-            entryTag.putString("operation", entry.getValue().getOperation());
-            tag.put(entry.getKey(), entryTag);
+        ListTag listTag = new ListTag();
+        
+        for (Map.Entry<String, List<ExtraEntry>> entry : map.entrySet()) {
+            for (ExtraEntry extraEntry : entry.getValue()) {
+                ListTag elementArray = new ListTag();
+                elementArray.add(StringTag.valueOf(extraEntry.getType()));
+                elementArray.add(StringTag.valueOf(Double.toString(extraEntry.getValue())));
+                elementArray.add(StringTag.valueOf(extraEntry.getSource()));
+                elementArray.add(StringTag.valueOf(extraEntry.getOperation()));
+                // 根据要求，specificSource不能为空，直接保存
+                elementArray.add(StringTag.valueOf(extraEntry.getSpecificSource()));
+                CompoundTag wrapper = new CompoundTag();
+                wrapper.put("data", elementArray);
+                listTag.add(wrapper);
+            }
         }
+        
+        tag.put("data", listTag);
         return tag;
     }
     
-    private static Map<String, Double> readDoubleMap(CompoundTag tag) {
-        Map<String, Double> map = new HashMap<>();
-        for (String key : tag.getAllKeys()) {
-            if (tag.contains(key, Tag.TAG_DOUBLE)) {
-                map.put(key, tag.getDouble(key));
+    private static Map<String, List<Double>> readDoubleMap(CompoundTag tag) {
+        Map<String, List<Double>> map = new HashMap<>();
+        if (tag.contains("data", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("data", Tag.TAG_COMPOUND);
+            for (int i = 0; i < listTag.size(); i++) {
+                CompoundTag wrapper = (CompoundTag) listTag.get(i);
+                ListTag elementArray = wrapper.getList("data", Tag.TAG_STRING);
+                String type = elementArray.getString(0);
+                double value = Double.parseDouble(elementArray.getString(1));
+                map.computeIfAbsent(type, k -> new ArrayList<>()).add(value);
             }
         }
         return map;
     }
     
-    private static CompoundTag writeDoubleMap(Map<String, Double> map) {
+    private static CompoundTag writeDoubleMap(Map<String, List<Double>> map) {
         CompoundTag tag = new CompoundTag();
-        for (Map.Entry<String, Double> entry : map.entrySet()) {
-            tag.putDouble(entry.getKey(), entry.getValue());
+        ListTag listTag = new ListTag();
+        
+        for (Map.Entry<String, List<Double>> entry : map.entrySet()) {
+            for (Double value : entry.getValue()) {
+                ListTag elementArray = new ListTag();
+                elementArray.add(StringTag.valueOf(entry.getKey()));
+                elementArray.add(StringTag.valueOf(Double.toString(value)));
+                CompoundTag wrapper = new CompoundTag();
+                wrapper.put("data", elementArray);
+                listTag.add(wrapper);
+            }
         }
+        
+        tag.put("data", listTag);
         return tag;
     }
 }

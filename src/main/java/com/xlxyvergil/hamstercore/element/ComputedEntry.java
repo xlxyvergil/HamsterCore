@@ -8,6 +8,7 @@ public class ComputedEntry {
     private double value;       // 数值
     private String source;      // def/user
     private String operation;   // 计算方法 add/sub/mul/div
+    private String specificSource = ""; // 特定来源标识符
     
     public ComputedEntry() {}
     
@@ -40,6 +41,9 @@ public class ComputedEntry {
     
     public String getOperation() { return operation; }
     public void setOperation(String operation) { this.operation = operation; }
+    
+    public String getSpecificSource() { return specificSource; }
+    public void setSpecificSource(String specificSource) { this.specificSource = specificSource; }
     
     @Override
     public String toString() {

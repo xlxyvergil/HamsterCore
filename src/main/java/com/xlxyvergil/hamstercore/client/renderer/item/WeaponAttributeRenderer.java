@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
@@ -55,30 +56,30 @@ public class WeaponAttributeRenderer {
      * 如果Usage层有任何有效数据（大于0或不等于0），则显示Usage层，否则显示Basic层
      */
     private static boolean shouldShowUsageLayer(ItemStack stack) {
-        // 加载武器数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
-        
-        // 计算Usage层数据
-        WeaponDataManager.computeUsageData(stack, data);
+        // 加载武器数据并重新计算Usage层数据
+        WeaponElementData data = WeaponDataManager.loadElementData(stack, true);
         
         // 检查Usage层的特殊属性（暴击率、暴击伤害、触发率）
-        Double criticalChance = data.getUsageValue("critical_chance");
-        Double criticalDamage = data.getUsageValue("critical_damage");
-        Double triggerChance = data.getUsageValue("trigger_chance");
+        List<Double> criticalChanceList = data.getUsageValue("critical_chance");
+        List<Double> criticalDamageList = data.getUsageValue("critical_damage");
+        List<Double> triggerChanceList = data.getUsageValue("trigger_chance");
         
-        if ((criticalChance != null && criticalChance > 0) || 
-            (criticalDamage != null && criticalDamage > 0) || 
-            (triggerChance != null && triggerChance > 0)) {
+        double criticalChance = criticalChanceList.stream().mapToDouble(Double::doubleValue).sum();
+        double criticalDamage = criticalDamageList.stream().mapToDouble(Double::doubleValue).sum();
+        double triggerChance = triggerChanceList.stream().mapToDouble(Double::doubleValue).sum();
+        
+        if (criticalChance > 0 || criticalDamage > 0 || triggerChance > 0) {
             return true;
         }
         
         // 检查Usage层的元素属性（物理、基础、复合元素）
-        for (Map.Entry<String, Double> entry : data.getAllUsageValues().entrySet()) {
+        for (Map.Entry<String, List<Double>> entry : data.getAllUsageValues().entrySet()) {
             String key = entry.getKey();
-            Double value = entry.getValue();
+            List<Double> valueList = entry.getValue();
+            double value = valueList.stream().mapToDouble(Double::doubleValue).sum();
             
             // 排除特殊属性，只检查元素属性
-            if (value != null && value > 0 && 
+            if (value > 0 && 
                 !"critical_chance".equals(key) && 
                 !"critical_damage".equals(key) && 
                 !"trigger_chance".equals(key)) {
@@ -87,13 +88,16 @@ public class WeaponAttributeRenderer {
         }
         
         // 检查Extra层的派系增伤属性
-        for (Map.Entry<String, com.xlxyvergil.hamstercore.element.ExtraEntry> entry : data.getAllExtraFactions().entrySet()) {
-            com.xlxyvergil.hamstercore.element.ExtraEntry extraEntry = entry.getValue();
-            if (extraEntry != null) {
-                double value = "add".equals(extraEntry.getOperation()) ? extraEntry.getValue() : 
-                             ("sub".equals(extraEntry.getOperation()) ? -extraEntry.getValue() : 0.0);
-                if (value != 0) {
-                    return true;
+        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.ExtraEntry>> entry : data.getAllExtraFactions().entrySet()) {
+            String key = entry.getKey();
+            List<com.xlxyvergil.hamstercore.element.ExtraEntry> extraEntries = entry.getValue();
+            for (com.xlxyvergil.hamstercore.element.ExtraEntry extraEntry : extraEntries) {
+                if (extraEntry != null) {
+                    double value = "add".equals(extraEntry.getOperation()) ? extraEntry.getValue() : 
+                                 ("sub".equals(extraEntry.getOperation()) ? -extraEntry.getValue() : 0.0);
+                    if (value != 0) {
+                        return true;
+                    }
                 }
             }
         }
@@ -159,9 +163,9 @@ public class WeaponAttributeRenderer {
         }
         
         if (criticalDamage != null && criticalDamage > 0) {
-            String criticalDamageText = String.format("%s: %.1f", 
+            String criticalDamageText = String.format("%s: %.1f%%", 
                 Component.translatable("hamstercore.ui.critical_damage").getString(), 
-                criticalDamage);
+                criticalDamage * 100);
             tooltipElements.add(Component.literal(criticalDamageText));
         }
         
@@ -231,20 +235,20 @@ public class WeaponAttributeRenderer {
         Double triggerChance = null;
         
         // 获取Basic层特殊属性
-        com.xlxyvergil.hamstercore.element.BasicEntry criticalChanceEntry = data.getBasicElement("critical_chance");
-        com.xlxyvergil.hamstercore.element.BasicEntry criticalDamageEntry = data.getBasicElement("critical_damage");
-        com.xlxyvergil.hamstercore.element.BasicEntry triggerChanceEntry = data.getBasicElement("trigger_chance");
+        List<com.xlxyvergil.hamstercore.element.BasicEntry> criticalChanceEntries = data.getBasicElement("critical_chance");
+        List<com.xlxyvergil.hamstercore.element.BasicEntry> criticalDamageEntries = data.getBasicElement("critical_damage");
+        List<com.xlxyvergil.hamstercore.element.BasicEntry> triggerChanceEntries = data.getBasicElement("trigger_chance");
         
-        if (criticalChanceEntry != null) {
-            criticalChance = criticalChanceEntry.getValue();
+        if (!criticalChanceEntries.isEmpty()) {
+            criticalChance = criticalChanceEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
         }
         
-        if (criticalDamageEntry != null) {
-            criticalDamage = criticalDamageEntry.getValue();
+        if (!criticalDamageEntries.isEmpty()) {
+            criticalDamage = criticalDamageEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
         }
         
-        if (triggerChanceEntry != null) {
-            triggerChance = triggerChanceEntry.getValue();
+        if (!triggerChanceEntries.isEmpty()) {
+            triggerChance = triggerChanceEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
         }
         
         // 添加特殊属性
@@ -256,9 +260,9 @@ public class WeaponAttributeRenderer {
         }
         
         if (criticalDamage != null && criticalDamage > 0) {
-            String criticalDamageText = String.format("%s: %.1f", 
+            String criticalDamageText = String.format("%s: %.1f%%", 
                 Component.translatable("hamstercore.ui.critical_damage").getString(), 
-                criticalDamage);
+                criticalDamage * 100);
             tooltipElements.add(Component.literal(criticalDamageText));
         }
         
@@ -271,16 +275,16 @@ public class WeaponAttributeRenderer {
         
         // 添加元素属性
         boolean hasElements = false;
-        for (Map.Entry<String, com.xlxyvergil.hamstercore.element.BasicEntry> entry : data.getAllBasicElements().entrySet()) {
+        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.BasicEntry>> entry : data.getAllBasicElements().entrySet()) {
             String key = entry.getKey();
-            com.xlxyvergil.hamstercore.element.BasicEntry basicEntry = entry.getValue();
+            List<com.xlxyvergil.hamstercore.element.BasicEntry> basicEntries = entry.getValue();
             
             // 排除特殊属性
             if (!"critical_chance".equals(key) && 
                 !"critical_damage".equals(key) && 
                 !"trigger_chance".equals(key) &&
-                basicEntry != null && 
-                basicEntry.getValue() > 0) {
+                !basicEntries.isEmpty() && 
+                basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum() > 0) {
                 hasElements = true;
                 break;
             }
@@ -291,16 +295,16 @@ public class WeaponAttributeRenderer {
                 Component.translatable("hamstercore.ui.element_ratios").append(":")
             );
             
-            for (Map.Entry<String, com.xlxyvergil.hamstercore.element.BasicEntry> entry : data.getAllBasicElements().entrySet()) {
+            for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.BasicEntry>> entry : data.getAllBasicElements().entrySet()) {
                 String key = entry.getKey();
-                com.xlxyvergil.hamstercore.element.BasicEntry basicEntry = entry.getValue();
+                List<com.xlxyvergil.hamstercore.element.BasicEntry> basicEntries = entry.getValue();
                 
                 // 排除特殊属性
                 if ("critical_chance".equals(key) || 
                     "critical_damage".equals(key) || 
                     "trigger_chance".equals(key) ||
-                    basicEntry == null || 
-                    basicEntry.getValue() <= 0) {
+                    basicEntries.isEmpty() || 
+                    basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum() <= 0) {
                     continue;
                 }
                 
@@ -310,9 +314,12 @@ public class WeaponAttributeRenderer {
                     continue;
                 }
                 
+                // 计算总值
+                double totalValue = basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
+                
                 // 创建元素名称和数值的文本组件，使用元素颜色
                 String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-                String elementText = String.format("  %s: %.2f", elementName, basicEntry.getValue());
+                String elementText = String.format("  %s: %.2f", elementName, totalValue);
                 
                 // 检查颜色是否有效，避免NullPointerException
                 Integer colorValue = elementType.getColor().getColor();

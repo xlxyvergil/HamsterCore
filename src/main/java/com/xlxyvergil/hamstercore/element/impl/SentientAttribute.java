@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.element.impl;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsChecker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -16,7 +15,7 @@ import java.util.UUID;
  */
 public class SentientAttribute extends ElementAttribute {
     
-    private static final UUID MODIFIER_UUID = UUID.fromString("c2016a32-5071-8e21-de51-5f5e56c03d4e");
+    private static final UUID MODIFIER_UUID = UUID.fromString("a08f4810-3e5f-6c0f-bc3f-3d3c34ae1b2f");
     
     // 静态初始化块，在类加载时自动注册
     static {
@@ -35,10 +34,5 @@ public class SentientAttribute extends ElementAttribute {
     @Override
     public AttributeModifier createModifier(ItemStack stack, double value) {
         return new AttributeModifier(MODIFIER_UUID, "Sentient faction element modifier", value, getOperation());
-    }
-    
-    @Override
-    public boolean canApplyTo(ItemStack stack) {
-        return WeaponApplicableItemsChecker.canApplyElements(stack);
     }
 }

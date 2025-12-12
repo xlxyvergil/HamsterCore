@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
-import com.xlxyvergil.hamstercore.util.DebugLogger;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.resources.ResourceLocation;
@@ -50,8 +49,9 @@ public class ElementApplier {
     
 
     
-
     
+    
+
     /**
      * 为枪械应用属性
      */
@@ -82,7 +82,11 @@ public class ElementApplier {
             stack.getOrCreateTag().putString("gunId", gunId.toString());
             
             // 复制元素数据
-            WeaponElementData elementData = weaponData.getElementData().copy();
+            WeaponElementData elementData = new WeaponElementData();
+            elementData.setBasic(weaponData.getElementData().getBasic());
+            elementData.setComputed(weaponData.getElementData().getComputed());
+            elementData.setUsage(weaponData.getElementData().getUsage());
+            elementData.setExtra(weaponData.getElementData().getExtra());
             if (elementData == null) {
                 elementData = new WeaponElementData();
             }
@@ -129,7 +133,11 @@ public class ElementApplier {
             stack.getOrCreateTag().putString("translationKey", translationKey);
             
             // 复制元素数据
-            WeaponElementData elementData = weaponData.getElementData().copy();
+            WeaponElementData elementData = new WeaponElementData();
+            elementData.setBasic(weaponData.getElementData().getBasic());
+            elementData.setComputed(weaponData.getElementData().getComputed());
+            elementData.setUsage(weaponData.getElementData().getUsage());
+            elementData.setExtra(weaponData.getElementData().getExtra());
             if (elementData == null) {
                 elementData = new WeaponElementData();
             }
@@ -145,8 +153,4 @@ public class ElementApplier {
             return false;
         }
     }
-    
-
-    
-
 }
