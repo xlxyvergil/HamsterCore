@@ -58,6 +58,18 @@ public class WeaponConfig {
     // 武器配置映射表
     private static Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
     
+    // TACZ配置缓存
+    private static Map<String, WeaponData> taczConfigCache = new HashMap<>();
+    
+    // 拔刀剑配置缓存
+    private static Map<String, WeaponData> slashBladeConfigCache = new HashMap<>();
+    
+    // TACZ gunId到配置的映射表
+    private static Map<String, WeaponData> gunIdToConfigMap = new HashMap<>();
+    
+    // 拔刀剑translationKey到配置的映射表
+    private static Map<String, WeaponData> translationKeyToConfigMap = new HashMap<>();
+    
     /**
      * 加载武器配置
      * 如果配置文件不存在，则生成默认配置
@@ -138,10 +150,13 @@ public class WeaponConfig {
             WeaponData weaponData = createTacZWeaponData(gunId);
             if (weaponData != null) {
                 JsonObject itemJson = createWeaponConfigJson(weaponData);
+                // 添加gunId字段到配置中
+                itemJson.addProperty("gunId", gunId.toString());
                 weaponsList.add(itemJson);
                 
                 // 存储到内存映射表，使用gunId作为键以便后续查找
                 weaponConfigs.put(gunId, weaponData);
+                gunIdToConfigMap.put(gunId.toString(), weaponData);
             }
         }
         
@@ -166,6 +181,8 @@ public class WeaponConfig {
             WeaponData weaponData = createSlashBladeWeaponData(translationKey);
             if (weaponData != null) {
                 JsonObject itemJson = createWeaponConfigJson(weaponData);
+                // 添加translationKey字段到配置中
+                itemJson.addProperty("translationKey", translationKey);
                 weaponsList.add(itemJson);
             }
         }
@@ -191,9 +208,9 @@ public class WeaponConfig {
         data.gunId = gunId.toString(); // 具体的枪械ID
         
         // 添加默认特殊属性
-        data.addBasicElement("critical_chance");
-        data.addBasicElement("critical_damage");
-        data.addBasicElement("trigger_chance");
+        data.addBasicElement("critical_chance", "CONFIG", 0);
+        data.addBasicElement("critical_damage", "CONFIG", 1);
+        data.addBasicElement("trigger_chance", "CONFIG", 2);
         
         // 设置TACZ枪械默认元素占比
         setDefaultElementRatiosForTacZ(data, gunId);
@@ -218,9 +235,9 @@ public class WeaponConfig {
         data.translationKey = translationKey; // 具体的translationKey
         
         // 添加默认特殊属性
-        data.addBasicElement("critical_chance");
-        data.addBasicElement("critical_damage");
-        data.addBasicElement("trigger_chance");
+        data.addBasicElement("critical_chance", "CONFIG", 0);
+        data.addBasicElement("critical_damage", "CONFIG", 1);
+        data.addBasicElement("trigger_chance", "CONFIG", 2);
         
         // 设置拔刀剑默认元素占比
         setDefaultElementRatiosForSlashBlade(data, translationKey);
@@ -310,9 +327,9 @@ public class WeaponConfig {
         }
         
         // 添加默认特殊属性
-        data.addBasicElement("critical_chance");
-        data.addBasicElement("critical_damage");
-        data.addBasicElement("trigger_chance");
+        data.addBasicElement("critical_chance", "CONFIG", 0);
+        data.addBasicElement("critical_damage", "CONFIG", 1);
+        data.addBasicElement("trigger_chance", "CONFIG", 2);
         
         // 根据物品类型设置不同的默认元素占比
         setDefaultElementRatiosForNormalItem(data, itemKey);
@@ -412,7 +429,7 @@ public class WeaponConfig {
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
         
-        // 添加Basic层 - 记录元素名称、添加顺序和def标记
+        // 添加Basic层 - 记录元素名称、来源和添加顺序
         JsonArray basicArray = new JsonArray();
         for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : weaponData.getBasicElements().entrySet()) {
             for (WeaponData.BasicEntry basicEntry : entry.getValue()) {
@@ -425,8 +442,25 @@ public class WeaponConfig {
         }
         elementDataJson.add("Basic", basicArray);
         
-        // 不再添加Usage层 - 元素复合后的元素类型和数值
-        // Usage层数据会在运行时根据Basic层数据计算得出
+        // 添加Usage层 - 元素复合后的元素类型和数值
+        JsonArray usageArray = new JsonArray();
+        for (Map.Entry<String, Double> entry : weaponData.getUsageElements().entrySet()) {
+            JsonArray elementArray = new JsonArray();
+            elementArray.add(entry.getKey());
+            elementArray.add(entry.getValue());
+            usageArray.add(elementArray);
+        }
+        elementDataJson.add("Usage", usageArray);
+        
+        // 添加Def层 - 默认元素数据
+        JsonArray defArray = new JsonArray();
+        for (Map.Entry<String, Double> entry : weaponData.getDefElements().entrySet()) {
+            JsonArray elementArray = new JsonArray();
+            elementArray.add(entry.getKey());
+            elementArray.add(entry.getValue());
+            defArray.add(elementArray);
+        }
+        elementDataJson.add("Def", defArray);
         
         // 添加初始属性修饰符数据（只包含名称和数值，UUID在应用阶段生成）
         JsonArray modifiersArray = new JsonArray();
@@ -563,8 +597,27 @@ public class WeaponConfig {
                 }
             }
             
-            // 不再读取Usage层 - 元素复合后的元素类型和数值
-            // Usage层数据会在运行时根据Basic层数据计算得出
+            // 读取Usage层
+            if (elementDataJson.has("Usage")) {
+                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
+                for (JsonElement element : usageArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    weaponData.setUsageElement(type, value);
+                }
+            }
+            
+            // 读取Def层
+            if (elementDataJson.has("Def")) {
+                JsonArray defArray = elementDataJson.getAsJsonArray("Def");
+                for (JsonElement element : defArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    weaponData.setDefElement(type, value);
+                }
+            }
             
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
@@ -655,6 +708,17 @@ public class WeaponConfig {
                 }
             }
             
+            // 读取Def层
+            if (elementDataJson.has("Def")) {
+                JsonArray defArray = elementDataJson.getAsJsonArray("Def");
+                for (JsonElement element : defArray) {
+                    JsonArray elementArray = element.getAsJsonArray();
+                    String type = elementArray.get(0).getAsString();
+                    double value = elementArray.get(1).getAsDouble();
+                    weaponData.setDefElement(type, value);
+                }
+            }
+            
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
                 JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
@@ -692,17 +756,14 @@ public class WeaponConfig {
         }
         
         // 根据配置类型决定内存映射的键名
-        ResourceLocation itemKey;
+        ResourceLocation itemKey = null;
         if (isTacZ && weaponData.gunId != null) {
             // TACZ武器使用gunId作为键
             itemKey = ResourceLocation.tryParse(weaponData.gunId);
-        } else if (configKey.equals("slashblade:slashblade")) {
+        } else if (!isTacZ && weaponData.translationKey != null) {
             // 拔刀剑使用统一的slashblade:slashblade作为键
             itemKey = new ResourceLocation("slashblade", "slashblade");
-        } else {
-            // 其他使用configKey
-            itemKey = ResourceLocation.tryParse(configKey);
-        }
+        } 
         
         if (itemKey != null) {
             weaponConfigs.put(itemKey, weaponData);
@@ -746,10 +807,29 @@ public class WeaponConfig {
      * 根据gunId获取武器配置（用于TACZ枪械）
      */
     public static WeaponData getWeaponConfigByGunId(String gunId) {
+        // 首先检查缓存
+        if (taczConfigCache.containsKey(gunId)) {
+            return taczConfigCache.get(gunId);
+        }
+        
+        // 在映射表中查找
+        if (gunIdToConfigMap.containsKey(gunId)) {
+            WeaponData data = gunIdToConfigMap.get(gunId);
+            taczConfigCache.put(gunId, data); // 添加到缓存
+            return data;
+        }
+        
+        // 回退到原来的查找方式
         ResourceLocation gunIdKey = ResourceLocation.tryParse(gunId);
         if (gunIdKey != null) {
-            return weaponConfigs.get(gunIdKey);
+            WeaponData data = weaponConfigs.get(gunIdKey);
+            if (data != null) {
+                taczConfigCache.put(gunId, data); // 添加到缓存
+                gunIdToConfigMap.put(gunId, data); // 添加到映射表
+                return data;
+            }
         }
+        
         return null;
     }
     
@@ -757,9 +837,24 @@ public class WeaponConfig {
      * 根据translationKey获取武器配置（用于拔刀剑）
      */
     public static WeaponData getWeaponConfigByTranslationKey(String translationKey) {
+        // 首先检查缓存
+        if (slashBladeConfigCache.containsKey(translationKey)) {
+            return slashBladeConfigCache.get(translationKey);
+        }
+        
+        // 在映射表中查找
+        if (translationKeyToConfigMap.containsKey(translationKey)) {
+            WeaponData data = translationKeyToConfigMap.get(translationKey);
+            slashBladeConfigCache.put(translationKey, data); // 添加到缓存
+            return data;
+        }
+        
+        // 回退到原来的查找方式
         // 遍历所有配置，查找匹配的translationKey
         for (WeaponData weaponData : weaponConfigs.values()) {
             if (translationKey.equals(weaponData.translationKey)) {
+                slashBladeConfigCache.put(translationKey, weaponData); // 添加到缓存
+                translationKeyToConfigMap.put(translationKey, weaponData); // 添加到映射表
                 return weaponData;
             }
         }
@@ -769,7 +864,7 @@ public class WeaponConfig {
     /**
      * 获取TACZ武器配置（根据具体的枪械ID）
      */
-    private static WeaponData getTacZWeaponConfig(ItemStack stack) {
+    public static WeaponData getTacZWeaponConfig(ItemStack stack) {
         // 获取枪械的gunId
         String gunId = ModCompat.getGunId(stack);
         if (gunId != null) {
@@ -781,16 +876,12 @@ public class WeaponConfig {
     /**
      * 获取拔刀剑武器配置（根据具体的刀）
      */
-    private static WeaponData getSlashBladeWeaponConfig(ItemStack stack) {
+    public static WeaponData getSlashBladeWeaponConfig(ItemStack stack) {
         // 获取拔刀剑的translationKey
         String translationKey = ModCompat.getSlashBladeTranslationKey(stack);
         if (translationKey != null) {
             // 查找匹配的translationKey配置
-            for (WeaponData weaponData : weaponConfigs.values()) {
-                if (translationKey.equals(weaponData.translationKey)) {
-                    return weaponData;
-                }
-            }
+            return getWeaponConfigByTranslationKey(translationKey);
         }
         // 如果没找到具体配置，返回统一的slashblade:slashblade配置
         return weaponConfigs.get(new ResourceLocation("slashblade", "slashblade"));
@@ -829,6 +920,29 @@ public class WeaponConfig {
             // 添加到初始修饰符列表
             data.addInitialModifier(new WeaponData.AttributeModifierEntry(elementType, modifier));
         }
+        
+        // 为Def层元素也添加初始修饰符
+        for (Map.Entry<String, Double> entry : data.getDefElements().entrySet()) {
+            String elementType = entry.getKey();
+            double defaultValue = entry.getValue(); // 使用Def层的值作为默认值
+            
+            // 检查是否已经在Basic层中添加过了
+            if (!data.getBasicElements().containsKey(elementType)) {
+                // 为每种元素类型使用固定的UUID
+                UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
+                
+                // 创建属性修饰符
+                AttributeModifier modifier = new AttributeModifier(
+                    modifierUuid, 
+                    elementType, 
+                    defaultValue, 
+                    AttributeModifier.Operation.ADDITION
+                );
+                
+                // 添加到初始修饰符列表
+                data.addInitialModifier(new WeaponData.AttributeModifierEntry(elementType, modifier));
+            }
+        }
     }
 
     /**
@@ -854,12 +968,17 @@ public class WeaponConfig {
                     + "  \"minecraft:diamond_sword\": {\n"
                     + "    \"elementData\": {\n"
                     + "      \"Basic\": [\n"
-                    + "        [\"SLASH\", 5.0, \"CONFIG\"],\n"
-                    + "        [\"CRITICAL_CHANCE\", 0.1, \"CONFIG\"]\n"
+                    + "        [\"SLASH\", \"CONFIG\", 0],\n"
+                    + "        [\"CRITICAL_CHANCE\", \"CONFIG\", 1]\n"
                     + "      ],\n"
-                    + "      \"Computed\": [],\n"
-                    + "      \"Usage\": [],\n"
-                    + "      \"Extra\": []\n"
+                    + "      \"Usage\": [\n"
+                    + "        [\"SLASH\", 5.0],\n"
+                    + "        [\"CRITICAL_CHANCE\", 0.1]\n"
+                    + "      ],\n"
+                    + "      \"Def\": [\n"
+                    + "        [\"SLASH\", 3.0],\n"
+                    + "        [\"IMPACT\", 2.0]\n"
+                    + "      ]\n"
                     + "    }\n"
                     + "  }\n"
                     + "}");

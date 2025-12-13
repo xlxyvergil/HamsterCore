@@ -9,15 +9,21 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ElementEnchantment extends Enchantment {
     protected final ElementType elementType;
     protected final int maxLevel;
@@ -94,5 +100,26 @@ public class ElementEnchantment extends Enchantment {
         }
         
         return Collections.emptyList();
+    }
+    
+    @SubscribeEvent
+    public static void onItemAttributeModifier(ItemAttributeModifierEvent event) {
+        ItemStack stack = event.getItemStack();
+        
+        // 遍历物品上的所有附魔
+        for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
+            if (entry.getKey() instanceof ElementEnchantment elementEnchantment) {
+                // 获取附魔等级
+                int level = entry.getValue();
+                
+                // 获取应该添加的属性修饰符
+                Collection<AttributeModifier> modifiers = elementEnchantment.getEntityAttributes(stack, event.getSlotType(), level);
+                
+                // 添加所有修饰符到事件中
+                for (AttributeModifier modifier : modifiers) {
+                    event.addModifier(Attributes.ATTACK_DAMAGE, modifier);
+                }
+            }
+        }
     }
 }

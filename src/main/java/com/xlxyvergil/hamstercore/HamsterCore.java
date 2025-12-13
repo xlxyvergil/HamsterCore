@@ -9,7 +9,9 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
+import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.api.element.ElementAttributeAPI;
+import com.xlxyvergil.hamstercore.api.element.RegisterElementsEvent;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
@@ -19,6 +21,11 @@ import com.xlxyvergil.hamstercore.element.ElementApplier;
 import com.xlxyvergil.hamstercore.element.NormalItemElementApplier;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
+import com.xlxyvergil.hamstercore.config.AdditionalConfigApplier;
+import com.xlxyvergil.hamstercore.config.NormalConfigApplier;
+import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
+import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -57,6 +64,12 @@ public class HamsterCore {
         FactionConfig.load();
         ArmorConfig.load();
         LevelSystem.init();
+        
+        // 发布元素注册事件，允许其他模组注册自定义元素
+        modEventBus.post(new RegisterElementsEvent(
+            ElementRegistry::register,
+            ElementType::register
+        ));
         
         // 初始化元素系统（不再需要显式调用init方法）
         LOGGER.info("Element system initialized");
@@ -97,13 +110,14 @@ public class HamsterCore {
             WeaponConfig.load();
             
             // 4. 应用普通物品元素属性
-            int normalAppliedCount = NormalItemElementApplier.applyNormalItemsElements();
+            int normalAppliedCount = NormalConfigApplier.applyConfigToItem();
             
             // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
-            int modSpecialAppliedCount = ElementApplier.applyModSpecialItemsElements();
+            int tacZAppliedCount = TacZConfigApplier.applyConfigToItem();
+            int slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigToItem();
             
             // 6. 应用额外的元素属性配置
-            int additionalAppliedCount = AdditionalElementApplier.applyAdditionalElements();
+            int additionalAppliedCount = AdditionalConfigApplier.applyConfigToItem();
             
             
         } catch (Exception e) {

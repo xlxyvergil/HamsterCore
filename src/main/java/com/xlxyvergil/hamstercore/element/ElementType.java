@@ -3,57 +3,78 @@ package com.xlxyvergil.hamstercore.element;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraftforge.registries.RegistryObject;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * 定义所有可用的元素类型常量
+ * 定义所有可用的元素类型
  * 包括物理元素、基础元素、复合元素和特殊属性
+ * 重构为可扩展类，支持通过API注册新的元素类型
  */
-public enum ElementType {
+public class ElementType {
+    private static final Map<String, ElementType> REGISTRY = new ConcurrentHashMap<>();
+    
     // 物理元素
-    IMPACT("impact", "冲击", ChatFormatting.GRAY),
-    PUNCTURE("puncture", "穿刺", ChatFormatting.LIGHT_PURPLE),
-    SLASH("slash", "切割", ChatFormatting.RED),
+    public static final ElementType IMPACT = registerBuiltIn("impact", "冲击", ChatFormatting.GRAY, TypeCategory.PHYSICAL);
+    public static final ElementType PUNCTURE = registerBuiltIn("puncture", "穿刺", ChatFormatting.LIGHT_PURPLE, TypeCategory.PHYSICAL);
+    public static final ElementType SLASH = registerBuiltIn("slash", "切割", ChatFormatting.RED, TypeCategory.PHYSICAL);
     
     // 基础元素
-    COLD("cold", "冰冻", ChatFormatting.AQUA),
-    ELECTRICITY("electricity", "电击", ChatFormatting.YELLOW),
-    HEAT("heat", "火焰", ChatFormatting.GOLD),
-    TOXIN("toxin", "毒素", ChatFormatting.DARK_GREEN),
+    public static final ElementType COLD = registerBuiltIn("cold", "冰冻", ChatFormatting.AQUA, TypeCategory.BASIC);
+    public static final ElementType ELECTRICITY = registerBuiltIn("electricity", "电击", ChatFormatting.YELLOW, TypeCategory.BASIC);
+    public static final ElementType HEAT = registerBuiltIn("heat", "火焰", ChatFormatting.GOLD, TypeCategory.BASIC);
+    public static final ElementType TOXIN = registerBuiltIn("toxin", "毒素", ChatFormatting.DARK_GREEN, TypeCategory.BASIC);
     
     // 复合元素
-    BLAST("blast", "爆炸", ChatFormatting.DARK_RED),
-    CORROSIVE("corrosive", "腐蚀", ChatFormatting.DARK_GRAY),
-    GAS("gas", "毒气", ChatFormatting.GREEN),
-    MAGNETIC("magnetic", "磁力", ChatFormatting.BLUE),
-    RADIATION("radiation", "辐射", ChatFormatting.WHITE),
-    VIRAL("viral", "病毒", ChatFormatting.DARK_PURPLE),
+    public static final ElementType BLAST = registerBuiltIn("blast", "爆炸", ChatFormatting.DARK_RED, TypeCategory.COMPLEX);
+    public static final ElementType CORROSIVE = registerBuiltIn("corrosive", "腐蚀", ChatFormatting.DARK_GRAY, TypeCategory.COMPLEX);
+    public static final ElementType GAS = registerBuiltIn("gas", "毒气", ChatFormatting.GREEN, TypeCategory.COMPLEX);
+    public static final ElementType MAGNETIC = registerBuiltIn("magnetic", "磁力", ChatFormatting.BLUE, TypeCategory.COMPLEX);
+    public static final ElementType RADIATION = registerBuiltIn("radiation", "辐射", ChatFormatting.WHITE, TypeCategory.COMPLEX);
+    public static final ElementType VIRAL = registerBuiltIn("viral", "病毒", ChatFormatting.DARK_PURPLE, TypeCategory.COMPLEX);
     
     // 特殊属性
-    CRITICAL_CHANCE("critical_chance", "暴击率", ChatFormatting.BOLD),
-    CRITICAL_DAMAGE("critical_damage", "暴击伤害", ChatFormatting.BOLD),
-    TRIGGER_CHANCE("trigger_chance", "触发率", ChatFormatting.BOLD),
+    public static final ElementType CRITICAL_CHANCE = registerBuiltIn("critical_chance", "暴击率", ChatFormatting.BOLD, TypeCategory.SPECIAL);
+    public static final ElementType CRITICAL_DAMAGE = registerBuiltIn("critical_damage", "暴击伤害", ChatFormatting.BOLD, TypeCategory.SPECIAL);
+    public static final ElementType TRIGGER_CHANCE = registerBuiltIn("trigger_chance", "触发率", ChatFormatting.BOLD, TypeCategory.SPECIAL);
     
     // 派系元素
-    GRINEER("grineer", "Grineer派系", ChatFormatting.RED),
-    INFESTED("infested", "Infested派系", ChatFormatting.GREEN),
-    CORPUS("corpus", "Corpus派系", ChatFormatting.BLUE),
-    OROKIN("orokin", "Orokin派系", ChatFormatting.LIGHT_PURPLE),
-    SENTIENT("sentient", "Sentient派系", ChatFormatting.DARK_RED),
-    MURMUR("murmur", "Murmur派系", ChatFormatting.AQUA);
-    
+    public static final ElementType GRINEER = registerBuiltIn("grineer", "Grineer派系", ChatFormatting.RED, TypeCategory.SPECIAL);
+    public static final ElementType INFESTED = registerBuiltIn("infested", "Infested派系", ChatFormatting.GREEN, TypeCategory.SPECIAL);
+    public static final ElementType CORPUS = registerBuiltIn("corpus", "Corpus派系", ChatFormatting.BLUE, TypeCategory.SPECIAL);
+    public static final ElementType OROKIN = registerBuiltIn("orokin", "Orokin派系", ChatFormatting.LIGHT_PURPLE, TypeCategory.SPECIAL);
+    public static final ElementType SENTIENT = registerBuiltIn("sentient", "Sentient派系", ChatFormatting.DARK_RED, TypeCategory.SPECIAL);
+    public static final ElementType MURMUR = registerBuiltIn("murmur", "Murmur派系", ChatFormatting.AQUA, TypeCategory.SPECIAL);
+
     private final String name;
     private final String displayName;
     private final ChatFormatting color;
+    private final TypeCategory category;
     
-    ElementType(String name, String displayName, ChatFormatting color) {
+    private ElementType(String name, String displayName, ChatFormatting color, TypeCategory category) {
         this.name = name;
         this.displayName = displayName;
         this.color = color;
+        this.category = category;
+    }
+    
+    private static ElementType registerBuiltIn(String name, String displayName, ChatFormatting color, TypeCategory category) {
+        ElementType type = new ElementType(name, displayName, color, category);
+        REGISTRY.put(name, type);
+        return type;
+    }
+    
+    public static ElementType register(String name, String displayName, ChatFormatting color, TypeCategory category) {
+        if (REGISTRY.containsKey(name)) {
+            throw new IllegalArgumentException("Duplicate element type registered: " + name);
+        }
+        ElementType type = new ElementType(name, displayName, color, category);
+        REGISTRY.put(name, type);
+        return type;
     }
     
     public String getName() {
@@ -76,31 +97,28 @@ public enum ElementType {
      * 检查是否为物理元素
      */
     public boolean isPhysical() {
-        return this == IMPACT || this == PUNCTURE || this == SLASH;
+        return category == TypeCategory.PHYSICAL;
     }
     
     /**
      * 检查是否为基础元素
      */
     public boolean isBasic() {
-        return this == COLD || this == ELECTRICITY || this == HEAT || this == TOXIN;
+        return category == TypeCategory.BASIC;
     }
     
     /**
      * 检查是否为复合元素
      */
     public boolean isComplex() {
-        return this == BLAST || this == CORROSIVE || this == GAS || 
-               this == MAGNETIC || this == RADIATION || this == VIRAL;
+        return category == TypeCategory.COMPLEX;
     }
     
     /**
      * 检查是否为特殊属性
      */
     public boolean isSpecial() {
-        return this == CRITICAL_CHANCE || this == CRITICAL_DAMAGE || this == TRIGGER_CHANCE ||
-               this == GRINEER || this == INFESTED || this == CORPUS || 
-               this == OROKIN || this == SENTIENT || this == MURMUR;
+        return category == TypeCategory.SPECIAL;
     }
     
     /**
@@ -108,14 +126,18 @@ public enum ElementType {
      * 例如：爆炸 = 火焰 + 冰冻
      */
     public List<ElementType> getComposition() {
-        switch (this) {
-            case BLAST: return Arrays.asList(HEAT, COLD);
-            case CORROSIVE: return Arrays.asList(ELECTRICITY, TOXIN);
-            case GAS: return Arrays.asList(HEAT, TOXIN);
-            case MAGNETIC: return Arrays.asList(COLD, ELECTRICITY);
-            case RADIATION: return Arrays.asList(HEAT, ELECTRICITY);
-            case VIRAL: return Arrays.asList(COLD, TOXIN);
-            default: return Arrays.asList();
+        if (!isComplex()) {
+            return Collections.emptyList();
+        }
+        
+        switch (this.getName()) {
+            case "blast": return Arrays.asList(HEAT, COLD);
+            case "corrosive": return Arrays.asList(ELECTRICITY, TOXIN);
+            case "gas": return Arrays.asList(HEAT, TOXIN);
+            case "magnetic": return Arrays.asList(COLD, ELECTRICITY);
+            case "radiation": return Arrays.asList(HEAT, ELECTRICITY);
+            case "viral": return Arrays.asList(COLD, TOXIN);
+            default: return Collections.emptyList();
         }
     }
     
@@ -131,22 +153,24 @@ public enum ElementType {
         }
         
         // 精确匹配复合元素组合
-        if ((element1 == HEAT && element2 == COLD) || (element1 == COLD && element2 == HEAT)) {
+        Set<ElementType> elements = new HashSet<>(Arrays.asList(element1, element2));
+        
+        if (elements.contains(HEAT) && elements.contains(COLD)) {
             return BLAST; // 爆炸（火焰+冰冻）
         }
-        if ((element1 == ELECTRICITY && element2 == TOXIN) || (element1 == TOXIN && element2 == ELECTRICITY)) {
+        if (elements.contains(ELECTRICITY) && elements.contains(TOXIN)) {
             return CORROSIVE; // 腐蚀（电击+毒素）
         }
-        if ((element1 == HEAT && element2 == TOXIN) || (element1 == TOXIN && element2 == HEAT)) {
+        if (elements.contains(HEAT) && elements.contains(TOXIN)) {
             return GAS; // 毒气（火焰+毒素）
         }
-        if ((element1 == COLD && element2 == ELECTRICITY) || (element1 == ELECTRICITY && element2 == COLD)) {
+        if (elements.contains(COLD) && elements.contains(ELECTRICITY)) {
             return MAGNETIC; // 磁力（冰冻+电击）
         }
-        if ((element1 == HEAT && element2 == ELECTRICITY) || (element1 == ELECTRICITY && element2 == HEAT)) {
+        if (elements.contains(HEAT) && elements.contains(ELECTRICITY)) {
             return RADIATION; // 辐射（火焰+电击）
         }
-        if ((element1 == COLD && element2 == TOXIN) || (element1 == TOXIN && element2 == COLD)) {
+        if (elements.contains(COLD) && elements.contains(TOXIN)) {
             return VIRAL; // 病毒（冰冻+毒素）
         }
         
@@ -156,8 +180,8 @@ public enum ElementType {
     /**
      * 获取所有物理元素
      */
-    public static List<ElementType> getPhysicalElements() {
-        return Arrays.stream(values())
+    public static Collection<ElementType> getPhysicalElements() {
+        return REGISTRY.values().stream()
                 .filter(ElementType::isPhysical)
                 .collect(Collectors.toList());
     }
@@ -165,8 +189,8 @@ public enum ElementType {
     /**
      * 获取所有基础元素
      */
-    public static List<ElementType> getBasicElements() {
-        return Arrays.stream(values())
+    public static Collection<ElementType> getBasicElements() {
+        return REGISTRY.values().stream()
                 .filter(ElementType::isBasic)
                 .collect(Collectors.toList());
     }
@@ -174,8 +198,8 @@ public enum ElementType {
     /**
      * 获取所有复合元素
      */
-    public static List<ElementType> getComplexElements() {
-        return Arrays.stream(values())
+    public static Collection<ElementType> getComplexElements() {
+        return REGISTRY.values().stream()
                 .filter(ElementType::isComplex)
                 .collect(Collectors.toList());
     }
@@ -183,8 +207,8 @@ public enum ElementType {
     /**
      * 获取所有特殊属性元素
      */
-    public static List<ElementType> getSpecialElements() {
-        return Arrays.stream(values())
+    public static Collection<ElementType> getSpecialElements() {
+        return REGISTRY.values().stream()
                 .filter(ElementType::isSpecial)
                 .collect(Collectors.toList());
     }
@@ -193,11 +217,20 @@ public enum ElementType {
      * 根据名称获取元素类型
      */
     public static ElementType byName(String name) {
-        for (ElementType type : values()) {
-            if (type.getName().equals(name)) {
-                return type;
-            }
-        }
-        return null;
+        return REGISTRY.get(name);
+    }
+    
+    /**
+     * 获取所有已注册的元素类型
+     */
+    public static Collection<ElementType> getAllTypes() {
+        return REGISTRY.values();
+    }
+    
+    public enum TypeCategory {
+        PHYSICAL,
+        BASIC,
+        COMPLEX,
+        SPECIAL
     }
 }
