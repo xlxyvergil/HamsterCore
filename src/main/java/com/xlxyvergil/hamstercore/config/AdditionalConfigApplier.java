@@ -53,8 +53,8 @@ public class AdditionalConfigApplier {
         }
         
         // 获取物品的ResourceLocation
-        ResourceLocation itemKey = ForgeRegistries.ITEM.getKey(stack.getItem());
-        if (itemKey == null || itemKey == ForgeRegistries.ITEM.getDefaultKey()) {
+        ResourceLocation itemKey = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (itemKey == null || itemKey == ForgeRegistries.ITEMS.getDefaultKey()) {
             return false;
         }
         

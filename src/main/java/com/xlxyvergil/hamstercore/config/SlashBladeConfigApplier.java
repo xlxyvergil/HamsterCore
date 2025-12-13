@@ -20,6 +20,14 @@ public class SlashBladeConfigApplier {
      * @return 成功应用配置的物品数量
      */
     public static int applyConfigToItem() {
+        return applyConfigs();
+    }
+    
+    /**
+     * 应用拔刀剑物品的配置到物品堆
+     * @return 成功应用配置的物品数量
+     */
+    public static int applyConfigs() {
         // 检查拔刀剑是否已加载
         if (!ModCompat.isSlashBladeLoaded()) {
             return 0;
@@ -28,7 +36,7 @@ public class SlashBladeConfigApplier {
         int appliedCount = 0;
         
         // 获取所有拔刀剑物品translationKeys
-        Set<String> slashBladeKeys = SlashBladeItemsFetcher.getAllTranslationKeys();
+        Set<String> slashBladeKeys = SlashBladeItemsFetcher.getSlashBladeTranslationKeys();
         for (String translationKey : slashBladeKeys) {
             // 创建物品堆（使用默认的slahblade物品）
             ItemStack stack = new ItemStack(ModCompat.getSlashBladeItem());
@@ -63,7 +71,7 @@ public class SlashBladeConfigApplier {
         }
         
         // 检查是否为拔刀剑物品
-        if (!ModCompat.isSlashBladeItem(stack)) {
+        if (!ModCompat.isSlashBlade(stack)) {
             return false;
         }
         

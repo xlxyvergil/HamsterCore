@@ -7,6 +7,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import static com.xlxyvergil.hamstercore.element.ElementType.*;
+
 import java.util.*;
 
 /**
@@ -149,48 +151,32 @@ public class ElementTriggerHandler {
      */
     private static void applyElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target) {
         // 根据元素类型应用不同的效果
-        switch (elementType) {
-            case IMPACT:
-                // 冲击效果：待设计
-                break;
-            case PUNCTURE:
-                // 穿刺效果：待设计
-                break;
-            case SLASH:
-                // 切割效果：待设计
-                break;
-            case COLD:
-                // 冰冻效果：待设计
-                break;
-            case ELECTRICITY:
-                // 电击效果：待设计
-                break;
-            case HEAT:
-                // 火焰效果：待设计
-                break;
-            case TOXIN:
-                // 毒素效果：待设计
-                break;
-            case BLAST:
-                // 爆炸效果：待设计
-                break;
-            case CORROSIVE:
-                // 腐蚀效果：待设计
-                break;
-            case GAS:
-                // 毒气效果：待设计
-                break;
-            case MAGNETIC:
-                // 磁力效果：待设计
-                break;
-            case RADIATION:
-                // 辐射效果：待设计
-                break;
-            case VIRAL:
-                // 病毒效果：待设计
-                break;
-            default:
-                break;
+        if (elementType == IMPACT) {
+            // 冲击效果：待设计
+        } else if (elementType == PUNCTURE) {
+            // 穿刺效果：待设计
+        } else if (elementType == SLASH) {
+            // 切割效果：待设计
+        } else if (elementType == COLD) {
+            // 冰冻效果：待设计
+        } else if (elementType == ELECTRICITY) {
+            // 电击效果：待设计
+        } else if (elementType == HEAT) {
+            // 火焰效果：待设计
+        } else if (elementType == TOXIN) {
+            // 毒素效果：待设计
+        } else if (elementType == BLAST) {
+            // 爆炸效果：待设计
+        } else if (elementType == CORROSIVE) {
+            // 腐蚀效果：待设计
+        } else if (elementType == GAS) {
+            // 毒气效果：待设计
+        } else if (elementType == MAGNETIC) {
+            // 磁力效果：待设计
+        } else if (elementType == RADIATION) {
+            // 辐射效果：待设计
+        } else if (elementType == VIRAL) {
+            // 病毒效果：待设计
         }
     }
 }

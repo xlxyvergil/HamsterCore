@@ -3,24 +3,20 @@ package com.xlxyvergil.hamstercore.config;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.util.WeaponDataNBTUtil;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
-import com.xlxyvergil.hamstercore.util.TacZItemsFetcher;
+import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Map;
+import java.util.Set;
 
-/**
- * TACZ配置应用类
- * 处理TACZ物品的NBT应用
- */
 public class TacZConfigApplier {
     
     /**
-     * 应用TACZ物品的配置到物品堆
+     * 应用TACZ配置到所有TACZ物品
      * @return 成功应用配置的物品数量
      */
-    public static int applyConfigToItem() {
-        // 检查TACZ是否已加载
+    public static int applyConfigs() {
+        // 检查TACZ模组是否已加载
         if (!ModCompat.isTaczLoaded()) {
             return 0;
         }
@@ -28,23 +24,16 @@ public class TacZConfigApplier {
         int appliedCount = 0;
         
         // 获取所有TACZ物品
-        Map<ResourceLocation, String> taczItems = TacZItemsFetcher.getAllGunIds();
-        for (Map.Entry<ResourceLocation, String> entry : taczItems.entrySet()) {
+        Set<ResourceLocation> taczItems = ModSpecialItemsFetcher.getTacZGunIDs();
+        for (ResourceLocation gunId : taczItems) {
             // 创建物品堆
-            ItemStack stack = new ItemStack(entry.getKey().getBlock());
+            ItemStack stack = new ItemStack(ModCompat.getTaczItem());
             
-            // 设置gunId到NBT
-            if (stack.hasTag()) {
-                stack.getTag().putString("GunId", entry.getValue());
-            } else {
-                stack.getOrCreateTag().putString("GunId", entry.getValue());
-            }
-            
-            // 获取TACZ物品配置
-            WeaponData weaponData = WeaponConfig.getTacZWeaponConfig(stack);
-            if (weaponData != null) {
-                // 应用配置到物品NBT
-                WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            // 应用元素属性
+            WeaponData data = WeaponConfig.getWeaponConfigByGunId(gunId.toString());
+            if (data != null) {
+                // 写入NBT数据
+                WeaponDataNBTUtil.writeWeaponDataToNBT(stack, data);
                 appliedCount++;
             }
         }

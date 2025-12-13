@@ -13,6 +13,12 @@ import java.util.*;
  * 存储三层NBT数据结构：Basic层、Usage层和Def层
  */
 public class WeaponData {
+    // MOD相关信息字段
+    public String modid;
+    public String itemId;
+    public String gunId;
+    public String translationKey;
+    
     // Basic层：记录元素名称、来源和添加顺序
     private final Map<String, List<BasicEntry>> basicElements = new LinkedHashMap<>();
     
@@ -21,6 +27,9 @@ public class WeaponData {
     
     // Def层：默认元素数据
     private final Map<String, Double> defElements = new HashMap<>();
+    
+    // 初始修饰符列表
+    private final List<AttributeModifierEntry> initialModifiers = new ArrayList<>();
     
     /**
      * Basic层条目内部类
@@ -83,6 +92,27 @@ public class WeaponData {
             String source = tag.getString("source");
             int order = tag.getInt("order");
             return new BasicEntry(type, source, order);
+        }
+    }
+    
+    /**
+     * 属性修饰符条目内部类
+     */
+    public static class AttributeModifierEntry {
+        private final String name;
+        private final net.minecraft.world.entity.ai.attributes.AttributeModifier modifier;
+        
+        public AttributeModifierEntry(String name, net.minecraft.world.entity.ai.attributes.AttributeModifier modifier) {
+            this.name = name;
+            this.modifier = modifier;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public net.minecraft.world.entity.ai.attributes.AttributeModifier getModifier() {
+            return modifier;
         }
     }
     
@@ -171,6 +201,17 @@ public class WeaponData {
     }
     
     /**
+     * 获取Usage层指定类型的元素值
+     */
+    public List<Double> getUsageValue(String type) {
+        // 返回一个包含单个值的列表，如果不存在则返回空列表
+        if (usageElements.containsKey(type)) {
+            return Arrays.asList(usageElements.get(type));
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
      * 获取Def层元素
      */
     public Map<String, Double> getDefElements() {
@@ -182,6 +223,20 @@ public class WeaponData {
      */
     public void clearUsageElements() {
         usageElements.clear();
+    }
+    
+    /**
+     * 添加初始修饰符
+     */
+    public void addInitialModifier(AttributeModifierEntry entry) {
+        initialModifiers.add(entry);
+    }
+    
+    /**
+     * 获取初始修饰符列表
+     */
+    public List<AttributeModifierEntry> getInitialModifiers() {
+        return initialModifiers;
     }
     
     /**

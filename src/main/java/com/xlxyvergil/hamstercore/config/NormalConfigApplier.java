@@ -25,8 +25,8 @@ public class NormalConfigApplier {
         int appliedCount = 0;
         
         // 遍历所有已注册的物品
-        for (Map.Entry<ResourceLocation, Item> entry : ForgeRegistries.ITEMS.getEntries()) {
-            ResourceLocation itemKey = entry.getKey();
+        for (Map.Entry<net.minecraft.resources.ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries()) {
+            ResourceLocation itemKey = entry.getKey().location();
             Item item = entry.getValue();
             
             // 检查物品是否为武器或工具

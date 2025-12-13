@@ -8,7 +8,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -90,7 +90,7 @@ public class ModEnchantments {
             "trigger_chance_element", TriggerChanceElementEnchantment::new);
 
     // 元素附魔映射表
-    public static final Map<ElementType, RegistryObject<? extends ElementEnchantment>> ELEMENT_ENCHANTMENTS = Maps.newEnumMap(ElementType.class);
+    public static final Map<ElementType, RegistryObject<? extends ElementEnchantment>> ELEMENT_ENCHANTMENTS = new HashMap<>();
     
     static {
         // 物理元素

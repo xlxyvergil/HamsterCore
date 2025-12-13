@@ -2,9 +2,13 @@ package com.xlxyvergil.hamstercore.compat;
 
 import com.tacz.guns.api.item.IGun;
 import com.tacz.guns.api.DefaultAssets;
+import com.tacz.guns.init.ModItems;
 import mods.flammpfeil.slashblade.item.ItemSlashBlade;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Tiers;
 import net.minecraftforge.fml.ModList;
 
 import javax.annotation.Nullable;
@@ -21,7 +25,7 @@ public class ModCompat {
     /**
      * 检查TACZ是否已加载
      */
-    public static boolean isTACZLoaded() {
+    public static boolean isTaczLoaded() {
         return ModList.get().isLoaded(TACZ_MOD_ID);
     }
     
@@ -32,12 +36,14 @@ public class ModCompat {
         return ModList.get().isLoaded(SLASHBLADE_MOD_ID);
     }
     
+
+    
     /**
      * 检查物品是否为TACZ枪械
      * 直接调用API，参考ck目录中其他模组的做法
      */
     public static boolean isGun(ItemStack stack) {
-        if (!isTACZLoaded()) {
+        if (!isTaczLoaded()) {
             return false;
         }
         
@@ -48,6 +54,13 @@ public class ModCompat {
             // API调用失败，返回false
             return false;
         }
+    }
+    
+    /**
+     * 检查物品是否为TACZ枪械
+     */
+    public static boolean isTacZItem(ItemStack stack) {
+        return isGun(stack);
     }
     
     /**
@@ -66,6 +79,28 @@ public class ModCompat {
             // API调用失败，返回false
             return false;
         }
+    }
+    
+    /**
+     * 获取SlashBlade物品
+     */
+    public static Item getSlashBladeItem() {
+        return new ItemSlashBlade(Tiers.DIAMOND, 1, -2.0F, new Item.Properties());
+    }
+    
+    /**
+     * 获取TACZ物品
+     * 参考getGunId的实现方式，通过API获取实际物品
+     * 参考拔刀剑实现方式，直接创建实例而不是使用静态引用
+     */
+    public static Item getTaczItem() {
+        if (!isTaczLoaded()) {
+            return Items.AIR;
+        }
+        
+        // 直接创建TACZ枪械物品实例
+        // 使用ModernKineticGunItem作为默认枪械类型
+        return new com.tacz.guns.item.ModernKineticGunItem();
     }
     
     /**

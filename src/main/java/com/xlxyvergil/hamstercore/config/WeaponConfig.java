@@ -258,43 +258,43 @@ public class WeaponConfig {
         
         if (gunType.contains("pistol") || gunType.contains("handgun")) {
             // 手枪类：平衡型
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.5);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.3);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.SLASH.getName(), 0.2);
         } else if (gunType.contains("rifle") || gunType.contains("assault")) {
             // 步枪类：穿刺为主
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.7);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         } else if (gunType.contains("sniper")) {
             // 狙击枪：高穿刺
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.8);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.15);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.SLASH.getName(), 0.05);
         } else if (gunType.contains("shotgun")) {
             // 霰弹枪：冲击为主
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.6);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.3);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         } else {
             // 默认枪械：穿刺和冲击为主
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.6);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.3);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         }
     }
@@ -304,11 +304,11 @@ public class WeaponConfig {
      */
     private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
         // 拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%
-        data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+        data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
         data.setUsageElement(ElementType.SLASH.getName(), 0.7);
-        data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+        data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
         data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
-        data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+        data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
         data.setUsageElement(ElementType.PUNCTURE.getName(), 0.1);
     }
     
@@ -352,11 +352,11 @@ public class WeaponConfig {
             "stone_sword".equals(itemKey.getPath()) ||
             "wooden_sword".equals(itemKey.getPath())) {
             // 剑类：主要是切割
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.SLASH.getName(), 0.6);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.2);
         } else if ("netherite_axe".equals(itemKey.getPath()) ||
                    "diamond_axe".equals(itemKey.getPath()) ||
@@ -365,19 +365,19 @@ public class WeaponConfig {
                    "stone_axe".equals(itemKey.getPath()) ||
                    "wooden_axe".equals(itemKey.getPath())) {
             // 斧类：主要是冲击和切割
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.IMPACT.getName(), 0.5);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.SLASH.getName(), 0.4);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.PUNCTURE.getName(), 0.1);
         } else {
             // 其他物品：默认物理元素占比
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG");
+            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
             data.setUsageElement(ElementType.SLASH.getName(), DEFAULT_SLASH);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG");
+            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
             data.setUsageElement(ElementType.IMPACT.getName(), DEFAULT_IMPACT);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG");
+            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
             data.setUsageElement(ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
         }
     }
@@ -466,7 +466,7 @@ public class WeaponConfig {
         JsonArray modifiersArray = new JsonArray();
         for (WeaponData.AttributeModifierEntry modifierEntry : weaponData.getInitialModifiers()) {
             JsonObject modifierJson = new JsonObject();
-            modifierJson.addProperty("name", modifierEntry.getAttributeName());
+            modifierJson.addProperty("name", modifierEntry.getName());
             modifierJson.addProperty("amount", modifierEntry.getModifier().getAmount());
             modifierJson.addProperty("operation", modifierEntry.getModifier().getOperation().toString());
             modifiersArray.add(modifierJson);
@@ -800,6 +800,13 @@ public class WeaponConfig {
      * 获取所有武器配置
      */
     public static Map<ResourceLocation, WeaponData> getAllWeaponConfigs() {
+        return new HashMap<>(weaponConfigs);
+    }
+    
+    /**
+     * 获取额外武器配置（与getAllWeaponConfigs相同）
+     */
+    public static Map<ResourceLocation, WeaponData> getAdditionalWeaponConfigs() {
         return new HashMap<>(weaponConfigs);
     }
     

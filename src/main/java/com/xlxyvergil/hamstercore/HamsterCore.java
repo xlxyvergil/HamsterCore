@@ -4,7 +4,6 @@ import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
-import com.xlxyvergil.hamstercore.element.ElementApplier;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
@@ -16,9 +15,6 @@ import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
-import com.xlxyvergil.hamstercore.element.AdditionalElementApplier;
-import com.xlxyvergil.hamstercore.element.ElementApplier;
-import com.xlxyvergil.hamstercore.element.NormalItemElementApplier;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
 import com.xlxyvergil.hamstercore.config.AdditionalConfigApplier;
@@ -113,8 +109,8 @@ public class HamsterCore {
             int normalAppliedCount = NormalConfigApplier.applyConfigToItem();
             
             // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
-            int tacZAppliedCount = TacZConfigApplier.applyConfigToItem();
-            int slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigToItem();
+            int tacZAppliedCount = TacZConfigApplier.applyConfigs();
+            int slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigs();
             
             // 6. 应用额外的元素属性配置
             int additionalAppliedCount = AdditionalConfigApplier.applyConfigToItem();

@@ -11,7 +11,7 @@ import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.TradeWithVillagerEvent;
-import net.minecraftforge.event.level.ChunkLoadEvent;
+// ChunkLoadEvent导入已移除，因为未使用
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -64,10 +64,11 @@ public class ItemAttributeEventHandler {
         }
     }
 
-    /**
-     * 处理玩家打开物品栏事件
+    /*
+     * 处理玩家打开物品栏事件已移除
      * 当玩家打开物品栏时重新计算物品属性
      */
+    /*
     @SubscribeEvent
     public static void onPlayerOpenContainer(PlayerEvent.OpenContainer event) {
         Player player = event.getEntity();
@@ -80,6 +81,7 @@ public class ItemAttributeEventHandler {
             }
         }
     }
+    */
 
     /**
      * 处理物品合成事件

@@ -108,7 +108,13 @@ public class WeaponAttributeRenderer {
             for (String elementTypeName : elementTypes) {
                 ElementType elementType = ElementType.byName(elementTypeName);
                 if (elementType != null) {
-                    double value = ElementNBTUtils.getUsageElementValue(stack, elementTypeName);
+                    List<Double> values = ElementNBTUtils.getUsageElementValue(stack, elementTypeName);
+                    if (values.isEmpty()) {
+                        continue;
+                    }
+                    
+                    // 获取第一个值
+                    double value = values.get(0);
                     
                     // 跳过无效值
                     if (value <= 0) {
