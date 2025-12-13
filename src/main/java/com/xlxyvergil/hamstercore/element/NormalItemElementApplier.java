@@ -2,12 +2,16 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,15 +66,30 @@ public class NormalItemElementApplier {
                 return false;
             }
             
-            // 应用元素修饰符到物品
-            ElementApplier.applyElementModifiers(stack, weaponData.getBasicElements());
-            
-            // 保存元素数据到NBT（只保存Basic层和Usage层）
-            WeaponDataManager.saveElementData(stack, weaponData);
+            // 应用元素修饰符到物品（使用独立实现并保存Basic层数据）
+            applyElementModifiers(stack, weaponData.getBasicElements());
             
             return true;
         } catch (Exception e) {
             return false;
         }
     }
+    
+    /**
+     * 应用元素修饰符到物品
+     * 根据配置文件中的元素属性修饰符，在Basic层里存储修饰符的元素类型、排序以及是否是CONFIG
+     */
+    private static void applyElementModifiers(ItemStack stack, Map<String, List<WeaponData.BasicEntry>> basicElements) {
+        // 同时将Basic层数据保存到NBT中
+        WeaponData weaponData = new WeaponData();
+        for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : basicElements.entrySet()) {
+            for (WeaponData.BasicEntry basicEntry : entry.getValue()) {
+                weaponData.addBasicElement(basicEntry.getType(), basicEntry.getSource(), basicEntry.getOrder());
+            }
+        }
+        
+        // 保存元素数据到NBT（只保存Basic层）
+        WeaponDataManager.saveElementDataWithoutUsage(stack, weaponData);
+    }
+
 }

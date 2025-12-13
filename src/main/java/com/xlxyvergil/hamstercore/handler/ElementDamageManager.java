@@ -78,6 +78,12 @@ public class ElementDamageManager {
     private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
+        // 对于空的武器栈，直接返回基础数据
+        if (weapon.isEmpty()) {
+            damageData.finalDamage = baseDamage;
+            return damageData;
+        }
+        
         // 获取武器数据并重新计算Usage层数据以确保准确性
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
@@ -116,6 +122,11 @@ public class ElementDamageManager {
      * @return 激活的元素实例列表
      */
     public static List<Map.Entry<ElementType, Double>> getActiveElements(ItemStack weapon) {
+        // 对于空的武器栈，直接返回空列表
+        if (weapon.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
         ElementCache.CacheValue<List<Map.Entry<ElementType, Double>>> cached = ACTIVE_ELEMENTS_CACHE.get(weapon);
         return cached.orElse(new ArrayList<>());
     }
@@ -128,6 +139,11 @@ public class ElementDamageManager {
     private static List<Map.Entry<ElementType, Double>> getActiveElementsImpl(ItemStack weapon) {
         // 使用新的四层数据结构，但不强制重新计算Usage层数据
         WeaponData data = WeaponDataManager.loadElementData(weapon);
+        
+        // 如果没有元素数据，返回空列表
+        if (data == null) {
+            return new ArrayList<>();
+        }
         
         // 将Usage层数据转换为ElementType和值的映射列表
         List<Map.Entry<ElementType, Double>> activeElements = new ArrayList<>();

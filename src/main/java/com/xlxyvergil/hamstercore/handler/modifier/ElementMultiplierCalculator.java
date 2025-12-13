@@ -1,15 +1,12 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
+import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 元素倍率计算器
@@ -30,36 +27,26 @@ public class ElementMultiplierCalculator {
             // 获取玩家主手物品
             ItemStack weapon = player.getMainHandItem();
             
-            // 检查物品是否有元素属性
-            if (ElementNBTUtils.hasAnyElements(weapon)) {
-                // 直接从武器NBT的Usage层获取元素数据以计算元素总倍率
-                WeaponData data = WeaponDataManager.loadElementData(weapon);
-                if (data != null) {
-                    // 计算元素总倍率（所有元素倍率之和，除了暴击相关属性和触发率）
-                    double elementTotalRatio = 0.0;
-                    
-                    // 获取Usage层所有元素数据
-                    Map<String, Double> usageElements = data.getUsageElements();
-                    for (Map.Entry<String, Double> entry : usageElements.entrySet()) {
-                        String elementTypeStr = entry.getKey();
-                        double value = entry.getValue();
-                        
-                        // 将字符串转换为ElementType枚举
-                        ElementType elementType = ElementType.byName(elementTypeStr);
-                        
-                        // 排除暴击相关属性和触发率，只计算元素伤害倍率
-                        if (elementType != null && 
-                            elementType != ElementType.CRITICAL_CHANCE && 
-                            elementType != ElementType.CRITICAL_DAMAGE &&
-                            elementType != ElementType.TRIGGER_CHANCE) {
-                            elementTotalRatio += value;
-                        }
-                    }
-                    
-                    // 元素总倍率 = 所有元素倍率之和（默认值保证了至少为1）
-                    totalElementMultiplier = 1.0 + elementTotalRatio;
+            // 从ElementDamageManager缓存中获取激活的元素列表
+            List<Map.Entry<ElementType, Double>> activeElements = ElementDamageManager.getActiveElements(weapon);
+            
+            // 计算元素总倍率（所有元素倍率之和）
+            double elementTotalRatio = 0.0;
+            
+            // 遍历激活的元素，只计算基础元素和复合元素的倍率
+            // Usage层只包含基础元素和复合元素，不包含特殊属性和派系增伤，所以可以直接累加
+            for (Map.Entry<ElementType, Double> entry : activeElements) {
+                ElementType elementType = entry.getKey();
+                double value = entry.getValue();
+                
+                // 计算基础元素和复合元素的倍率
+                if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
+                    elementTotalRatio += value;
                 }
             }
+            
+            // 元素总倍率 = 1.0 + 所有元素倍率之和
+            totalElementMultiplier = 1.0 + elementTotalRatio;
         }
         
         return totalElementMultiplier;

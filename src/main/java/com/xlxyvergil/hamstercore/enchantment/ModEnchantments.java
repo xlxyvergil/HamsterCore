@@ -92,6 +92,40 @@ public class ModEnchantments {
     // 元素附魔映射表
     public static final Map<ElementType, RegistryObject<ElementEnchantment>> ELEMENT_ENCHANTMENTS = Maps.newEnumMap(ElementType.class);
     
+    static {
+        // 物理元素
+        ELEMENT_ENCHANTMENTS.put(ElementType.SLASH, SLASH_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.PUNCTURE, PUNCTURE_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.IMPACT, IMPACT_ELEMENT);
+        
+        // 基础元素
+        ELEMENT_ENCHANTMENTS.put(ElementType.HEAT, HEAT_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.COLD, COLD_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.ELECTRICITY, ELECTRICITY_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.TOXIN, TOXIN_ELEMENT);
+        
+        // 复合元素
+        ELEMENT_ENCHANTMENTS.put(ElementType.BLAST, BLAST_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.RADIATION, RADIATION_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.GAS, GAS_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.MAGNETIC, MAGNETIC_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.VIRAL, VIRAL_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.CORROSIVE, CORROSIVE_ELEMENT);
+        
+        // 派系元素
+        ELEMENT_ENCHANTMENTS.put(ElementType.GRINEER, GRINEER_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.INFESTED, INFESTED_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.CORPUS, CORPUS_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.OROKIN, OROKIN_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.SENTIENT, SENTIENT_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.MURMUR, MURMUR_ELEMENT);
+        
+        // 特殊属性
+        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_CHANCE, CRITICAL_CHANCE_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_DAMAGE, CRITICAL_DAMAGE_ELEMENT);
+        ELEMENT_ENCHANTMENTS.put(ElementType.TRIGGER_CHANCE, TRIGGER_CHANCE_ELEMENT);
+    }
+    
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
     }

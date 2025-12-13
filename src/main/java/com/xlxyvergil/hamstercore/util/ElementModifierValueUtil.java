@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.util;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collection;
@@ -21,8 +22,14 @@ public class ElementModifierValueUtil {
      * @return 元素数值
      */
     public static double getElementValueFromAttributes(ItemStack stack, ElementType elementType) {
+        // 检查输入参数
+        if (stack == null || elementType == null) {
+            return 0.0;
+        }
+        
         // 获取物品指定装备槽位上的所有攻击伤害属性修饰符
-        Collection<AttributeModifier> modifiers = stack.getAttributeModifiers(stack.getEquipmentSlot()).get(Attributes.ATTACK_DAMAGE);
+        EquipmentSlot slot = stack.getEquipmentSlot();
+        Collection<AttributeModifier> modifiers = stack.getAttributeModifiers(slot).get(Attributes.ATTACK_DAMAGE);
         if (modifiers == null || modifiers.isEmpty()) {
             return 0.0;
         }
@@ -34,7 +41,7 @@ public class ElementModifierValueUtil {
             // 检查修饰符名称是否与元素类型匹配
             // 使用元素属性的标识符进行匹配
             String identifier = "hamstercore:" + elementType.getName();
-            if (modifier.getName() != null && modifier.getName().equals(identifier)) {
+            if (modifier.getName() != null && modifier.getName().contains(identifier)) {
                 totalValue += modifier.getAmount();
             }
         }

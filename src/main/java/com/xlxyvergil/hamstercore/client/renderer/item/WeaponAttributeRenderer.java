@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
@@ -40,37 +39,13 @@ public class WeaponAttributeRenderer {
         // 获取现有的工具提示行
         List<Component> tooltipElements = event.getToolTip();
         
-        // 检查是否应该显示Usage层数据
-        if (shouldShowUsageLayer(stack)) {
-            // 添加Usage层属性到工具提示（特殊属性+元素属性+派系增伤）
-             addUsageAttributes(tooltipElements, stack);             
-             addBasicAttributes(tooltipElements, stack);           
-        } else {
-            // 添加Basic层属性到工具提示（特殊属性+元素属性）
-
-
-        }
-    }
-    
-    /**
-     * 判断是否应该显示Usage层数据
-     * 如果Usage层有任何有效数据（大于0或不等于0），则显示Usage层，否则显示Basic层
-     */
-    private static boolean shouldShowUsageLayer(ItemStack stack) {
-        // 加载武器数据并重新计算Usage层数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = com.xlxyvergil.hamstercore.element.WeaponDataManager.loadElementData(stack);
-        com.xlxyvergil.hamstercore.element.WeaponDataManager.computeUsageData(stack, data);
-        
-        // 检查Usage层是否有触发率数据
-        double sum = data.getUsageElements().getOrDefault("trigger_chance", 0.0);
-        
-        // 如果有任何Usage层数据大于0，则显示Usage层
-        return sum > 0;
+        // 添加Usage层属性到工具提示（仅包含基础元素和复合元素）
+        addUsageAttributes(tooltipElements, stack);
     }
     
     /**
      * 添加Usage层属性到工具提示
-     * 包括：特殊属性（暴击率、暴击伤害、触发率）+ 元素属性 + 派系增伤
+     * 仅包含：基础元素和复合元素
      */
     private static void addUsageAttributes(List<Component> tooltipElements, ItemStack stack) {
         // 先调用一遍计算，确保缓存是最新的
@@ -79,49 +54,23 @@ public class WeaponAttributeRenderer {
         // 从缓存中获取元素列表
         List<Map.Entry<ElementType, Double>> cachedElements = ElementDamageManager.getActiveElements(stack);
         
-        if (cachedElements == null || cachedElements.isEmpty()) {
-            return;
-        }
-        
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
         
         // 添加Usage层标题
-        tooltipElements.add(Component.literal("Usage").withStyle(ChatFormatting.YELLOW));
+        tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.YELLOW));
         
         // 分离特殊属性和元素属性
         Double criticalChance = null;
         Double criticalDamage = null;
         Double triggerChance = null;
         
-        // 通过ElementModifierValueUtil获取特殊属性值
+        // 通过ElementModifierValueUtil获取特殊属性值（从属性修饰符系统获取Forge计算后的值）
         criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_CHANCE);
         criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_DAMAGE);
         triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.TRIGGER_CHANCE);
         
-        // 添加元素属性标题
-        boolean hasElements = false;
-        for (Map.Entry<ElementType, Double> entry : cachedElements) {
-            ElementType elementType = entry.getKey();
-            double value = entry.getValue();
-            
-            if (value <= 0) {
-                continue;
-            }
-            
-            // 检查是否为特殊属性
-            if (elementType == ElementType.CRITICAL_CHANCE) {
-                criticalChance = value;
-            } else if (elementType == ElementType.CRITICAL_DAMAGE) {
-                criticalDamage = value;
-            } else if (elementType == ElementType.TRIGGER_CHANCE) {
-                triggerChance = value;
-            } else {
-                hasElements = true;
-            }
-        }
-        
-        // 添加特殊属性
+        // 添加特殊属性（全部从属性修饰符系统获取Forge计算后的值）
         if (criticalChance != null && criticalChance > 0) {
             String criticalChanceText = String.format("%s: %.1f%%", 
                 Component.translatable("hamstercore.ui.critical_chance").getString(), 
@@ -143,116 +92,34 @@ public class WeaponAttributeRenderer {
             tooltipElements.add(Component.literal(triggerChanceText));
         }
         
-        // 添加元素属性
-        if (hasElements) {
-            tooltipElements.add(
-                Component.translatable("hamstercore.ui.element_ratios").append(":")
-            );
-            
-            for (Map.Entry<ElementType, Double> entry : cachedElements) {
-                ElementType elementType = entry.getKey();
-                double value = entry.getValue();
-                
-                // 跳过特殊属性和无效值
-                if (value <= 0 || 
-                    elementType == ElementType.CRITICAL_CHANCE || 
-                    elementType == ElementType.CRITICAL_DAMAGE || 
-                    elementType == ElementType.TRIGGER_CHANCE) {
-                    continue;
-                }
-                
-                // 创建元素名称和数值的文本组件，使用元素颜色
-                String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-                String elementText = String.format("  %s: %.2f", elementName, value);
-                
-                // 检查颜色是否有效，避免NullPointerException
-                Integer colorValue = elementType.getColor().getColor();
-                if (colorValue != null) {
-                    Component elementComponent = Component.literal(elementText)
-                        .withStyle(style -> style.withColor(colorValue));
-                    tooltipElements.add(elementComponent);
-                } else {
-                    // 如果没有有效颜色，使用默认样式
-                    tooltipElements.add(Component.literal(elementText));
-                }
-            }
-        }
-        
-        // 添加派系增伤属性到工具提示
-        addFactionAttributes(tooltipElements, stack);
-    }
-    
-    /**
-     * 添加Basic层属性到工具提示
-     * 包括：特殊属性（暴击率、暴击伤害、触发率）+ 元素属性
-     */
-    private static void addBasicAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 获取Basic层数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = com.xlxyvergil.hamstercore.element.WeaponDataManager.loadElementData(stack);
-        
-        // 添加空行分隔
-        tooltipElements.add(Component.literal(""));
-        
-        // 添加Basic层标题
-        tooltipElements.add(Component.literal("Basic").withStyle(ChatFormatting.YELLOW));
-        
-        // 添加特殊属性
-        String criticalChanceText = String.format("%s: %.1f%%", 
-            Component.translatable("hamstercore.ui.critical_chance").getString(), 
-            data.getUsageElements().getOrDefault("critical_chance", 0.0) * 100);
-        tooltipElements.add(Component.literal(criticalChanceText));
-        
-        String criticalDamageText = String.format("%s: %.1f%%", 
-            Component.translatable("hamstercore.ui.critical_damage").getString(), 
-            data.getUsageElements().getOrDefault("critical_damage", 0.0) * 100);
-        tooltipElements.add(Component.literal(criticalDamageText));
-        
-        String triggerChanceText = String.format("%s: %.1f%%", 
-            Component.translatable("hamstercore.ui.trigger_chance").getString(), 
-            data.getUsageElements().getOrDefault("trigger_chance", 0.0) * 100);
-        tooltipElements.add(Component.literal(triggerChanceText));
-        
-        // 添加元素属性
+        // 添加元素属性（从Usage层获取）
+        // 获取所有元素类型
+        Set<String> elementTypes = ElementNBTUtils.getAllUsageElementTypes(stack);
         boolean hasElements = false;
-        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry>> entry : data.getBasicElements().entrySet()) {
-            String key = entry.getKey();
-            List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> basicEntries = entry.getValue();
-            
-            // 排除特殊属性
-            if (!"critical_chance".equals(key) && 
-                !"critical_damage".equals(key) && 
-                !"trigger_chance".equals(key) &&
-                !basicEntries.isEmpty() && 
-                basicEntries.size() > 0) {
-                hasElements = true;
-                break;
-            }
-        }
         
-        if (hasElements) {
+        // 添加元素属性标题
+        if (!elementTypes.isEmpty()) {
+            hasElements = true;
             tooltipElements.add(
                 Component.translatable("hamstercore.ui.element_ratios").append(":")
             );
             
-            for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry>> entry : data.getBasicElements().entrySet()) {
-                String key = entry.getKey();
-                List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> basicEntries = entry.getValue();
-                
-                // 排除特殊属性
-                if ("critical_chance".equals(key) || 
-                    "critical_damage".equals(key) || 
-                    "trigger_chance".equals(key) ||
-                    basicEntries.isEmpty()) {
-                    continue;
-                }
-                
-                // 显示元素类型和数量
-                String elementName = Component.translatable("element." + key + ".name").getString();
-                String elementText = String.format("  %s: %d", elementName, basicEntries.size());
-                
-                // 获取元素类型的颜色
-                com.xlxyvergil.hamstercore.element.ElementType elementType = com.xlxyvergil.hamstercore.element.ElementType.byName(key);
+            // 添加每个元素的数值
+            for (String elementTypeName : elementTypes) {
+                ElementType elementType = ElementType.byName(elementTypeName);
                 if (elementType != null) {
+                    double value = ElementNBTUtils.getUsageElementValue(stack, elementTypeName);
+                    
+                    // 跳过无效值
+                    if (value <= 0) {
+                        continue;
+                    }
+                    
+                    // 创建元素名称和数值的文本组件，使用元素颜色
+                    String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
+                    String elementText = String.format("  %s: %.2f", elementName, value);
+                    
+                    // 检查颜色是否有效，避免NullPointerException
                     Integer colorValue = elementType.getColor().getColor();
                     if (colorValue != null) {
                         Component elementComponent = Component.literal(elementText)
@@ -262,25 +129,22 @@ public class WeaponAttributeRenderer {
                         // 如果没有有效颜色，使用默认样式
                         tooltipElements.add(Component.literal(elementText));
                     }
-                } else {
-                    // 如果没有找到元素类型，使用默认样式
-                    tooltipElements.add(Component.literal(elementText));
                 }
             }
         }
+        
+        // 添加派系增伤属性到工具提示（从属性修饰符系统获取Forge计算后的值）
+        addFactionAttributes(tooltipElements, stack);
     }
     
     /**
-     * 添加派系增伤属性到工具提示
+     * 添加派系增伤属性到工具提示（从属性修饰符系统获取Forge计算后的值）
      */
     private static void addFactionAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 获取Extra层派系数据
-        Set<String> factions = ElementNBTUtils.getAllExtraFactions(stack);
+        // 获取派系数据（从属性修饰符系统获取Forge计算后的值）
         
-        // 如果没有派系增伤数据，则直接返回
-        if (factions.isEmpty()) {
-            return;
-        }
+        // 定义所有可能的派系类型
+        String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
         
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
@@ -290,15 +154,19 @@ public class WeaponAttributeRenderer {
             Component.translatable("hamstercore.ui.faction_damage_bonus").append(":")
         );
         
-        // 添加每个派系的增伤数值
-        for (String faction : factions) {
-            double modifier = ElementNBTUtils.getExtraFactionModifier(stack, faction);
+        boolean hasFactionBonuses = false;
+        
+        // 添加每个派系的增伤数值（从属性修饰符系统获取Forge计算后的值）
+        for (String faction : factionTypes) {
+            // 从属性修饰符系统获取派系增伤值
+            double factionModifier = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.byName(faction));
             
             // 只显示非零的派系增伤
-            if (modifier != 0) {
+            if (factionModifier > 0) {
+                hasFactionBonuses = true;
                 String factionText = String.format("  %s: %.1f%%", 
-                    Component.translatable("faction." + faction.toLowerCase() + ".name").getString(), 
-                    modifier * 100);
+                    Component.translatable("element." + faction + ".name").getString(), 
+                    factionModifier * 100);
                 
                 // 根据派系设置颜色
                 ChatFormatting color = ChatFormatting.WHITE; // 默认颜色
@@ -325,6 +193,18 @@ public class WeaponAttributeRenderer {
                 
                 Component factionComponent = Component.literal(factionText).withStyle(color);
                 tooltipElements.add(factionComponent);
+            }
+        }
+        
+        // 如果没有任何派系增伤，则移除标题和空行
+        if (!hasFactionBonuses) {
+            // 移除派系增伤标题
+            if (!tooltipElements.isEmpty()) {
+                tooltipElements.remove(tooltipElements.size() - 1);
+            }
+            // 移除空行分隔
+            if (!tooltipElements.isEmpty()) {
+                tooltipElements.remove(tooltipElements.size() - 1);
             }
         }
     }

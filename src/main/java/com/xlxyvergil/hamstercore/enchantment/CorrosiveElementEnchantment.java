@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -10,22 +11,22 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.UUID;
 
 public class CorrosiveElementEnchantment extends ElementEnchantment {
-    private static final UUID CORROSIVE_MODIFIER_UUID = UUID.fromString("656c650d-0000-0000-0000-000000000000");
-    
     public CorrosiveElementEnchantment() {
-        super(Rarity.RARE, ElementType.CORROSIVE, 5, "enchantment_corrosive", CORROSIVE_MODIFIER_UUID);
+        super(Rarity.RARE, ElementType.CORROSIVE, 5, "enchantment_corrosive");
     }
     
     @Override
-    public java.util.Collection<AttributeModifier> getEntityAttributes(EquipmentSlot slot, int level) {
+    public java.util.Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
             // 获取元素属性
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.3
                 double value = 0.3 * level;
+                        // 使用ElementUUIDManager生成UUID
+                        UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
                 AttributeModifier modifier = new AttributeModifier(
-                    this.elementModifierId, 
+                    modifierId, 
                     "hamstercore:" + elementType.getName(), 
                     value, 
                     elementAttribute.getOperation()
@@ -38,6 +39,6 @@ public class CorrosiveElementEnchantment extends ElementEnchantment {
             }
         }
         
-        return super.getEntityAttributes(slot, level);
+        return java.util.Collections.emptyList();
     }
 }

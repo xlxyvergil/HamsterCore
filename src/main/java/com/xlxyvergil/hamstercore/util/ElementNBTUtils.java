@@ -1,218 +1,118 @@
 package com.xlxyvergil.hamstercore.util;
 
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-
-
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import net.minecraft.world.item.ItemStack;
+import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+import com.xlxyvergil.hamstercore.element.ElementType;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 元素NBT工具类
- * 提供对武器元素数据的读取和解析功能
+ * 提供对物品元素数据的便捷访问方法
+ * 只处理Usage层数据
  */
 public class ElementNBTUtils {
     
-    public static final String TRIGGER_CHANCE = "trigger_chance";
-    
     /**
-     * 检查武器是否有任何元素属性
-     * 从Usage层获取数据
+     * 检查物品是否包含任何元素（只检查Usage层）
      */
     public static boolean hasAnyElements(ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
         }
         
-        // 从Usage层获取元素数据
-        List<Map.Entry<ElementType, Double>> elements = ElementDamageManager.getActiveElements(stack);
-        return !elements.isEmpty();
-    }
-    
-    /**
-     * 获取暴击率
-     * 从Usage层获取数据
-     */
-    public static double getCriticalChance(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return 0.0;
+        // 尝试应用配置数据（如果尚未应用）
+        WeaponDataManager.applyConfigDataIfNeeded(stack);
+        
+        // 从物品中加载元素数据
+        WeaponData data = WeaponDataManager.loadElementData(stack);
+        
+        // 检查data是否为null
+        if (data == null) {
+            return false;
         }
         
-        // 从Usage层获取暴击率数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
-        
-        // 检查Usage层是否有暴击率数据
-        return data.getUsageElements().getOrDefault("critical_chance", 0.0);
-    }
-    
-    /**
-     * 获取暴击伤害
-     * 从Usage层获取数据
-     */
-    public static double getCriticalDamage(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return 0.0;
-        }
-        
-        // 从Usage层获取暴击伤害数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
-        
-        // 检查Usage层是否有暴击伤害数据
-        return data.getUsageElements().getOrDefault("critical_damage", 0.0);
-    }
-    
-    /**
-     * 获取触发率
-     * 从Usage层获取数据
-     */
-    public static double getTriggerChance(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return 0.0;
-        }
-        
-        // 从Usage层获取触发率数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
-        
-        // 检查Usage层是否有触发率数据
-        double sum = data.getUsageElements().getOrDefault("trigger_chance", 0.0);
-        return sum;
-    }
-    
-    /**
-     * 获取所有元素类型
-     * 从Usage层获取数据
-     */
-    public static Set<ElementType> getAllElementTypes(ItemStack stack) {
-        List<Map.Entry<ElementType, Double>> elements = ElementDamageManager.getActiveElements(stack);
-        Set<ElementType> types = new HashSet<>();
-        for (Map.Entry<ElementType, Double> element : elements) {
-            types.add(element.getKey());
-        }
-        return types;
-    }
-    
-    /**
-     * 获取指定元素类型的值
-     * 从Usage层获取数据
-     */
-    public static double getElementValue(ItemStack stack, ElementType type) {
-        List<Map.Entry<ElementType, Double>> elements = ElementDamageManager.getActiveElements(stack);
-        for (Map.Entry<ElementType, Double> element : elements) {
-            if (element.getKey() == type) {
-                return element.getValue();
+        // 检查Usage层是否有数据
+        // Usage层只包含基础元素和复合元素，不包含特殊属性和派系增伤
+        for (Map.Entry<String, Double> entry : data.getUsageElements().entrySet()) {
+            String elementTypeStr = entry.getKey();
+            double value = entry.getValue();
+            
+            // 获取元素类型
+            ElementType elementType = ElementType.byName(elementTypeStr);
+            
+            // 只检查基础元素和复合元素
+            if (value > 0 && elementType != null && (elementType.isBasic() || elementType.isComplex())) {
+                return true;
             }
         }
-        return 0.0; // 默认值
-    }
-    
-
-    
-    /**
-     * 获取Basic层指定元素类型的值
-     * 从Basic层获取数据
-     */
-    public static double getBasicElementValue(ItemStack stack, String elementType) {
-        if (stack.isEmpty()) {
-            return 0.0;
-        }
         
-        // 从Basic层获取元素数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        
-        // 检查Basic层是否有指定元素类型的数据
-        List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> entries = data.getBasicElements().get(elementType);
-        if (entries != null) {
-            return entries.size(); // Basic层不包含实际数值
-        }
-        return 0.0;
-    }
-    
-    /**
-     * 获取Basic层所有元素类型
-     * 从Basic层获取数据
-     */
-    public static Set<String> getAllBasicElementTypes(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return new HashSet<>();
-        }
-        
-        // 从Basic层获取元素数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        
-        // 返回Basic层所有元素类型
-        return data.getBasicElements().keySet();
+        return false;
     }
     
     /**
      * 获取Usage层指定元素类型的值
-     * 从Usage层获取数据
      */
     public static double getUsageElementValue(ItemStack stack, String elementType) {
         if (stack.isEmpty()) {
             return 0.0;
         }
         
-        // 从Usage层获取元素数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
+        // 尝试应用配置数据（如果尚未应用）
+        WeaponDataManager.applyConfigDataIfNeeded(stack);
         
-        // 检查Usage层是否有指定元素类型的数据
-        return data.getUsageElements().getOrDefault(elementType, 0.0);
+        // 从物品中加载元素数据
+        WeaponData data = WeaponDataManager.loadElementData(stack);
+        
+        // 检查data是否为null
+        if (data == null) {
+            return 0.0;
+        }
+        
+        // Usage层只包含基础元素和复合元素，不包含特殊属性和派系增伤
+        // 所以不需要额外检查，直接返回值即可
+        ElementType type = ElementType.byName(elementType);
+        if (type != null && (type.isBasic() || type.isComplex())) {
+            return data.getUsageElements().getOrDefault(elementType, 0.0);
+        }
+        
+        return 0.0;
     }
     
     /**
      * 获取Usage层所有元素类型
-     * 从Usage层获取数据
      */
     public static Set<String> getAllUsageElementTypes(ItemStack stack) {
         if (stack.isEmpty()) {
             return new HashSet<>();
         }
         
-        // 从Usage层获取元素数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
+        // 尝试应用配置数据（如果尚未应用）
+        WeaponDataManager.applyConfigDataIfNeeded(stack);
         
-        // 返回Usage层所有元素类型
-        return data.getUsageElements().keySet();
-    }
-    
-    /**
-     * 获取Usage层指定派系的修饰值
-     * 从Usage层获取数据
-     */
-    public static double getExtraFactionModifier(ItemStack stack, String faction) {
-        if (stack.isEmpty()) {
-            return 0.0;
-        }
+        // 从物品中加载元素数据
+        WeaponData data = WeaponDataManager.loadElementData(stack);
         
-        // 从Usage层获取派系修饰数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
-        
-        // 检查Usage层是否有指定派系的数据
-        return data.getUsageElements().getOrDefault(faction, 0.0);
-    }
-    
-    /**
-     * 获取Usage层所有派系类型
-     * 从Usage层获取数据
-     */
-    public static Set<String> getAllExtraFactions(ItemStack stack) {
-        if (stack.isEmpty()) {
+        // 检查data是否为null
+        if (data == null) {
             return new HashSet<>();
         }
         
-        // 从Usage层获取派系数据
-        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
-        WeaponDataManager.computeUsageData(stack, data);
+        // 返回Usage层所有元素类型
+        // Usage层只包含基础元素和复合元素，不包含特殊属性和派系增伤
+        Set<String> elementTypes = new HashSet<>();
+        for (Map.Entry<String, Double> entry : data.getUsageElements().entrySet()) {
+            String elementTypeStr = entry.getKey();
+            // 检查是否为基础元素或复合元素
+            ElementType elementType = ElementType.byName(elementTypeStr);
+            if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
+                elementTypes.add(elementTypeStr);
+            }
+        }
         
-        // 返回Usage层所有派系类型
-        return data.getUsageElements().keySet();
+        return elementTypes;
     }
 }

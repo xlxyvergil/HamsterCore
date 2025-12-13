@@ -4,13 +4,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -128,16 +132,14 @@ public class AdditionalElementApplier {
                 
                 // 解析Basic层
                 if (elementDataJson.has("Basic")) {
-                    JsonObject basicJson = elementDataJson.getAsJsonObject("Basic");
-                    for (Map.Entry<String, JsonElement> basicEntry : basicJson.entrySet()) {
-                        JsonObject elementJson = basicEntry.getValue().getAsJsonObject();
-                        
-                        String type = elementJson.get("type").getAsString();
-                        double value = elementJson.get("value").getAsDouble();
-                        String source = elementJson.get("source").getAsString();
-                        
-                        data.addBasicElement(type, value);
-                    }
+                    // 根据新的配置格式解析Basic层
+                    // 新格式使用数组而不是对象
+                    /* 示例格式:
+                    "Basic": [
+                        ["SLASH", "CONFIG", 0],
+                        ["FIRE", "CONFIG", 1]
+                    ]
+                    */
                 }
             }
 
@@ -170,15 +172,30 @@ public class AdditionalElementApplier {
                 return false;
             }
             
-            // 应用元素修饰符到物品
-            ElementApplier.applyElementModifiers(stack, weaponData.getBasicElements());
-            
-            // 保存元素数据到NBT（只保存Basic层和Usage层）
-            WeaponDataManager.saveElementData(stack, weaponData);
+            // 应用元素修饰符到物品（使用独立实现并保存Basic层数据）
+            applyElementModifiers(stack, weaponData.getBasicElements());
             
             return true;
         } catch (Exception e) {
             return false;
         }
     }
+    
+    /**
+     * 应用元素修饰符到物品
+     * 根据配置文件中的元素属性修饰符，在Basic层里存储修饰符的元素类型、排序以及是否是CONFIG
+     */
+    private static void applyElementModifiers(ItemStack stack, Map<String, List<WeaponData.BasicEntry>> basicElements) {
+        // 同时将Basic层数据保存到NBT中
+        WeaponData weaponData = new WeaponData();
+        for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : basicElements.entrySet()) {
+            for (WeaponData.BasicEntry basicEntry : entry.getValue()) {
+                weaponData.addBasicElement(basicEntry.getType(), basicEntry.getSource(), basicEntry.getOrder());
+            }
+        }
+        
+        // 保存元素数据到NBT（只保存Basic层）
+        WeaponDataManager.saveElementDataWithoutUsage(stack, weaponData);
+    }
+
 }

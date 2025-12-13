@@ -25,25 +25,10 @@ public class FactionModifierCalculator {
      * 计算派系伤害修饰符
      * @param weapon 武器物品堆
      * @param targetFaction 目标派系
-     * @return 派系伤害修饰符
+     * @return 派系伤害修饰符（从修饰符系统获取计算后的值）
      */
     public static double calculateFactionModifier(ItemStack weapon, String targetFaction) {
-        // 计算克制系数
-        double modifier = 0.0;
-        
-        // 获取武器数据
-        WeaponData data = WeaponDataManager.loadElementData(weapon);
-        
-        // 检查Usage层是否有指定派系的元素
-        if (data != null) {
-            // 获取指定派系元素的值
-            List<Double> factionValues = data.getUsageValue(targetFaction.toLowerCase());
-            // 累加所有该派系元素的值
-            for (Double value : factionValues) {
-                modifier += value;
-            }
-        }
-        
-        return modifier;
+        // 从修饰符系统获取派系增伤值
+        return ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.byName(targetFaction.toLowerCase()));
     }
 }

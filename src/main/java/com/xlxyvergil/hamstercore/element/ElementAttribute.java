@@ -6,6 +6,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.UUID;
+
 /**
  * 元素属性抽象基类，定义元素属性的基本属性和行为
  * 所有具体的元素类都将继承这个基类
@@ -58,7 +60,11 @@ public abstract class ElementAttribute {
     /**
      * 获取元素的属性修饰符
      */
-    public abstract AttributeModifier createModifier(ItemStack stack, double value);
+    public AttributeModifier createModifier(ItemStack stack, double value) {
+        // 为每个元素类型生成固定的UUID，确保一致性
+        UUID modifierId = UUID.nameUUIDFromBytes(("hamstercore:" + type.getName()).getBytes());
+        return new AttributeModifier(modifierId, "hamstercore:" + type.getName(), value, operation);
+    }
     
     /**
      * 格式化数值显示     */

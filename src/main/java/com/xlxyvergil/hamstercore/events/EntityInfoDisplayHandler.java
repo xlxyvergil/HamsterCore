@@ -5,8 +5,11 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+import com.xlxyvergil.hamstercore.element.WeaponData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -17,6 +20,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +132,12 @@ public class EntityInfoDisplayHandler {
                 }
 
                 // 添加武器元素属性信息（使用缓存中的计算数据）
-                Set<String> elementTypes = ElementNBTUtils.getAllUsageElementTypes(weapon);
+                WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
+                Set<String> elementTypes = new HashSet<>();
+                if (weaponData != null) {
+                    // 获取Usage层所有元素类型（Usage层不包含特殊属性和派系增伤）
+                    elementTypes = ElementNBTUtils.getAllUsageElementTypes(weapon);
+                }
                 
                 if (!elementTypes.isEmpty()) {
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
@@ -147,20 +156,8 @@ public class EntityInfoDisplayHandler {
                     }
                 }
 
-                // 添加派系增伤信息
-                Set<String> factions = ElementNBTUtils.getAllExtraFactions(weapon);
-                if (!factions.isEmpty()) {
-                    message.append(Component.translatable("hamstercore.ui.faction_damage_bonus").withStyle(ChatFormatting.GOLD));
-                    
-                    for (String faction : factions) {
-                        double modifier = ElementNBTUtils.getExtraFactionModifier(weapon, faction);
-                        if (modifier != 0) {
-                            String fName = Component.translatable("faction." + faction.toLowerCase() + ".name").getString();
-                            message.append(Component.literal(String.format("  %s: %.1f%%", fName, modifier * 100))
-                                .withStyle(getFactionColor(faction)));
-                        }
-                    }
-                }
+                // 添加派系增伤信息（从修饰符系统获取计算后的值）
+                addFactionModifiersToMessage(message, weapon);
             }
             
             player.sendSystemMessage(message);
@@ -202,17 +199,25 @@ public class EntityInfoDisplayHandler {
      * @param weapon 武器物品堆
      */
     private static void addFactionModifiersToMessage(MutableComponent message, ItemStack weapon) {
-        // 获取Extra层派系数据
-        java.util.Set<String> factions = com.xlxyvergil.hamstercore.util.ElementNBTUtils.getAllExtraFactions(weapon);
+        // 获取派系数据（从Basic层获取）并从修饰符系统获取计算后的值
+        WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
+        Set<String> factions = new HashSet<>();
+        if (weaponData != null && weaponData.getBasicElements() != null) {
+            for (String elementType : weaponData.getBasicElements().keySet()) {
+                if (isFactionType(elementType)) {
+                    factions.add(elementType);
+                }
+            }
+        }
         
         // 如果没有派系增伤数据，则直接返回
         if (factions.isEmpty()) {
             return;
         }
         
-        // 添加每个派系的增伤数值
+        // 添加每个派系的增伤数值（从修饰符系统获取计算后的值）
         for (String faction : factions) {
-            double modifier = com.xlxyvergil.hamstercore.util.ElementNBTUtils.getExtraFactionModifier(weapon, faction);
+            double modifier = ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.byName(faction));
             
             // 只显示非零的派系增伤
             if (modifier != 0) {
@@ -224,5 +229,20 @@ public class EntityInfoDisplayHandler {
                 );
             }
         }
+    }
+    
+    /**
+     * 判断元素类型是否为派系类型
+     */
+    private static boolean isFactionType(String elementType) {
+        Set<String> factionTypes = new HashSet<>();
+        factionTypes.add("grineer");
+        factionTypes.add("infested");
+        factionTypes.add("corpus");
+        factionTypes.add("orokin");
+        factionTypes.add("sentient");
+        factionTypes.add("murmur");
+        
+        return factionTypes.contains(elementType);
     }
 }

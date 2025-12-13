@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -17,14 +18,14 @@ public class ElementEnchantment extends Enchantment {
     protected final ElementType elementType;
     protected final int maxLevel;
     protected final String enchantmentId;
-    protected final UUID elementModifierId;
+    // 移除了硬编码的elementModifierId字段
 
-    public ElementEnchantment(Rarity rarity, ElementType elementType, int maxLevel, String enchantmentId, UUID elementModifierId) {
+    public ElementEnchantment(Rarity rarity, ElementType elementType, int maxLevel, String enchantmentId) {
         super(rarity, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
         this.elementType = elementType;
         this.maxLevel = maxLevel;
         this.enchantmentId = enchantmentId;
-        this.elementModifierId = elementModifierId;
+        // 移除了硬编码的elementModifierId字段
     }
 
     @Override
@@ -65,15 +66,17 @@ public class ElementEnchantment extends Enchantment {
         return false;
     }
     
-    public java.util.Collection<AttributeModifier> getEntityAttributes(EquipmentSlot slot, int level) {
+    public java.util.Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
             // 获取元素属性
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 创建属性修饰符
                 double value = elementAttribute.getDefaultValue() * level;
+                // 使用ElementUUIDManager生成UUID
+                UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
                 AttributeModifier modifier = new AttributeModifier(
-                    this.elementModifierId, 
+                    modifierId, 
                     "hamstercore:" + elementType.getName(), 
                     value, 
                     elementAttribute.getOperation()

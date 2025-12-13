@@ -10,9 +10,9 @@ import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
-import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
-import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
+
+import java.io.File;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -411,26 +411,19 @@ public class WeaponConfig {
         
         // 添加Basic层 - 记录元素名称、添加顺序和def标记
         JsonArray basicArray = new JsonArray();
-        for (Map.Entry<String, List<WeaponData.BasicEntry>> basicEntry : weaponData.getBasicElements().entrySet()) {
-            for (WeaponData.BasicEntry elementValue : basicEntry.getValue()) {
+        for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : weaponData.getBasicElements().entrySet()) {
+            for (WeaponData.BasicEntry basicEntry : entry.getValue()) {
                 JsonArray elementArray = new JsonArray();
-                elementArray.add(elementValue.getType());
-                elementArray.add(elementValue.getSource());
-                elementArray.add(elementValue.getOrder()); // 添加顺序
+                elementArray.add(basicEntry.getType());
+                elementArray.add(basicEntry.getSource());
+                elementArray.add(basicEntry.getOrder());
                 basicArray.add(elementArray);
             }
         }
         elementDataJson.add("Basic", basicArray);
         
-        // 添加Usage层 - 元素复合后的元素类型和数值
-        JsonArray usageArray = new JsonArray();
-        for (Map.Entry<String, Double> usageEntry : weaponData.getUsageElements().entrySet()) {
-            JsonArray elementArray = new JsonArray();
-            elementArray.add(usageEntry.getKey());
-            elementArray.add(usageEntry.getValue());
-            usageArray.add(elementArray);
-        }
-        elementDataJson.add("Usage", usageArray);
+        // 不再添加Usage层 - 元素复合后的元素类型和数值
+        // Usage层数据会在运行时根据Basic层数据计算得出
         
         // 添加初始属性修饰符数据（只包含名称和数值，UUID在应用阶段生成）
         JsonArray modifiersArray = new JsonArray();
@@ -567,16 +560,8 @@ public class WeaponConfig {
                 }
             }
             
-            // 读取Usage层
-            if (elementDataJson.has("Usage")) {
-                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
-                for (JsonElement element : usageArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    weaponData.setUsageElement(type, value);
-                }
-            }
+            // 不再读取Usage层 - 元素复合后的元素类型和数值
+            // Usage层数据会在运行时根据Basic层数据计算得出
             
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
@@ -605,7 +590,7 @@ public class WeaponConfig {
                     }
                     
                     // UUID将在应用阶段生成
-                    UUID uuid = com.xlxyvergil.hamstercore.element.ElementUUIDManager.getElementUUID(name);
+                    UUID uuid = ElementUUIDManager.getElementUUID(name);
                     
                     // 创建修饰符
                     AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
@@ -694,7 +679,7 @@ public class WeaponConfig {
                     }
                     
                     // UUID将在应用阶段生成
-                    UUID uuid = com.xlxyvergil.hamstercore.element.ElementUUIDManager.getElementUUID(name);
+                    UUID uuid = ElementUUIDManager.getElementUUID(name);
                     
                     // 创建修饰符
                     AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
@@ -824,12 +809,11 @@ public class WeaponConfig {
                 defaultValue = DEFAULT_CRITICAL_DAMAGE;
             } else if ("trigger_chance".equals(elementType)) {
                 defaultValue = DEFAULT_TRIGGER_CHANCE;
-            } else if (data.getUsageElements().containsKey(elementType)) {
-                defaultValue = data.getUsageElements().get(elementType);
             }
+            // 注意：派系增伤和特殊属性不应该从Usage层获取默认值，因为Usage层不存储这些数据
             
             // 为每种元素类型使用固定的UUID
-            UUID modifierUuid = com.xlxyvergil.hamstercore.element.ElementUUIDManager.getElementUUID(elementType);
+            UUID modifierUuid = ElementUUIDManager.getElementUUID(elementType);
             
             // 创建属性修饰符
             AttributeModifier modifier = new AttributeModifier(

@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -61,8 +62,8 @@ public class ElementTriggerHandler {
             return;
         }
         
-        // 获取触发率（从缓存中获取）
-        double triggerChance = ElementNBTUtils.getTriggerChance(weapon);
+        // 获取触发率（从修饰符系统获取计算后的值）
+        double triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.TRIGGER_CHANCE);
         
         // 判断是否触发
         if (RANDOM.nextDouble() > triggerChance) {

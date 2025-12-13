@@ -8,6 +8,8 @@ import java.util.*;
 /**
  * 武器数据类
  * 用于存储武器的元素配置信息，适配新的两层NBT数据结构
+ * Basic层：存储修饰符的元素类型、排序和是否是CONFIG的信息
+ * Usage层：存储复合后的元素以及数值
  */
 public class WeaponData {
     // MOD ID
@@ -22,7 +24,7 @@ public class WeaponData {
     // 拔刀剑translationKey（仅拔刀剑使用）
     public String translationKey;
     
-    // 基础元素数据（Basic层）- 记录元素名称、添加顺序和def标记
+    // 基础元素数据（Basic层）- 记录元素名称、添加顺序和CONFIG标记
     private Map<String, List<BasicEntry>> basicElements = new HashMap<>();
     
     // 使用层数据（Usage层）- 元素复合后的元素类型和数值
@@ -64,7 +66,14 @@ public class WeaponData {
     }
     
     /**
-     * 添加基础元素（默认来源为CONFIG，即def）
+     * 添加基础元素，指定类型、来源和顺序
+     */
+    public void addBasicElement(String type, String source, int order) {
+        basicElements.computeIfAbsent(type, k -> new ArrayList<>()).add(new BasicEntry(type, source, order));
+    }
+    
+    /**
+     * 添加基础元素（默认来源为CONFIG）
      */
     public void addBasicElement(String type) {
         addBasicElement(type, "CONFIG");
@@ -77,14 +86,6 @@ public class WeaponData {
         // 计算添加顺序，基于当前该元素类型在整体中的位置
         int order = getNextOrderForType(type);
         basicElements.computeIfAbsent(type, k -> new ArrayList<>()).add(new BasicEntry(type, source, order));
-    }
-    
-    /**
-     * 添加基础元素，带具体数值
-     */
-    public void addBasicElement(String type, double value) {
-        addBasicElement(type, "CONFIG");
-        setUsageElement(type, value);
     }
     
     /**
@@ -163,11 +164,11 @@ public class WeaponData {
     
     /**
      * BasicEntry内部类，表示基础元素条目
-     * 记录元素名称、添加顺序和def标记
+     * 记录元素名称、添加顺序和CONFIG标记
      */
     public static class BasicEntry {
         private String type;
-        private String source; // def 或 user 标记
+        private String source; // CONFIG 或 USER 标记
         private int order; // 添加顺序
         
         public BasicEntry(String type, String source, int order) {
