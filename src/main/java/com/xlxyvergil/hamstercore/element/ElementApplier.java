@@ -2,18 +2,20 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.util.ElementModifierUtil;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.event.ItemAttributeModifierEvent;
 
 import java.util.Map;
 import java.util.Set;
 
 /**
  * MOD特殊物品元素应用器，专门处理TACZ枪械和拔刀剑的元素属性应用
- * 使用新的四层数据结构：Basic、Computed、Usage、Extra
+ * 使用新的两层数据结构：Basic、Usage
  */
 public class ElementApplier {
     
@@ -53,7 +55,16 @@ public class ElementApplier {
     
 
     /**
+     * 应用元素修饰符到物品
+     * 使用新的两层数据结构
+     */
+    public static void applyElementModifiers(ItemStack stack, Map<String, List<BasicEntry>> basicElements) {
+        ElementModifierUtil.applyElementModifiers(stack, basicElements);
+    }
+    
+    /**
      * 为枪械应用属性
+     * 适配新的两层数据结构
      */
     private static boolean applyGunAttributes(ResourceLocation gunId) {
         try {
@@ -72,7 +83,7 @@ public class ElementApplier {
                 itemKey = new ResourceLocation("tacz", "modern_kinetic_gun");
             }
             
-            ItemStack stack = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey));
+            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(itemKey));
             
             if (stack.isEmpty()) {
                 return false;
@@ -81,21 +92,11 @@ public class ElementApplier {
             // 设置gunId到NBT
             stack.getOrCreateTag().putString("gunId", gunId.toString());
             
-            // 复制元素数据
-            WeaponElementData elementData = new WeaponElementData();
-            elementData.setBasic(weaponData.getElementData().getBasic());
-            elementData.setComputed(weaponData.getElementData().getComputed());
-            elementData.setUsage(weaponData.getElementData().getUsage());
-            elementData.setExtra(weaponData.getElementData().getExtra());
-            if (elementData == null) {
-                elementData = new WeaponElementData();
-            }
+            // 应用元素修饰符到物品
+            applyElementModifiers(stack, weaponData.getBasicElements());
             
-            // 计算Usage数据
-            WeaponDataManager.computeUsageData(stack, elementData);
-            
-            // 保存到NBT
-            WeaponDataManager.saveElementData(stack, elementData);
+            // 保存元素数据到NBT（只保存Basic层和Usage层）
+            WeaponDataManager.saveElementData(stack, weaponData);
             
             return true;
         } catch (Exception e) {
@@ -105,6 +106,7 @@ public class ElementApplier {
     
     /**
      * 为拔刀剑应用属性
+     * 适配新的两层数据结构
      */
     private static boolean applySlashBladeAttributes(String translationKey) {
         try {
@@ -123,7 +125,7 @@ public class ElementApplier {
                 itemKey = new ResourceLocation("slashblade", "slashblade");
             }
             
-            ItemStack stack = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey));
+            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(itemKey));
             
             if (stack.isEmpty()) {
                 return false;
@@ -132,21 +134,11 @@ public class ElementApplier {
             // 设置translationKey到NBT
             stack.getOrCreateTag().putString("translationKey", translationKey);
             
-            // 复制元素数据
-            WeaponElementData elementData = new WeaponElementData();
-            elementData.setBasic(weaponData.getElementData().getBasic());
-            elementData.setComputed(weaponData.getElementData().getComputed());
-            elementData.setUsage(weaponData.getElementData().getUsage());
-            elementData.setExtra(weaponData.getElementData().getExtra());
-            if (elementData == null) {
-                elementData = new WeaponElementData();
-            }
+            // 应用元素修饰符到物品
+            applyElementModifiers(stack, weaponData.getBasicElements());
             
-            // 计算Usage数据
-            WeaponDataManager.computeUsageData(stack, elementData);
-            
-            // 保存到NBT
-            WeaponDataManager.saveElementData(stack, elementData);
+            // 保存元素数据到NBT（只保存Basic层和Usage层）
+            WeaponDataManager.saveElementData(stack, weaponData);
             
             return true;
         } catch (Exception e) {

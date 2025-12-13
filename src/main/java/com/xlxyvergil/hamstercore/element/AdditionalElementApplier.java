@@ -149,7 +149,7 @@ public class AdditionalElementApplier {
     
     /**
      * 为普通物品应用元素属性
-     * 使用新的四层数据结构
+     * 使用新的两层数据结构
      */
     private static boolean applyElementAttributesToNormalItem(ResourceLocation itemKey, WeaponData weaponData) {
         // 检查武器数据是否为空
@@ -166,29 +166,18 @@ public class AdditionalElementApplier {
             
             ItemStack stack = new ItemStack(item);
             
-            // 确保物品栈有效
             if (stack.isEmpty()) {
                 return false;
             }
             
-            // 直接使用从配置加载的WeaponElementData
-            WeaponElementData elementData = weaponData.getElementData();
+            // 应用元素修饰符到物品
+            ElementApplier.applyElementModifiers(stack, weaponData.getBasicElements());
             
-            // 确保elementData不为空
-            if (elementData == null) {
-                elementData = new WeaponElementData();
-            } else {
-            }
-            
-            // 计算Usage数据
-            WeaponDataManager.computeUsageData(stack, elementData);
-            
-            // 将数据写入NBT
-            WeaponDataManager.saveElementData(stack, elementData);
+            // 保存元素数据到NBT（只保存Basic层和Usage层）
+            WeaponDataManager.saveElementData(stack, weaponData);
             
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }

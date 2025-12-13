@@ -82,9 +82,9 @@ public class ElementDamageManager {
         WeaponElementData data = WeaponDataManager.loadElementData(weapon, true);
         
         // 计算各部分的伤害修正系数
-        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(attacker, target, data, targetFaction); // HM
+        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction); // HM
         damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker); // 元素总倍率
-        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker); // 暴击伤害
+        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon); // 暴击伤害
         damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
         
         // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）

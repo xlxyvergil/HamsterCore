@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,12 +18,14 @@ public class NormalItemElementApplier {
      * 应用普通物品的元素属性
      */
     public static int applyNormalItemsElements() {
+        DebugLogger.log("开始应用普通物品元素属性...");
         
         // 确保配置已加载
         WeaponConfig.load();
         
         // 获取普通武器配置
         Map<ResourceLocation, WeaponData> normalWeaponConfigs = WeaponConfig.getAllWeaponConfigs();
+        DebugLogger.log("配置文件中共有 %d 个普通武器配置", normalWeaponConfigs.size());
         
         int appliedCount = 0;
         
@@ -31,17 +34,19 @@ public class NormalItemElementApplier {
             ResourceLocation itemKey = entry.getKey();
             WeaponData weaponData = entry.getValue();
             
+            DebugLogger.log("处理普通物品: %s", itemKey.toString());
             if (applyElementAttributesToNormalItem(itemKey, weaponData)) {
                 appliedCount++;
             }
         }
         
+        DebugLogger.log("普通物品元素属性应用完成，处理了 %d 个普通物品", appliedCount);
         return appliedCount;
     }
     
     /**
      * 为普通物品应用元素属性
-     * 使用新的四层数据结构
+     * 使用新的两层数据结构
      */
     private static boolean applyElementAttributesToNormalItem(ResourceLocation itemKey, WeaponData weaponData) {
         // 检查武器数据是否为空
@@ -51,36 +56,25 @@ public class NormalItemElementApplier {
         
         try {
             // 创建实际的ItemStack用于存储元素属性
-            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey);
+            Item item = BuiltInRegistries.ITEM.get(itemKey);
             if (item == null) {
                 return false;
             }
             
             ItemStack stack = new ItemStack(item);
             
-            // 确保物品栈有效
             if (stack.isEmpty()) {
                 return false;
             }
             
-            // 直接使用从配置加载的WeaponElementData
-            WeaponElementData elementData = weaponData.getElementData();
+            // 应用元素修饰符到物品
+            ElementApplier.applyElementModifiers(stack, weaponData.getBasicElements());
             
-            // 确保elementData不为空
-            if (elementData == null) {
-                elementData = new WeaponElementData();
-            } else {
-            }
-            
-            // 计算Usage数据
-            WeaponDataManager.computeUsageData(stack, elementData);
-            
-            // 将数据写入NBT
-            WeaponDataManager.saveElementData(stack, elementData);
+            // 保存元素数据到NBT（只保存Basic层和Usage层）
+            WeaponDataManager.saveElementData(stack, weaponData);
             
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
     }

@@ -1,68 +1,42 @@
 package com.xlxyvergil.hamstercore.api.element;
 
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 
 /**
- * 元素系统Computed层API
- * 提供对物品NBT中Computed层数据的修改接口
+ * 元素系统属性修饰符API
+ * 提供添加和删除物品属性修饰符的接口
  */
 public class ElementComputedAPI {
     
     /**
-     * 向物品的Computed层添加带具体来源标识符的元素数据
+     * 向物品添加属性修饰符
      * 
      * @param stack 物品堆
-     * @param type 元素类型名称
-     * @param value 元素数值
-     * @param operation 计算操作(add/sub/mul/div)
-     * @param specificSource 具体来源标识符
+     * @param attributeName 属性名称
+     * @param modifier 属性修饰符
+     * @param slot 装备槽位
      */
-    public static void addComputedElementWithSpecificSource(ItemStack stack, String type, double value, String operation, String specificSource) {
-        WeaponDataManager.addComputedElementWithSpecificSource(stack, type, value, operation, specificSource);
+    public static void addAttributeModifier(ItemStack stack, String attributeName, AttributeModifier modifier, EquipmentSlot slot) {
+        Attribute attribute = BuiltInRegistries.ATTRIBUTE.get(new ResourceLocation(attributeName));
+        if (attribute != null) {
+            stack.addAttributeModifier(attribute, modifier, slot);
+        }
     }
     
     /**
-     * 从物品的Computed层移除指定具体来源标识符的元素数据
+     * 从物品移除指定UUID的属性修饰符
      * 
      * @param stack 物品堆
-     * @param type 元素类型名称
-     * @param specificSource 具体来源标识符
+     * @param modifierId 属性修饰符UUID
+     * @param slot 装备槽位
      */
-    public static void removeComputedElementBySpecificSource(ItemStack stack, String type, String specificSource) {
-        WeaponDataManager.removeComputedElementBySpecificSource(stack, type, specificSource);
-    }
-    
-    /**
-     * 向物品的Extra层添加带具体来源标识符的派系增伤数据
-     * 
-     * @param stack 物品堆
-     * @param faction 派系名称
-     * @param value 数值
-     * @param operation 计算操作(add/sub)
-     * @param specificSource 具体来源标识符
-     */
-    public static void addExtraFactionModifierWithSpecificSource(ItemStack stack, String faction, double value, String operation, String specificSource) {
-        WeaponDataManager.addExtraFactionWithSpecificSource(stack, faction, value, operation, specificSource);
-    }
-    
-    /**
-     * 从物品的Extra层移除指定具体来源标识符的派系增伤数据
-     * 
-     * @param stack 物品堆
-     * @param faction 派系名称
-     * @param specificSource 具体来源标识符
-     */
-    public static void removeExtraFactionModifierBySpecificSource(ItemStack stack, String faction, String specificSource) {
-        WeaponDataManager.removeExtraFactionBySpecificSource(stack, faction, specificSource);
-    }
-    
-    /**
-     * 清除物品的Computed层数据
-     * 
-     * @param stack 物品堆
-     */
-    public static void clearComputedData(ItemStack stack) {
-        WeaponDataManager.clearComputedData(stack);
+    public static void removeAttributeModifier(ItemStack stack, java.util.UUID modifierId, EquipmentSlot slot) {
+        stack.removeAttributeModifier(slot, modifierId);
     }
 }

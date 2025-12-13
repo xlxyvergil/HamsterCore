@@ -9,6 +9,7 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
+import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
@@ -87,17 +88,13 @@ public class WeaponAttributeRenderer {
             }
         }
         
-        // 检查Extra层的派系增伤属性
-        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.ExtraEntry>> entry : data.getAllExtraFactions().entrySet()) {
+        // 检查Usage层的派系增伤属性
+        for (Map.Entry<String, List<Double>> entry : data.getAllUsageValues().entrySet()) {
             String key = entry.getKey();
-            List<com.xlxyvergil.hamstercore.element.ExtraEntry> extraEntries = entry.getValue();
-            for (com.xlxyvergil.hamstercore.element.ExtraEntry extraEntry : extraEntries) {
-                if (extraEntry != null) {
-                    double value = "add".equals(extraEntry.getOperation()) ? extraEntry.getValue() : 
-                                 ("sub".equals(extraEntry.getOperation()) ? -extraEntry.getValue() : 0.0);
-                    if (value != 0) {
-                        return true;
-                    }
+            List<Double> usageValues = entry.getValue();
+            for (Double value : usageValues) {
+                if (value != null && value != 0) {
+                    return true;
                 }
             }
         }
@@ -131,6 +128,11 @@ public class WeaponAttributeRenderer {
         Double criticalChance = null;
         Double criticalDamage = null;
         Double triggerChance = null;
+        
+        // 通过ElementModifierValueUtil获取特殊属性值
+        criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_CHANCE);
+        criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_DAMAGE);
+        triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.TRIGGER_CHANCE);
         
         // 添加元素属性标题
         boolean hasElements = false;
@@ -234,22 +236,10 @@ public class WeaponAttributeRenderer {
         Double criticalDamage = null;
         Double triggerChance = null;
         
-        // 获取Basic层特殊属性
-        List<com.xlxyvergil.hamstercore.element.BasicEntry> criticalChanceEntries = data.getBasicElement("critical_chance");
-        List<com.xlxyvergil.hamstercore.element.BasicEntry> criticalDamageEntries = data.getBasicElement("critical_damage");
-        List<com.xlxyvergil.hamstercore.element.BasicEntry> triggerChanceEntries = data.getBasicElement("trigger_chance");
-        
-        if (!criticalChanceEntries.isEmpty()) {
-            criticalChance = criticalChanceEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
-        }
-        
-        if (!criticalDamageEntries.isEmpty()) {
-            criticalDamage = criticalDamageEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
-        }
-        
-        if (!triggerChanceEntries.isEmpty()) {
-            triggerChance = triggerChanceEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
-        }
+        // 通过ElementModifierValueUtil获取特殊属性值
+        criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_CHANCE);
+        criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_DAMAGE);
+        triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.TRIGGER_CHANCE);
         
         // 添加特殊属性
         if (criticalChance != null && criticalChance > 0) {
@@ -314,8 +304,8 @@ public class WeaponAttributeRenderer {
                     continue;
                 }
                 
-                // 计算总值
-                double totalValue = basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum();
+                // 通过ElementModifierValueUtil获取元素值
+                double totalValue = ElementModifierValueUtil.getElementValueFromAttributes(stack, elementType);
                 
                 // 创建元素名称和数值的文本组件，使用元素颜色
                 String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();

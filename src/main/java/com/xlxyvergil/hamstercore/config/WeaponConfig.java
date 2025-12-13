@@ -8,16 +8,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.BasicEntry;
-import com.xlxyvergil.hamstercore.element.ComputedEntry;
-import com.xlxyvergil.hamstercore.element.ExtraEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.io.File;
@@ -33,6 +30,7 @@ import java.util.stream.Collectors;
 /**
  * 武器配置管理器
  * 负责加载、保存和管理所有武器的元素配置
+ * 已适配新的两层NBT数据结构
  */
 public class WeaponConfig {
     
@@ -190,12 +188,15 @@ public class WeaponConfig {
         data.gunId = gunId.toString(); // 具体的枪械ID
         
         // 添加默认特殊属性
-        data.elementData.addBasicElement("critical_chance", DEFAULT_CRITICAL_CHANCE);
-        data.elementData.addBasicElement("critical_damage", DEFAULT_CRITICAL_DAMAGE);
-        data.elementData.addBasicElement("trigger_chance", DEFAULT_TRIGGER_CHANCE);
+        data.addBasicElement("critical_chance");
+        data.addBasicElement("critical_damage");
+        data.addBasicElement("trigger_chance");
         
         // 设置TACZ枪械默认元素占比
-        setDefaultElementRatiosForTacZ(data.elementData, gunId);
+        setDefaultElementRatiosForTacZ(data, gunId);
+        
+        // 添加初始修饰符
+        addInitialModifiers(data);
         
         return data;
     }
@@ -214,61 +215,63 @@ public class WeaponConfig {
         data.translationKey = translationKey; // 具体的translationKey
         
         // 添加默认特殊属性
-        data.elementData.addBasicElement("critical_chance", DEFAULT_CRITICAL_CHANCE);
-        data.elementData.addBasicElement("critical_damage", DEFAULT_CRITICAL_DAMAGE);
-        data.elementData.addBasicElement("trigger_chance", DEFAULT_TRIGGER_CHANCE);
+        data.addBasicElement("critical_chance");
+        data.addBasicElement("critical_damage");
+        data.addBasicElement("trigger_chance");
         
         // 设置拔刀剑默认元素占比
-        setDefaultElementRatiosForSlashBlade(data.elementData, translationKey);
+        setDefaultElementRatiosForSlashBlade(data, translationKey);
+        
+        // 添加初始修饰符
+        addInitialModifiers(data);
         
         return data;
     }
-    
 
     
     /**
      * 为TACZ枪械设置默认元素占比
      */
-    private static void setDefaultElementRatiosForTacZ(WeaponElementData elementData, ResourceLocation gunId) {
+    private static void setDefaultElementRatiosForTacZ(WeaponData data, ResourceLocation gunId) {
         // 根据具体枪械类型设置不同的元素占比
         String gunType = gunId.getPath().toLowerCase();
         
         if (gunType.contains("pistol") || gunType.contains("handgun")) {
             // 手枪类：平衡型
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.5);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.3);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.2);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.5);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.3);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.2);
         } else if (gunType.contains("rifle") || gunType.contains("assault")) {
             // 步枪类：穿刺为主
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.7);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.2);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.1);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.7);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.2);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.1);
         } else if (gunType.contains("sniper")) {
             // 狙击枪：高穿刺
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.8);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.15);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.05);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.8);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.15);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.05);
         } else if (gunType.contains("shotgun")) {
             // 霰弹枪：冲击为主
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.6);
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.3);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.1);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.6);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.3);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.1);
         } else {
             // 默认枪械：穿刺和冲击为主
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.6);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.3);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.1);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.6);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.3);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.1);
         }
     }
     
     /**
      * 为拔刀剑设置默认元素占比（统一配置）
      */
-    private static void setDefaultElementRatiosForSlashBlade(WeaponElementData elementData, String translationKey) {
+    private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
         // 拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%
-        elementData.addBasicElement(ElementType.SLASH.getName(), 0.7);
-        elementData.addBasicElement(ElementType.IMPACT.getName(), 0.2);
-        elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.1);
+        data.addBasicElement(ElementType.SLASH.getName(), 0.7);
+        data.addBasicElement(ElementType.IMPACT.getName(), 0.2);
+        data.addBasicElement(ElementType.PUNCTURE.getName(), 0.1);
     }
     
 
@@ -286,12 +289,15 @@ public class WeaponConfig {
         }
         
         // 添加默认特殊属性
-        data.elementData.addBasicElement("critical_chance", DEFAULT_CRITICAL_CHANCE);
-        data.elementData.addBasicElement("critical_damage", DEFAULT_CRITICAL_DAMAGE);
-        data.elementData.addBasicElement("trigger_chance", DEFAULT_TRIGGER_CHANCE);
+        data.addBasicElement("critical_chance");
+        data.addBasicElement("critical_damage");
+        data.addBasicElement("trigger_chance");
         
         // 根据物品类型设置不同的默认元素占比
-        setDefaultElementRatiosForNormalItem(data.elementData, itemKey);
+        setDefaultElementRatiosForNormalItem(data, itemKey);
+        
+        // 添加初始修饰符
+        addInitialModifiers(data);
         
         return data;
     }
@@ -299,7 +305,7 @@ public class WeaponConfig {
     /**
      * 为普通物品设置默认元素占比
      */
-    private static void setDefaultElementRatiosForNormalItem(WeaponElementData elementData, ResourceLocation itemKey) {
+    private static void setDefaultElementRatiosForNormalItem(WeaponData data, ResourceLocation itemKey) {
         // 根据物品名称判断类型并设置不同的默认元素占比
         if ("netherite_sword".equals(itemKey.getPath()) || 
             "diamond_sword".equals(itemKey.getPath()) ||
@@ -308,9 +314,9 @@ public class WeaponConfig {
             "stone_sword".equals(itemKey.getPath()) ||
             "wooden_sword".equals(itemKey.getPath())) {
             // 剑类：主要是切割
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.6);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.2);
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.2);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.6);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.2);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.2);
         } else if ("netherite_axe".equals(itemKey.getPath()) ||
                    "diamond_axe".equals(itemKey.getPath()) ||
                    "iron_axe".equals(itemKey.getPath()) ||
@@ -318,14 +324,14 @@ public class WeaponConfig {
                    "stone_axe".equals(itemKey.getPath()) ||
                    "wooden_axe".equals(itemKey.getPath())) {
             // 斧类：主要是冲击和切割
-            elementData.addBasicElement(ElementType.IMPACT.getName(), 0.5);
-            elementData.addBasicElement(ElementType.SLASH.getName(), 0.4);
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), 0.1);
+            data.addBasicElement(ElementType.IMPACT.getName(), 0.5);
+            data.addBasicElement(ElementType.SLASH.getName(), 0.4);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), 0.1);
         } else {
             // 其他物品：默认物理元素占比
-            elementData.addBasicElement(ElementType.SLASH.getName(), DEFAULT_SLASH);
-            elementData.addBasicElement(ElementType.IMPACT.getName(), DEFAULT_IMPACT);
-            elementData.addBasicElement(ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
+            data.addBasicElement(ElementType.SLASH.getName(), DEFAULT_SLASH);
+            data.addBasicElement(ElementType.IMPACT.getName(), DEFAULT_IMPACT);
+            data.addBasicElement(ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
         }
     }
     
@@ -359,6 +365,7 @@ public class WeaponConfig {
     
     /**
      * 创建武器配置的JSON对象
+     * 适配新的两层数据结构
      */
     private static JsonObject createWeaponConfigJson(WeaponData weaponData) {
         JsonObject itemJson = new JsonObject();
@@ -375,63 +382,44 @@ public class WeaponConfig {
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
         
-        // 添加Basic层
+        // 添加Basic层 - 记录元素名称、添加顺序和def标记
         JsonArray basicArray = new JsonArray();
-        for (Map.Entry<String, List<BasicEntry>> basicEntry : weaponData.getElementData().getAllBasicElements().entrySet()) {
-            for (BasicEntry elementValue : basicEntry.getValue()) {
+        for (Map.Entry<String, List<WeaponData.BasicEntry>> basicEntry : weaponData.getBasicElements().entrySet()) {
+            for (WeaponData.BasicEntry elementValue : basicEntry.getValue()) {
                 JsonArray elementArray = new JsonArray();
                 elementArray.add(elementValue.getType());
-                elementArray.add(elementValue.getValue());
                 elementArray.add(elementValue.getSource());
+                elementArray.add(elementValue.getOrder()); // 添加顺序
                 basicArray.add(elementArray);
             }
         }
         elementDataJson.add("Basic", basicArray);
         
-        // 添加Computed层
-        JsonArray computedArray = new JsonArray();
-        for (Map.Entry<String, List<ComputedEntry>> computedEntry : weaponData.getElementData().getAllComputedElements().entrySet()) {
-            for (ComputedEntry elementValue : computedEntry.getValue()) {
-                JsonArray elementArray = new JsonArray();
-                elementArray.add(elementValue.getType());
-                elementArray.add(elementValue.getValue());
-                elementArray.add(elementValue.getSource());
-                elementArray.add(elementValue.getOperation());
-                computedArray.add(elementArray);
-            }
-        }
-        elementDataJson.add("Computed", computedArray);
-        
-        // 添加Usage层
+        // 添加Usage层 - 元素复合后的元素类型和数值
         JsonArray usageArray = new JsonArray();
-        for (Map.Entry<String, List<Double>> usageEntry : weaponData.getElementData().getAllUsageValues().entrySet()) {
-            for (Double value : usageEntry.getValue()) {
-                JsonArray elementArray = new JsonArray();
-                elementArray.add(usageEntry.getKey());
-                elementArray.add(value);
-                usageArray.add(elementArray);
-            }
+        for (Map.Entry<String, Double> usageEntry : weaponData.getUsageElements().entrySet()) {
+            JsonArray elementArray = new JsonArray();
+            elementArray.add(usageEntry.getKey());
+            elementArray.add(usageEntry.getValue());
+            usageArray.add(elementArray);
         }
         elementDataJson.add("Usage", usageArray);
         
-        // 添加Extra层
-        JsonArray extraArray = new JsonArray();
-        for (Map.Entry<String, List<ExtraEntry>> extraEntry : weaponData.getElementData().getAllExtraFactions().entrySet()) {
-            for (ExtraEntry elementValue : extraEntry.getValue()) {
-                JsonArray elementArray = new JsonArray();
-                elementArray.add(elementValue.getType());
-                elementArray.add(elementValue.getValue());
-                elementArray.add(elementValue.getOperation());
-                extraArray.add(elementArray);
-            }
+        // 添加初始属性修饰符数据（只包含名称和数值，UUID在应用阶段生成）
+        JsonArray modifiersArray = new JsonArray();
+        for (WeaponData.AttributeModifierEntry modifierEntry : weaponData.getInitialModifiers()) {
+            JsonObject modifierJson = new JsonObject();
+            modifierJson.addProperty("name", modifierEntry.getAttributeName());
+            modifierJson.addProperty("amount", modifierEntry.getModifier().getAmount());
+            modifierJson.addProperty("operation", modifierEntry.getModifier().getOperation().toString());
+            modifiersArray.add(modifierJson);
         }
-        elementDataJson.add("Extra", extraArray);
+        elementDataJson.add("InitialModifiers", modifiersArray);
         
         itemJson.add("elementData", elementDataJson);
         
         return itemJson;
     }
-    
 
     
     /**
@@ -520,6 +508,7 @@ public class WeaponConfig {
     
     /**
      * 处理普通武器配置（数组格式）
+     * 适配新的两层数据结构
      */
     private static void processNormalWeaponConfig(JsonObject itemJson, String itemKey) {
         // 创建WeaponData对象
@@ -542,22 +531,12 @@ public class WeaponConfig {
                 for (JsonElement element : basicArray) {
                     JsonArray elementArray = element.getAsJsonArray();
                     String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String source = elementArray.get(2).getAsString();
-                    weaponData.getElementData().addBasicElement(type, value, source);
-                }
-            }
-            
-            // 读取Computed层
-            if (elementDataJson.has("Computed")) {
-                JsonArray computedArray = elementDataJson.getAsJsonArray("Computed");
-                for (JsonElement element : computedArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String source = elementArray.get(2).getAsString();
-                    String operation = elementArray.get(3).getAsString();
-                    weaponData.getElementData().addComputedElement(type, value, source, operation);
+                    String source = elementArray.get(1).getAsString();
+                    int order = elementArray.size() > 2 ? elementArray.get(2).getAsInt() : 0; // 顺序，默认为0
+                    
+                    // 直接添加，保持原有顺序
+                    weaponData.getBasicElements().computeIfAbsent(type, k -> new ArrayList<>())
+                        .add(new WeaponData.BasicEntry(type, source, order));
                 }
             }
             
@@ -568,19 +547,42 @@ public class WeaponConfig {
                     JsonArray elementArray = element.getAsJsonArray();
                     String type = elementArray.get(0).getAsString();
                     double value = elementArray.get(1).getAsDouble();
-                    weaponData.getElementData().setUsageValue(type, value);
+                    weaponData.setUsageElement(type, value);
                 }
             }
             
-            // 读取Extra层
-            if (elementDataJson.has("Extra")) {
-                JsonArray extraArray = elementDataJson.getAsJsonArray("Extra");
-                for (JsonElement element : extraArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String operation = elementArray.get(2).getAsString();
-                    weaponData.getElementData().addExtraFaction(type, value, operation);
+            // 读取初始属性修饰符数据
+            if (elementDataJson.has("InitialModifiers")) {
+                JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                for (JsonElement modifierElement : modifiersArray) {
+                    JsonObject modifierJson = modifierElement.getAsJsonObject();
+                    
+                    String name = modifierJson.get("name").getAsString();
+                    double amount = modifierJson.get("amount").getAsDouble();
+                    String operationStr = modifierJson.get("operation").getAsString();
+                    
+                    // 解析操作类型
+                    AttributeModifier.Operation operation;
+                    switch (operationStr) {
+                        case "ADDITION":
+                            operation = AttributeModifier.Operation.ADDITION;
+                            break;
+                        case "MULTIPLY_BASE":
+                            operation = AttributeModifier.Operation.MULTIPLY_BASE;
+                            break;
+                        case "MULTIPLY_TOTAL":
+                            operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
+                            break;
+                        default:
+                            operation = AttributeModifier.Operation.ADDITION;
+                    }
+                    
+                    // UUID将在应用阶段生成
+                    UUID uuid = com.xlxyvergil.hamstercore.element.ElementUUIDManager.getElementUUID(name);
+                    
+                    // 创建修饰符
+                    AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
+                    weaponData.addInitialModifier(new WeaponData.AttributeModifierEntry(name, modifier));
                 }
             }
         }
@@ -593,6 +595,7 @@ public class WeaponConfig {
     
     /**
      * 处理单个武器配置（数组格式，用于TACZ和拔刀剑）
+     * 适配新的两层数据结构
      */
     private static void processWeaponConfig(JsonObject itemJson, String configKey, boolean isTacZ) {
         // 创建WeaponData对象
@@ -617,22 +620,12 @@ public class WeaponConfig {
                 for (JsonElement element : basicArray) {
                     JsonArray elementArray = element.getAsJsonArray();
                     String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String source = elementArray.get(2).getAsString();
-                    weaponData.getElementData().addBasicElement(type, value, source);
-                }
-            }
-            
-            // 读取Computed层
-            if (elementDataJson.has("Computed")) {
-                JsonArray computedArray = elementDataJson.getAsJsonArray("Computed");
-                for (JsonElement element : computedArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String source = elementArray.get(2).getAsString();
-                    String operation = elementArray.get(3).getAsString();
-                    weaponData.getElementData().addComputedElement(type, value, source, operation);
+                    String source = elementArray.get(1).getAsString();
+                    int order = elementArray.size() > 2 ? elementArray.get(2).getAsInt() : 0; // 顺序，默认为0
+                    
+                    // 直接添加，保持原有顺序
+                    weaponData.getBasicElements().computeIfAbsent(type, k -> new ArrayList<>())
+                        .add(new WeaponData.BasicEntry(type, source, order));
                 }
             }
             
@@ -643,19 +636,42 @@ public class WeaponConfig {
                     JsonArray elementArray = element.getAsJsonArray();
                     String type = elementArray.get(0).getAsString();
                     double value = elementArray.get(1).getAsDouble();
-                    weaponData.getElementData().setUsageValue(type, value);
+                    weaponData.setUsageElement(type, value);
                 }
             }
             
-            // 读取Extra层
-            if (elementDataJson.has("Extra")) {
-                JsonArray extraArray = elementDataJson.getAsJsonArray("Extra");
-                for (JsonElement element : extraArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    String operation = elementArray.get(2).getAsString();
-                    weaponData.getElementData().addExtraFaction(type, value, operation);
+            // 读取初始属性修饰符数据
+            if (elementDataJson.has("InitialModifiers")) {
+                JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                for (JsonElement modifierElement : modifiersArray) {
+                    JsonObject modifierJson = modifierElement.getAsJsonObject();
+                    
+                    String name = modifierJson.get("name").getAsString();
+                    double amount = modifierJson.get("amount").getAsDouble();
+                    String operationStr = modifierJson.get("operation").getAsString();
+                    
+                    // 解析操作类型
+                    AttributeModifier.Operation operation;
+                    switch (operationStr) {
+                        case "ADDITION":
+                            operation = AttributeModifier.Operation.ADDITION;
+                            break;
+                        case "MULTIPLY_BASE":
+                            operation = AttributeModifier.Operation.MULTIPLY_BASE;
+                            break;
+                        case "MULTIPLY_TOTAL":
+                            operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
+                            break;
+                        default:
+                            operation = AttributeModifier.Operation.ADDITION;
+                    }
+                    
+                    // UUID将在应用阶段生成
+                    UUID uuid = com.xlxyvergil.hamstercore.element.ElementUUIDManager.getElementUUID(name);
+                    
+                    // 创建修饰符
+                    AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
+                    weaponData.addInitialModifier(new WeaponData.AttributeModifierEntry(name, modifier));
                 }
             }
         }
@@ -765,6 +781,42 @@ public class WeaponConfig {
         return weaponConfigs.get(new ResourceLocation("slashblade", "slashblade"));
     }
     
+    /**
+     * 为武器添加初始修饰符
+     */
+    private static void addInitialModifiers(WeaponData data) {
+        // 为每个基础元素添加初始修饰符
+        for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : data.getBasicElements().entrySet()) {
+            String elementType = entry.getKey();
+            double defaultValue = 1.0; // 默认值
+            
+            // 根据元素类型设置默认值
+            if ("critical_chance".equals(elementType)) {
+                defaultValue = DEFAULT_CRITICAL_CHANCE;
+            } else if ("critical_damage".equals(elementType)) {
+                defaultValue = DEFAULT_CRITICAL_DAMAGE;
+            } else if ("trigger_chance".equals(elementType)) {
+                defaultValue = DEFAULT_TRIGGER_CHANCE;
+            } else if (data.getUsageElements().containsKey(elementType)) {
+                defaultValue = data.getUsageElements().get(elementType);
+            }
+            
+            // 为每种元素类型使用固定的UUID
+            UUID modifierUuid = ElementUUIDManager.getElementUUID(elementType);
+            
+            // 创建属性修饰符
+            AttributeModifier modifier = new AttributeModifier(
+                modifierUuid, 
+                elementType, 
+                defaultValue, 
+                AttributeModifier.Operation.ADDITION
+            );
+            
+            // 添加到初始修饰符列表
+            data.addInitialModifier(new WeaponData.AttributeModifierEntry(elementType, modifier));
+        }
+    }
+
     /**
      * 创建默认的额外普通武器配置文件
      */

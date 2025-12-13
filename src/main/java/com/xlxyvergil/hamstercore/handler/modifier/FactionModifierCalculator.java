@@ -2,11 +2,12 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.ExtraEntry;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
+import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,30 +23,24 @@ public class FactionModifierCalculator {
     
     /**
      * 计算派系伤害修饰符
-     * @param attacker 攻击者
-     * @param target 目标实体
-     * @param data 武器元素数据
+     * @param weapon 武器物品堆
      * @param targetFaction 目标派系
      * @return 派系伤害修饰符
      */
-    public static double calculateFactionModifier(LivingEntity attacker, LivingEntity target, WeaponElementData data, String targetFaction) {
+    public static double calculateFactionModifier(ItemStack weapon, String targetFaction) {
         // 计算克制系数
         double modifier = 0.0;
         
-        // 添加武器上的extra层派系修饰符
-        // 如果目标实体派系和extra层中的派系相同，则extra层中的数据生效
+        // 获取武器数据
+        WeaponElementData data = WeaponDataManager.loadElementData(weapon, false);
+        
+        // 检查Usage层是否有指定派系的元素
         if (data != null) {
-            // 检查Extra层是否有指定派系的数据
-            List<ExtraEntry> entries = data.getExtraFaction(targetFaction);
-            for (ExtraEntry entry : entries) {
-                if (entry != null) {
-                    // 根据操作类型应用值
-                    if ("add".equals(entry.getOperation())) {
-                        modifier += entry.getValue();
-                    } else if ("sub".equals(entry.getOperation())) {
-                        modifier -= entry.getValue();
-                    }
-                }
+            // 获取指定派系元素的值
+            List<Double> factionValues = data.getUsageValue(targetFaction.toLowerCase());
+            // 累加所有该派系元素的值
+            for (Double value : factionValues) {
+                modifier += value;
             }
         }
         

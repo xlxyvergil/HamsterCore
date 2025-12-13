@@ -3,8 +3,6 @@ package com.xlxyvergil.hamstercore.util;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponElementData;
 import com.xlxyvergil.hamstercore.element.BasicEntry;
-import com.xlxyvergil.hamstercore.element.ComputedEntry;
-import com.xlxyvergil.hamstercore.element.ExtraEntry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import net.minecraft.world.item.ItemStack;
@@ -133,8 +131,7 @@ public class ElementNBTUtils {
         
         // 检查Basic层是否有指定元素类型的数据
         List<BasicEntry> entries = data.getBasicElement(elementType);
-        return entries.stream().filter(e -> "user".equals(e.getSource()))
-                     .mapToDouble(BasicEntry::getValue).sum();
+        return entries.stream().mapToDouble(e -> 1.0).sum(); // Basic层不包含实际数值
     }
     
     /**
@@ -151,40 +148,6 @@ public class ElementNBTUtils {
         
         // 返回Basic层所有元素类型
         return data.getAllBasicElements().keySet();
-    }
-    
-    /**
-     * 获取Computed层指定元素类型的值
-     * 从Computed层获取数据
-     */
-    public static double getComputedElementValue(ItemStack stack, String elementType) {
-        if (stack.isEmpty()) {
-            return 0.0;
-        }
-        
-        // 从Computed层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
-        
-        // 检查Computed层是否有指定元素类型的数据
-        List<ComputedEntry> entries = data.getComputedElement(elementType);
-        return entries.stream().filter(e -> "user".equals(e.getSource()))
-                     .mapToDouble(ComputedEntry::getValue).sum();
-    }
-    
-    /**
-     * 获取Computed层所有元素类型
-     * 从Computed层获取数据
-     */
-    public static Set<String> getAllComputedElementTypes(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return new HashSet<>();
-        }
-        
-        // 从Computed层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
-        
-        // 返回Computed层所有元素类型
-        return data.getAllComputedElements().keySet();
     }
     
     /**
@@ -223,35 +186,37 @@ public class ElementNBTUtils {
     }
     
     /**
-     * 获取Extra层指定派系的修饰值
-     * 从Extra层获取数据
+     * 获取Usage层指定派系的修饰值
+     * 从Usage层获取数据
      */
     public static double getExtraFactionModifier(ItemStack stack, String faction) {
         if (stack.isEmpty()) {
             return 0.0;
         }
         
-        // 从Extra层获取派系修饰数据
+        // 从Usage层获取派系修饰数据
         WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        WeaponDataManager.computeUsageData(stack, data);
         
-        // 检查Extra层是否有指定派系的数据
-        List<ExtraEntry> entries = data.getExtraFaction(faction);
-        return entries.stream().mapToDouble(ExtraEntry::getValue).sum();
+        // 检查Usage层是否有指定派系的数据
+        List<Double> values = data.getUsageValue(faction);
+        return values.stream().mapToDouble(Double::doubleValue).sum();
     }
     
     /**
-     * 获取Extra层所有派系类型
-     * 从Extra层获取数据
+     * 获取Usage层所有派系类型
+     * 从Usage层获取数据
      */
     public static Set<String> getAllExtraFactions(ItemStack stack) {
         if (stack.isEmpty()) {
             return new HashSet<>();
         }
         
-        // 从Extra层获取派系数据
+        // 从Usage层获取派系数据
         WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        WeaponDataManager.computeUsageData(stack, data);
         
-        // 返回Extra层所有派系类型
-        return data.getAllExtraFactions().keySet();
+        // 返回Usage层所有派系类型
+        return data.getAllUsageValues().keySet();
     }
 }
