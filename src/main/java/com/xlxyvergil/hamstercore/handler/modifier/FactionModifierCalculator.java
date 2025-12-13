@@ -3,7 +3,7 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponElementData;
+import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
@@ -32,7 +32,7 @@ public class FactionModifierCalculator {
         double modifier = 0.0;
         
         // 获取武器数据
-        WeaponElementData data = WeaponDataManager.loadElementData(weapon, false);
+        WeaponData data = WeaponDataManager.loadElementData(weapon);
         
         // 检查Usage层是否有指定派系的元素
         if (data != null) {

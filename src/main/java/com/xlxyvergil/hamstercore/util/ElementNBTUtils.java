@@ -1,8 +1,8 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponElementData;
-import com.xlxyvergil.hamstercore.element.BasicEntry;
+
+
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import net.minecraft.world.item.ItemStack;
@@ -41,13 +41,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取暴击率数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有暴击率数据
-        List<Double> criticalChances = data.getUsageValue("critical_chance");
-        double sum = criticalChances.stream().mapToDouble(Double::doubleValue).sum();
-        return sum;
+        return data.getUsageElements().getOrDefault("critical_chance", 0.0);
     }
     
     /**
@@ -60,13 +58,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取暴击伤害数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有暴击伤害数据
-        List<Double> criticalDamages = data.getUsageValue("critical_damage");
-        double sum = criticalDamages.stream().mapToDouble(Double::doubleValue).sum();
-        return sum;
+        return data.getUsageElements().getOrDefault("critical_damage", 0.0);
     }
     
     /**
@@ -79,12 +75,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取触发率数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有触发率数据
-        List<Double> triggerChances = data.getUsageValue("trigger_chance");
-        double sum = triggerChances.stream().mapToDouble(Double::doubleValue).sum();
+        double sum = data.getUsageElements().getOrDefault("trigger_chance", 0.0);
         return sum;
     }
     
@@ -127,11 +122,14 @@ public class ElementNBTUtils {
         }
         
         // 从Basic层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         
         // 检查Basic层是否有指定元素类型的数据
-        List<BasicEntry> entries = data.getBasicElement(elementType);
-        return entries.stream().mapToDouble(e -> 1.0).sum(); // Basic层不包含实际数值
+        List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> entries = data.getBasicElements().get(elementType);
+        if (entries != null) {
+            return entries.size(); // Basic层不包含实际数值
+        }
+        return 0.0;
     }
     
     /**
@@ -144,10 +142,10 @@ public class ElementNBTUtils {
         }
         
         // 从Basic层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         
         // 返回Basic层所有元素类型
-        return data.getAllBasicElements().keySet();
+        return data.getBasicElements().keySet();
     }
     
     /**
@@ -160,12 +158,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有指定元素类型的数据
-        List<Double> values = data.getUsageValue(elementType);
-        return values.stream().mapToDouble(Double::doubleValue).sum();
+        return data.getUsageElements().getOrDefault(elementType, 0.0);
     }
     
     /**
@@ -178,11 +175,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取元素数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 返回Usage层所有元素类型
-        return data.getAllUsageValues().keySet();
+        return data.getUsageElements().keySet();
     }
     
     /**
@@ -195,12 +192,11 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取派系修饰数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 检查Usage层是否有指定派系的数据
-        List<Double> values = data.getUsageValue(faction);
-        return values.stream().mapToDouble(Double::doubleValue).sum();
+        return data.getUsageElements().getOrDefault(faction, 0.0);
     }
     
     /**
@@ -213,10 +209,10 @@ public class ElementNBTUtils {
         }
         
         // 从Usage层获取派系数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = WeaponDataManager.loadElementData(stack);
         WeaponDataManager.computeUsageData(stack, data);
         
         // 返回Usage层所有派系类型
-        return data.getAllUsageValues().keySet();
+        return data.getUsageElements().keySet();
     }
 }

@@ -28,6 +28,17 @@ public class WeaponData {
     // 使用层数据（Usage层）- 元素复合后的元素类型和数值
     private Map<String, Double> usageElements = new HashMap<>();
     
+    /**
+     * 获取指定类型的所有使用层元素值
+     */
+    public List<Double> getUsageValue(String type) {
+        List<Double> values = new ArrayList<>();
+        if (usageElements.containsKey(type)) {
+            values.add(usageElements.get(type));
+        }
+        return values;
+    }
+    
     // 初始属性修饰符数据（将在世界加载阶段赋予武器）
     private List<AttributeModifierEntry> initialModifiers = new ArrayList<>();
     
@@ -53,14 +64,27 @@ public class WeaponData {
     }
     
     /**
-     * 添加基础元素
-     * @param type 元素类型
-     * @param source 来源(def或user)
+     * 添加基础元素（默认来源为CONFIG，即def）
+     */
+    public void addBasicElement(String type) {
+        addBasicElement(type, "CONFIG");
+    }
+    
+    /**
+     * 添加基础元素，指定类型和来源
      */
     public void addBasicElement(String type, String source) {
         // 计算添加顺序，基于当前该元素类型在整体中的位置
         int order = getNextOrderForType(type);
         basicElements.computeIfAbsent(type, k -> new ArrayList<>()).add(new BasicEntry(type, source, order));
+    }
+    
+    /**
+     * 添加基础元素，带具体数值
+     */
+    public void addBasicElement(String type, double value) {
+        addBasicElement(type, "CONFIG");
+        setUsageElement(type, value);
     }
     
     /**
@@ -100,13 +124,6 @@ public class WeaponData {
         
         // 计算总的元素类型数作为新顺序
         return basicElements.size();
-    }
-    
-    /**
-     * 添加基础元素（默认来源为CONFIG，即def）
-     */
-    public void addBasicElement(String type) {
-        addBasicElement(type, "def");
     }
     
     /**
@@ -173,6 +190,11 @@ public class WeaponData {
         
         public void setOrder(int order) {
             this.order = order;
+        }
+        
+        // 添加getOperation方法以修复编译错误
+        public net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation getOperation() {
+            return net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION;
         }
     }
 }

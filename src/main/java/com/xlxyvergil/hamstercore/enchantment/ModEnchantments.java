@@ -12,6 +12,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.google.common.collect.Maps;
+
 public class ModEnchantments {
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
             DeferredRegister.create(Registries.ENCHANTMENT, HamsterCore.MODID);
@@ -35,9 +37,6 @@ public class ModEnchantments {
             
     public static final RegistryObject<ElectricityElementEnchantment> ELECTRICITY_ELEMENT = ENCHANTMENTS.register(
             "electricity_element", ElectricityElementEnchantment::new);
-            
-    public static final RegistryObject<ChemicalElementEnchantment> CHEMICAL_ELEMENT = ENCHANTMENTS.register(
-            "chemical_element", ChemicalElementEnchantment::new);
             
     public static final RegistryObject<ToxinElementEnchantment> TOXIN_ELEMENT = ENCHANTMENTS.register(
             "toxin_element", ToxinElementEnchantment::new);
@@ -90,6 +89,9 @@ public class ModEnchantments {
     public static final RegistryObject<TriggerChanceElementEnchantment> TRIGGER_CHANCE_ELEMENT = ENCHANTMENTS.register(
             "trigger_chance_element", TriggerChanceElementEnchantment::new);
 
+    // 元素附魔映射表
+    public static final Map<ElementType, RegistryObject<ElementEnchantment>> ELEMENT_ENCHANTMENTS = Maps.newEnumMap(ElementType.class);
+    
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);
     }

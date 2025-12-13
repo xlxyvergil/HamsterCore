@@ -136,7 +136,7 @@ public class AdditionalElementApplier {
                         double value = elementJson.get("value").getAsDouble();
                         String source = elementJson.get("source").getAsString();
                         
-                        data.getElementData().addBasicElement(type, value, source);
+                        data.addBasicElement(type, value);
                     }
                 }
             }

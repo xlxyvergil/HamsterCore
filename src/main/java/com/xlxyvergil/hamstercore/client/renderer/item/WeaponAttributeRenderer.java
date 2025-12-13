@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponElementData;
+import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
@@ -58,49 +58,14 @@ public class WeaponAttributeRenderer {
      */
     private static boolean shouldShowUsageLayer(ItemStack stack) {
         // 加载武器数据并重新计算Usage层数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack, true);
+        com.xlxyvergil.hamstercore.element.WeaponData data = com.xlxyvergil.hamstercore.element.WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponDataManager.computeUsageData(stack, data);
         
-        // 检查Usage层的特殊属性（暴击率、暴击伤害、触发率）
-        List<Double> criticalChanceList = data.getUsageValue("critical_chance");
-        List<Double> criticalDamageList = data.getUsageValue("critical_damage");
-        List<Double> triggerChanceList = data.getUsageValue("trigger_chance");
+        // 检查Usage层是否有触发率数据
+        double sum = data.getUsageElements().getOrDefault("trigger_chance", 0.0);
         
-        double criticalChance = criticalChanceList.stream().mapToDouble(Double::doubleValue).sum();
-        double criticalDamage = criticalDamageList.stream().mapToDouble(Double::doubleValue).sum();
-        double triggerChance = triggerChanceList.stream().mapToDouble(Double::doubleValue).sum();
-        
-        if (criticalChance > 0 || criticalDamage > 0 || triggerChance > 0) {
-            return true;
-        }
-        
-        // 检查Usage层的元素属性（物理、基础、复合元素）
-        for (Map.Entry<String, List<Double>> entry : data.getAllUsageValues().entrySet()) {
-            String key = entry.getKey();
-            List<Double> valueList = entry.getValue();
-            double value = valueList.stream().mapToDouble(Double::doubleValue).sum();
-            
-            // 排除特殊属性，只检查元素属性
-            if (value > 0 && 
-                !"critical_chance".equals(key) && 
-                !"critical_damage".equals(key) && 
-                !"trigger_chance".equals(key)) {
-                return true;
-            }
-        }
-        
-        // 检查Usage层的派系增伤属性
-        for (Map.Entry<String, List<Double>> entry : data.getAllUsageValues().entrySet()) {
-            String key = entry.getKey();
-            List<Double> usageValues = entry.getValue();
-            for (Double value : usageValues) {
-                if (value != null && value != 0) {
-                    return true;
-                }
-            }
-        }
-        
-        // 如果以上都没有有效数据，则显示Basic层
-        return false;
+        // 如果有任何Usage层数据大于0，则显示Usage层
+        return sum > 0;
     }
     
     /**
@@ -223,7 +188,7 @@ public class WeaponAttributeRenderer {
      */
     private static void addBasicAttributes(List<Component> tooltipElements, ItemStack stack) {
         // 获取Basic层数据
-        WeaponElementData data = WeaponDataManager.loadElementData(stack);
+        com.xlxyvergil.hamstercore.element.WeaponData data = com.xlxyvergil.hamstercore.element.WeaponDataManager.loadElementData(stack);
         
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
@@ -232,49 +197,33 @@ public class WeaponAttributeRenderer {
         tooltipElements.add(Component.literal("Basic").withStyle(ChatFormatting.YELLOW));
         
         // 添加特殊属性
-        Double criticalChance = null;
-        Double criticalDamage = null;
-        Double triggerChance = null;
+        String criticalChanceText = String.format("%s: %.1f%%", 
+            Component.translatable("hamstercore.ui.critical_chance").getString(), 
+            data.getUsageElements().getOrDefault("critical_chance", 0.0) * 100);
+        tooltipElements.add(Component.literal(criticalChanceText));
         
-        // 通过ElementModifierValueUtil获取特殊属性值
-        criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_CHANCE);
-        criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_DAMAGE);
-        triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.TRIGGER_CHANCE);
+        String criticalDamageText = String.format("%s: %.1f%%", 
+            Component.translatable("hamstercore.ui.critical_damage").getString(), 
+            data.getUsageElements().getOrDefault("critical_damage", 0.0) * 100);
+        tooltipElements.add(Component.literal(criticalDamageText));
         
-        // 添加特殊属性
-        if (criticalChance != null && criticalChance > 0) {
-            String criticalChanceText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.critical_chance").getString(), 
-                criticalChance * 100);
-            tooltipElements.add(Component.literal(criticalChanceText));
-        }
-        
-        if (criticalDamage != null && criticalDamage > 0) {
-            String criticalDamageText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.critical_damage").getString(), 
-                criticalDamage * 100);
-            tooltipElements.add(Component.literal(criticalDamageText));
-        }
-        
-        if (triggerChance != null && triggerChance > 0) {
-            String triggerChanceText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.trigger_chance").getString(), 
-                triggerChance * 100);
-            tooltipElements.add(Component.literal(triggerChanceText));
-        }
+        String triggerChanceText = String.format("%s: %.1f%%", 
+            Component.translatable("hamstercore.ui.trigger_chance").getString(), 
+            data.getUsageElements().getOrDefault("trigger_chance", 0.0) * 100);
+        tooltipElements.add(Component.literal(triggerChanceText));
         
         // 添加元素属性
         boolean hasElements = false;
-        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.BasicEntry>> entry : data.getAllBasicElements().entrySet()) {
+        for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry>> entry : data.getBasicElements().entrySet()) {
             String key = entry.getKey();
-            List<com.xlxyvergil.hamstercore.element.BasicEntry> basicEntries = entry.getValue();
+            List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> basicEntries = entry.getValue();
             
             // 排除特殊属性
             if (!"critical_chance".equals(key) && 
                 !"critical_damage".equals(key) && 
                 !"trigger_chance".equals(key) &&
                 !basicEntries.isEmpty() && 
-                basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum() > 0) {
+                basicEntries.size() > 0) {
                 hasElements = true;
                 break;
             }
@@ -285,40 +234,36 @@ public class WeaponAttributeRenderer {
                 Component.translatable("hamstercore.ui.element_ratios").append(":")
             );
             
-            for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.BasicEntry>> entry : data.getAllBasicElements().entrySet()) {
+            for (Map.Entry<String, List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry>> entry : data.getBasicElements().entrySet()) {
                 String key = entry.getKey();
-                List<com.xlxyvergil.hamstercore.element.BasicEntry> basicEntries = entry.getValue();
+                List<com.xlxyvergil.hamstercore.element.WeaponData.BasicEntry> basicEntries = entry.getValue();
                 
                 // 排除特殊属性
                 if ("critical_chance".equals(key) || 
                     "critical_damage".equals(key) || 
                     "trigger_chance".equals(key) ||
-                    basicEntries.isEmpty() || 
-                    basicEntries.stream().mapToDouble(com.xlxyvergil.hamstercore.element.BasicEntry::getValue).sum() <= 0) {
+                    basicEntries.isEmpty()) {
                     continue;
                 }
                 
-                // 获取元素类型
-                ElementType elementType = ElementType.byName(key);
-                if (elementType == null) {
-                    continue;
-                }
+                // 显示元素类型和数量
+                String elementName = Component.translatable("element." + key + ".name").getString();
+                String elementText = String.format("  %s: %d", elementName, basicEntries.size());
                 
-                // 通过ElementModifierValueUtil获取元素值
-                double totalValue = ElementModifierValueUtil.getElementValueFromAttributes(stack, elementType);
-                
-                // 创建元素名称和数值的文本组件，使用元素颜色
-                String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-                String elementText = String.format("  %s: %.2f", elementName, totalValue);
-                
-                // 检查颜色是否有效，避免NullPointerException
-                Integer colorValue = elementType.getColor().getColor();
-                if (colorValue != null) {
-                    Component elementComponent = Component.literal(elementText)
-                        .withStyle(style -> style.withColor(colorValue));
-                    tooltipElements.add(elementComponent);
+                // 获取元素类型的颜色
+                com.xlxyvergil.hamstercore.element.ElementType elementType = com.xlxyvergil.hamstercore.element.ElementType.byName(key);
+                if (elementType != null) {
+                    Integer colorValue = elementType.getColor().getColor();
+                    if (colorValue != null) {
+                        Component elementComponent = Component.literal(elementText)
+                            .withStyle(style -> style.withColor(colorValue));
+                        tooltipElements.add(elementComponent);
+                    } else {
+                        // 如果没有有效颜色，使用默认样式
+                        tooltipElements.add(Component.literal(elementText));
+                    }
                 } else {
-                    // 如果没有有效颜色，使用默认样式
+                    // 如果没有找到元素类型，使用默认样式
                     tooltipElements.add(Component.literal(elementText));
                 }
             }

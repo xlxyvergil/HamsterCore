@@ -6,10 +6,11 @@ import com.xlxyvergil.hamstercore.util.ElementModifierUtil;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
-
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,17 +27,17 @@ public class ElementApplier {
     public static int applyModSpecialItemsElements() {
         // 应用TACZ枪械元素属性 - 使用具体gunId
         int tacZAppliedCount = 0;
-        if (ModList.get().isLoaded("tacz")) {
+         if (ModList.get().isLoaded("tacz")) {
             for (ResourceLocation gunId : ModSpecialItemsFetcher.getTacZGunIDs()) {
                 if (applyGunAttributes(gunId)) {
                     tacZAppliedCount++;
                 }
             }
-        }
+         }
         
         // 应用拔刀剑元素属性 - 使用具体translationKey
         int slashBladeAppliedCount = 0;
-        if (ModList.get().isLoaded("slashblade")) {
+         if (ModList.get().isLoaded("slashblade")) {
             // 确保拔刀剑物品获取器已初始化
             SlashBladeItemsFetcher.init();
             for (String translationKey : SlashBladeItemsFetcher.getSlashBladeTranslationKeys()) {
@@ -44,12 +45,14 @@ public class ElementApplier {
                     slashBladeAppliedCount++;
                 }
             }
-        }
+         }
         
         return tacZAppliedCount + slashBladeAppliedCount;
     }
+
     
 
+    
     
     
     
@@ -58,7 +61,7 @@ public class ElementApplier {
      * 应用元素修饰符到物品
      * 使用新的两层数据结构
      */
-    public static void applyElementModifiers(ItemStack stack, Map<String, List<BasicEntry>> basicElements) {
+    public static void applyElementModifiers(ItemStack stack, Map<String, List<WeaponData.BasicEntry>> basicElements) {
         ElementModifierUtil.applyElementModifiers(stack, basicElements);
     }
     

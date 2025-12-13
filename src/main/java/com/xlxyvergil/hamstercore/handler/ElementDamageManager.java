@@ -2,8 +2,8 @@ package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponElementData;
-import com.xlxyvergil.hamstercore.element.ExtraEntry;
+import com.xlxyvergil.hamstercore.element.WeaponData;
+
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
 import net.minecraft.world.entity.LivingEntity;
@@ -79,7 +79,7 @@ public class ElementDamageManager {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
         // 获取武器数据并重新计算Usage层数据以确保准确性
-        WeaponElementData data = WeaponDataManager.loadElementData(weapon, true);
+        WeaponData data = WeaponDataManager.loadElementData(weapon);
         
         // 计算各部分的伤害修正系数
         damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction); // HM
@@ -127,7 +127,7 @@ public class ElementDamageManager {
      */
     private static List<Map.Entry<ElementType, Double>> getActiveElementsImpl(ItemStack weapon) {
         // 使用新的四层数据结构，但不强制重新计算Usage层数据
-        WeaponElementData data = WeaponDataManager.loadElementData(weapon, false);
+        WeaponData data = WeaponDataManager.loadElementData(weapon);
         
         // 将Usage层数据转换为ElementType和值的映射列表
         List<Map.Entry<ElementType, Double>> activeElements = new ArrayList<>();

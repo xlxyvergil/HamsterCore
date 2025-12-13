@@ -339,6 +339,10 @@ public class ElementCombinationModifier {
             this.source = source;
         }
         
+        public net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation getOperation() {
+            return net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION;
+        }
+        
         @Override
         public String toString() {
             return String.format("%s(%.3f,%s)", type, value, source);

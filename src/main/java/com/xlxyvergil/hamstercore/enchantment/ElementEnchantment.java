@@ -7,18 +7,17 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.ResourceLocation;
 import java.util.UUID;
 
 public class ElementEnchantment extends Enchantment {
-    private final ElementType elementType;
-    private final int maxLevel;
-    private final String enchantmentId;
-    private final UUID elementModifierId;
+    protected final ElementType elementType;
+    protected final int maxLevel;
+    protected final String enchantmentId;
+    protected final UUID elementModifierId;
 
     public ElementEnchantment(Rarity rarity, ElementType elementType, int maxLevel, String enchantmentId, UUID elementModifierId) {
         super(rarity, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
@@ -66,7 +65,6 @@ public class ElementEnchantment extends Enchantment {
         return false;
     }
     
-    @Override
     public java.util.Collection<AttributeModifier> getEntityAttributes(EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
             // 获取元素属性
@@ -88,6 +86,6 @@ public class ElementEnchantment extends Enchantment {
             }
         }
         
-        return super.getEntityAttributes(slot, level);
+        return java.util.Collections.emptyList();
     }
 }

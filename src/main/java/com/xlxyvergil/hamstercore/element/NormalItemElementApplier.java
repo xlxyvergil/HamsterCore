@@ -4,6 +4,8 @@ import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.util.DebugLogger;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
@@ -46,23 +48,16 @@ public class NormalItemElementApplier {
     
     /**
      * 为普通物品应用元素属性
-     * 使用新的两层数据结构
      */
     private static boolean applyElementAttributesToNormalItem(ResourceLocation itemKey, WeaponData weaponData) {
-        // 检查武器数据是否为空
-        if (weaponData == null) {
-            return false;
-        }
-        
         try {
-            // 创建实际的ItemStack用于存储元素属性
+            // 创建物品栈
             Item item = BuiltInRegistries.ITEM.get(itemKey);
             if (item == null) {
                 return false;
             }
             
             ItemStack stack = new ItemStack(item);
-            
             if (stack.isEmpty()) {
                 return false;
             }
