@@ -18,13 +18,14 @@ public class ElementEnchantment extends Enchantment {
     private final ElementType elementType;
     private final int maxLevel;
     private final String enchantmentId;
-    private static final UUID ELEMENT_MODIFIER_ID = UUID.fromString("CB3F5740-CA39-4346-9A85-4F558D338D8B");
+    private final UUID elementModifierId;
 
-    public ElementEnchantment(Rarity rarity, ElementType elementType, int maxLevel, String enchantmentId) {
+    public ElementEnchantment(Rarity rarity, ElementType elementType, int maxLevel, String enchantmentId, UUID elementModifierId) {
         super(rarity, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND});
         this.elementType = elementType;
         this.maxLevel = maxLevel;
         this.enchantmentId = enchantmentId;
+        this.elementModifierId = elementModifierId;
     }
 
     @Override
@@ -42,8 +43,9 @@ public class ElementEnchantment extends Enchantment {
     
     @Override
     public boolean canEnchant(ItemStack stack) {
-        // 确保可以应用于武器类型物品
-        return this.category.canEnchant(stack.getItem());
+        // 使用WeaponItemIds来判断物品是否可以应用元素附魔
+        ResourceLocation itemKey = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+        return com.xlxyvergil.hamstercore.config.WeaponItemIds.isConfiguredWeapon(itemKey);
     }
     
     @Override
@@ -73,7 +75,7 @@ public class ElementEnchantment extends Enchantment {
                 // 创建属性修饰符
                 double value = elementAttribute.getDefaultValue() * level;
                 AttributeModifier modifier = new AttributeModifier(
-                    ELEMENT_MODIFIER_ID, 
+                    this.elementModifierId, 
                     "hamstercore:" + elementType.getName(), 
                     value, 
                     elementAttribute.getOperation()

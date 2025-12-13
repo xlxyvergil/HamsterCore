@@ -16,81 +16,79 @@ public class ModEnchantments {
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
             DeferredRegister.create(Registries.ENCHANTMENT, HamsterCore.MODID);
 
-    // 使用 EnumMap 存储所有元素附魔
-    public static final Map<ElementType, RegistryObject<ElementEnchantment>> ELEMENT_ENCHANTMENTS = new EnumMap<>(ElementType.class);
+    // 物理元素附魔
+    public static final RegistryObject<SlashElementEnchantment> SLASH_ELEMENT = ENCHANTMENTS.register(
+            "slash_element", SlashElementEnchantment::new);
+            
+    public static final RegistryObject<PunctureElementEnchantment> PUNCTURE_ELEMENT = ENCHANTMENTS.register(
+            "puncture_element", PunctureElementEnchantment::new);
+            
+    public static final RegistryObject<ImpactElementEnchantment> IMPACT_ELEMENT = ENCHANTMENTS.register(
+            "impact_element", ImpactElementEnchantment::new);
 
-    static {
-        // 为所有物理元素创建附魔
-        for (ElementType type : ElementType.getPhysicalElements()) {
-            ELEMENT_ENCHANTMENTS.put(type, ENCHANTMENTS.register(
-                    type.getName() + "_element",
-                    () -> new ElementEnchantment(Enchantment.Rarity.COMMON, type, 1, "enchantment_" + type.getName())
-            ));
-        }
+    // 基础元素附魔
+    public static final RegistryObject<HeatElementEnchantment> HEAT_ELEMENT = ENCHANTMENTS.register(
+            "heat_element", HeatElementEnchantment::new);
+            
+    public static final RegistryObject<ColdElementEnchantment> COLD_ELEMENT = ENCHANTMENTS.register(
+            "cold_element", ColdElementEnchantment::new);
+            
+    public static final RegistryObject<ElectricityElementEnchantment> ELECTRICITY_ELEMENT = ENCHANTMENTS.register(
+            "electricity_element", ElectricityElementEnchantment::new);
+            
+    public static final RegistryObject<ChemicalElementEnchantment> CHEMICAL_ELEMENT = ENCHANTMENTS.register(
+            "chemical_element", ChemicalElementEnchantment::new);
+            
+    public static final RegistryObject<ToxinElementEnchantment> TOXIN_ELEMENT = ENCHANTMENTS.register(
+            "toxin_element", ToxinElementEnchantment::new);
 
-        // 为所有基础元素创建附魔
-        for (ElementType type : ElementType.getBasicElements()) {
-            ELEMENT_ENCHANTMENTS.put(type, ENCHANTMENTS.register(
-                    type.getName() + "_element",
-                    () -> new ElementEnchantment(Enchantment.Rarity.UNCOMMON, type, 1, "enchantment_" + type.getName())
-            ));
-        }
+    // 复合元素附魔
+    public static final RegistryObject<BlastElementEnchantment> BLAST_ELEMENT = ENCHANTMENTS.register(
+            "blast_element", BlastElementEnchantment::new);
+            
+    public static final RegistryObject<RadiationElementEnchantment> RADIATION_ELEMENT = ENCHANTMENTS.register(
+            "radiation_element", RadiationElementEnchantment::new);
+            
+    public static final RegistryObject<GasElementEnchantment> GAS_ELEMENT = ENCHANTMENTS.register(
+            "gas_element", GasElementEnchantment::new);
+            
+    public static final RegistryObject<MagneticElementEnchantment> MAGNETIC_ELEMENT = ENCHANTMENTS.register(
+            "magnetic_element", MagneticElementEnchantment::new);
+            
+    public static final RegistryObject<ViralElementEnchantment> VIRAL_ELEMENT = ENCHANTMENTS.register(
+            "viral_element", ViralElementEnchantment::new);
+            
+    public static final RegistryObject<CorrosiveElementEnchantment> CORROSIVE_ELEMENT = ENCHANTMENTS.register(
+            "corrosive_element", CorrosiveElementEnchantment::new);
 
-        // 为所有复合元素创建附魔
-        for (ElementType type : ElementType.getComplexElements()) {
-            ELEMENT_ENCHANTMENTS.put(type, ENCHANTMENTS.register(
-                    type.getName() + "_element",
-                    () -> new ElementEnchantment(Enchantment.Rarity.RARE, type, 1, "enchantment_" + type.getName())
-            ));
-        }
+    // 派系元素附魔
+    public static final RegistryObject<GrineerElementEnchantment> GRINEER_ELEMENT = ENCHANTMENTS.register(
+            "grineer_element", GrineerElementEnchantment::new);
+            
+    public static final RegistryObject<InfestedElementEnchantment> INFESTED_ELEMENT = ENCHANTMENTS.register(
+            "infested_element", InfestedElementEnchantment::new);
+            
+    public static final RegistryObject<CorpusElementEnchantment> CORPUS_ELEMENT = ENCHANTMENTS.register(
+            "corpus_element", CorpusElementEnchantment::new);
+            
+    public static final RegistryObject<OrokinElementEnchantment> OROKIN_ELEMENT = ENCHANTMENTS.register(
+            "orokin_element", OrokinElementEnchantment::new);
+            
+    public static final RegistryObject<SentientElementEnchantment> SENTIENT_ELEMENT = ENCHANTMENTS.register(
+            "sentient_element", SentientElementEnchantment::new);
+            
+    public static final RegistryObject<MurmurElementEnchantment> MURMUR_ELEMENT = ENCHANTMENTS.register(
+            "murmur_element", MurmurElementEnchantment::new);
 
-        // 为派系元素创建附魔
-        ELEMENT_ENCHANTMENTS.put(ElementType.GRINEER, ENCHANTMENTS.register(
-                "grineer_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.GRINEER, 1, "enchantment_grineer")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.INFESTED, ENCHANTMENTS.register(
-                "infested_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.INFESTED, 1, "enchantment_infested")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.CORPUS, ENCHANTMENTS.register(
-                "corpus_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.CORPUS, 1, "enchantment_corpus")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.OROKIN, ENCHANTMENTS.register(
-                "orokin_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.OROKIN, 1, "enchantment_orokin")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.SENTIENT, ENCHANTMENTS.register(
-                "sentient_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.SENTIENT, 1, "enchantment_sentient")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.MURMUR, ENCHANTMENTS.register(
-                "murmur_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.VERY_RARE, ElementType.MURMUR, 1, "enchantment_murmur")
-        ));
-
-        // 为其他特殊属性创建附魔
-        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_CHANCE, ENCHANTMENTS.register(
-                "critical_chance_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.RARE, ElementType.CRITICAL_CHANCE, 1, "enchantment_critical_chance")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_DAMAGE, ENCHANTMENTS.register(
-                "critical_damage_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.RARE, ElementType.CRITICAL_DAMAGE, 1, "enchantment_critical_damage")
-        ));
-
-        ELEMENT_ENCHANTMENTS.put(ElementType.TRIGGER_CHANCE, ENCHANTMENTS.register(
-                "trigger_chance_element",
-                () -> new ElementEnchantment(Enchantment.Rarity.RARE, ElementType.TRIGGER_CHANCE, 1, "enchantment_trigger_chance")
-        ));
-    }
+    // 特殊属性附魔
+    public static final RegistryObject<CriticalChanceElementEnchantment> CRITICAL_CHANCE_ELEMENT = ENCHANTMENTS.register(
+            "critical_chance_element", CriticalChanceElementEnchantment::new);
+            
+    public static final RegistryObject<CriticalDamageElementEnchantment> CRITICAL_DAMAGE_ELEMENT = ENCHANTMENTS.register(
+            "critical_damage_element", CriticalDamageElementEnchantment::new);
+            
+    public static final RegistryObject<TriggerChanceElementEnchantment> TRIGGER_CHANCE_ELEMENT = ENCHANTMENTS.register(
+            "trigger_chance_element", TriggerChanceElementEnchantment::new);
 
     public static void register(IEventBus eventBus) {
         ENCHANTMENTS.register(eventBus);

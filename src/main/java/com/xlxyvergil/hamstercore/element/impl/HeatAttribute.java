@@ -24,8 +24,7 @@ public class HeatAttribute extends ElementAttribute {
     
     public HeatAttribute() {
         super(ElementType.HEAT, 0.0, AttributeModifier.Operation.ADDITION);
-    }
-    
+    }    
     @Override
     public MutableComponent getDescription(ItemStack stack) {
         return Component.translatable("element.heat.desc", formatValue(0));
