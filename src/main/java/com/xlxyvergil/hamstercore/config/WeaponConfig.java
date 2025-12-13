@@ -11,8 +11,11 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.compat.ModCompat;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
+import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
+import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 
 import java.io.File;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
@@ -813,7 +816,7 @@ public class WeaponConfig {
             // 注意：派系增伤和特殊属性不应该从Usage层获取默认值，因为Usage层不存储这些数据
             
             // 为每种元素类型使用固定的UUID
-            UUID modifierUuid = ElementUUIDManager.getElementUUID(elementType);
+            UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
             
             // 创建属性修饰符
             AttributeModifier modifier = new AttributeModifier(

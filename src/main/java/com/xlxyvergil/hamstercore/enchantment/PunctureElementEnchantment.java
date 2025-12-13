@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
 

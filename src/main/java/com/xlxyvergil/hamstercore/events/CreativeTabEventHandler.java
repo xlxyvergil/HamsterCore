@@ -1,5 +1,7 @@
 package com.xlxyvergil.hamstercore.events;
 
+import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.enchantment.ElementEnchantment;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.EnchantedBookItem;
@@ -10,6 +12,7 @@ import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Map;
 
@@ -20,14 +23,14 @@ public class CreativeTabEventHandler {
     public static void buildContents(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.SEARCH) {
             // 将所有元素附魔书添加到搜索标签页
-            for (Map.Entry<com.xlxyvergil.hamstercore.element.ElementType, net.minecraftforge.registries.RegistryObject<com.xlxyvergil.hamstercore.enchantment.ElementEnchantment>> entry : 
+            for (Map.Entry<ElementType, RegistryObject<? extends ElementEnchantment>> entry : 
                  ModEnchantments.ELEMENT_ENCHANTMENTS.entrySet()) {
                 
-                com.xlxyvergil.hamstercore.element.ElementType elementType = entry.getKey();
-                net.minecraftforge.registries.RegistryObject<com.xlxyvergil.hamstercore.enchantment.ElementEnchantment> enchantmentRegistryObject = entry.getValue();
+                ElementType elementType = entry.getKey();
+                RegistryObject<? extends ElementEnchantment> enchantmentRegistryObject = entry.getValue();
                 
                 if (enchantmentRegistryObject.isPresent()) {
-                    com.xlxyvergil.hamstercore.enchantment.ElementEnchantment enchantment = enchantmentRegistryObject.get();
+                    ElementEnchantment enchantment = enchantmentRegistryObject.get();
                     
                     // 为每个附魔等级创建附魔书
                     for (int level = 1; level <= enchantment.getMaxLevel(); level++) {

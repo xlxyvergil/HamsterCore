@@ -1,6 +1,8 @@
 package com.xlxyvergil.hamstercore.api.element;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.handler.ElementModifierEventHandler;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -32,12 +34,18 @@ public class ElementComputedAPI {
         // 使用ElementUUIDManager生成唯一的UUID
         UUID modifierId = ElementUUIDManager.getOrCreateUUID(event.getItemStack(), elementType, index);
         
+        // 获取元素属性
+        ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
+        if (elementAttribute == null) {
+            return; // 如果没有找到元素属性，则不应用修饰符
+        }
+        
         // 创建属性修饰符
         AttributeModifier modifier = new AttributeModifier(
             modifierId, 
             "hamstercore:" + elementType.getName(), 
             value, 
-            elementType.getDefaultOperation()
+            elementAttribute.getOperation()
         );
         
         // 应用修饰符到物品的攻击伤害属性上

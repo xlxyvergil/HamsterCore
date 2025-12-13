@@ -179,4 +179,15 @@ public class ElementUUIDManager {
         CompoundTag nbt = stack.getTag();
         nbt.remove(ELEMENT_UUID_TAG);
     }
+    
+    /**
+     * 根据名称获取元素UUID
+     * 
+     * @param name 名称
+     * @return 对应的UUID
+     */
+    public static UUID getElementUUID(String name) {
+        // 使用名称生成固定的UUID
+        return UUID.nameUUIDFromBytes(name.getBytes());
+    }
 }

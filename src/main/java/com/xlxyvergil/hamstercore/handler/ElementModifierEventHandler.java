@@ -81,7 +81,7 @@ public class ElementModifierEventHandler {
         // 检查物品是否有元素数据
         if (stack.hasTag() && stack.getTag().contains("element_data")) {
             // 从NBT加载武器数据
-            WeaponData weaponData = WeaponDataManager.getElementData(stack);
+            WeaponData weaponData = WeaponDataManager.loadElementData(stack);
             if (weaponData != null && weaponData.getBasicElements() != null) {
                 // 应用元素修饰符
                 applyElementModifiers(event, weaponData.getBasicElements());

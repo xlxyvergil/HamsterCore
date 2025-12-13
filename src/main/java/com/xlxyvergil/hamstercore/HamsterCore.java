@@ -13,6 +13,10 @@ import com.xlxyvergil.hamstercore.api.element.ElementAttributeAPI;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
+import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.element.AdditionalElementApplier;
+import com.xlxyvergil.hamstercore.element.ElementApplier;
+import com.xlxyvergil.hamstercore.element.NormalItemElementApplier;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
 import net.minecraftforge.common.MinecraftForge;
@@ -90,16 +94,16 @@ public class HamsterCore {
             }
 
             // 3. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
-            com.xlxyvergil.hamstercore.config.WeaponConfig.load();
+            WeaponConfig.load();
             
             // 4. 应用普通物品元素属性
-            int normalAppliedCount = com.xlxyvergil.hamstercore.element.NormalItemElementApplier.applyNormalItemsElements();
+            int normalAppliedCount = NormalItemElementApplier.applyNormalItemsElements();
             
             // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
-            int modSpecialAppliedCount = com.xlxyvergil.hamstercore.element.ElementApplier.applyModSpecialItemsElements();
+            int modSpecialAppliedCount = ElementApplier.applyModSpecialItemsElements();
             
             // 6. 应用额外的元素属性配置
-            int additionalAppliedCount = com.xlxyvergil.hamstercore.element.AdditionalElementApplier.applyAdditionalElements();
+            int additionalAppliedCount = AdditionalElementApplier.applyAdditionalElements();
             
             
         } catch (Exception e) {
