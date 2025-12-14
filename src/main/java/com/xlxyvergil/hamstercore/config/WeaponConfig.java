@@ -9,7 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.compat.ModCompat;
+
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
@@ -259,43 +259,28 @@ public class WeaponConfig {
         if (gunType.contains("pistol") || gunType.contains("handgun")) {
             // 手枪类：平衡型
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.5);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.3);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.2);
         } else if (gunType.contains("rifle") || gunType.contains("assault")) {
             // 步枪类：穿刺为主
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.7);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         } else if (gunType.contains("sniper")) {
             // 狙击枪：高穿刺
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.8);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.15);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.05);
         } else if (gunType.contains("shotgun")) {
             // 霰弹枪：冲击为主
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.6);
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.3);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         } else {
             // 默认枪械：穿刺和冲击为主
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.6);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.3);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.1);
         }
     }
     
@@ -305,11 +290,8 @@ public class WeaponConfig {
     private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
         // 拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%
         data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-        data.setUsageElement(ElementType.SLASH.getName(), 0.7);
         data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-        data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
         data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-        data.setUsageElement(ElementType.PUNCTURE.getName(), 0.1);
     }
     
 
@@ -353,11 +335,8 @@ public class WeaponConfig {
             "wooden_sword".equals(itemKey.getPath())) {
             // 剑类：主要是切割
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.6);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.2);
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.2);
         } else if ("netherite_axe".equals(itemKey.getPath()) ||
                    "diamond_axe".equals(itemKey.getPath()) ||
                    "iron_axe".equals(itemKey.getPath()) ||
@@ -366,19 +345,13 @@ public class WeaponConfig {
                    "wooden_axe".equals(itemKey.getPath())) {
             // 斧类：主要是冲击和切割
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.IMPACT.getName(), 0.5);
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.SLASH.getName(), 0.4);
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), 0.1);
         } else {
             // 其他物品：默认物理元素占比
             data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-            data.setUsageElement(ElementType.SLASH.getName(), DEFAULT_SLASH);
             data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.setUsageElement(ElementType.IMPACT.getName(), DEFAULT_IMPACT);
             data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-            data.setUsageElement(ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
         }
     }
     
@@ -442,25 +415,9 @@ public class WeaponConfig {
         }
         elementDataJson.add("Basic", basicArray);
         
-        // 添加Usage层 - 元素复合后的元素类型和数值
+        // 添加Usage层 - 使用空数组，将在运行时由ElementCombinationModifier计算
         JsonArray usageArray = new JsonArray();
-        for (Map.Entry<String, Double> entry : weaponData.getUsageElements().entrySet()) {
-            JsonArray elementArray = new JsonArray();
-            elementArray.add(entry.getKey());
-            elementArray.add(entry.getValue());
-            usageArray.add(elementArray);
-        }
         elementDataJson.add("Usage", usageArray);
-        
-        // 添加Def层 - 默认元素数据
-        JsonArray defArray = new JsonArray();
-        for (Map.Entry<String, Double> entry : weaponData.getDefElements().entrySet()) {
-            JsonArray elementArray = new JsonArray();
-            elementArray.add(entry.getKey());
-            elementArray.add(entry.getValue());
-            defArray.add(elementArray);
-        }
-        elementDataJson.add("Def", defArray);
         
         // 添加初始属性修饰符数据（只包含名称和数值，UUID在应用阶段生成）
         JsonArray modifiersArray = new JsonArray();
@@ -597,27 +554,8 @@ public class WeaponConfig {
                 }
             }
             
-            // 读取Usage层
-            if (elementDataJson.has("Usage")) {
-                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
-                for (JsonElement element : usageArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    weaponData.setUsageElement(type, value);
-                }
-            }
-            
-            // 读取Def层
-            if (elementDataJson.has("Def")) {
-                JsonArray defArray = elementDataJson.getAsJsonArray("Def");
-                for (JsonElement element : defArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    weaponData.setDefElement(type, value);
-                }
-            }
+            // Usage层和Def层数据将由ElementCombinationModifier在运行时计算
+            // 不需要从配置文件中读取这些数据
             
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
@@ -697,27 +635,8 @@ public class WeaponConfig {
                 }
             }
             
-            // 读取Usage层
-            if (elementDataJson.has("Usage")) {
-                JsonArray usageArray = elementDataJson.getAsJsonArray("Usage");
-                for (JsonElement element : usageArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    weaponData.setUsageElement(type, value);
-                }
-            }
-            
-            // 读取Def层
-            if (elementDataJson.has("Def")) {
-                JsonArray defArray = elementDataJson.getAsJsonArray("Def");
-                for (JsonElement element : defArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    double value = elementArray.get(1).getAsDouble();
-                    weaponData.setDefElement(type, value);
-                }
-            }
+            // Usage层和Def层数据将由ElementCombinationModifier在运行时计算
+            // 不需要从配置文件中读取这些数据
             
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
@@ -872,8 +791,8 @@ public class WeaponConfig {
      * 获取TACZ武器配置（根据具体的枪械ID）
      */
     public static WeaponData getTacZWeaponConfig(ItemStack stack) {
-        // 获取枪械的gunId
-        String gunId = ModCompat.getGunId(stack);
+        // 获取枪械的gunId - 使用ModSpecialItemsFetcher
+        String gunId = com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher.getTacZGunId(stack);
         if (gunId != null) {
             return getWeaponConfigByGunId(gunId);
         }
@@ -884,8 +803,8 @@ public class WeaponConfig {
      * 获取拔刀剑武器配置（根据具体的刀）
      */
     public static WeaponData getSlashBladeWeaponConfig(ItemStack stack) {
-        // 获取拔刀剑的translationKey
-        String translationKey = ModCompat.getSlashBladeTranslationKey(stack);
+        // 获取拔刀剑的translationKey - 使用SlashBladeItemsFetcher
+        String translationKey = com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher.getSlashBladeTranslationKey(stack);
         if (translationKey != null) {
             // 查找匹配的translationKey配置
             return getWeaponConfigByTranslationKey(translationKey);
@@ -927,29 +846,6 @@ public class WeaponConfig {
             // 添加到初始修饰符列表
             data.addInitialModifier(new WeaponData.AttributeModifierEntry(elementType, modifier));
         }
-        
-        // 为Def层元素也添加初始修饰符
-        for (Map.Entry<String, Double> entry : data.getDefElements().entrySet()) {
-            String elementType = entry.getKey();
-            double defaultValue = entry.getValue(); // 使用Def层的值作为默认值
-            
-            // 检查是否已经在Basic层中添加过了
-            if (!data.getBasicElements().containsKey(elementType)) {
-                // 为每种元素类型使用固定的UUID
-                UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
-                
-                // 创建属性修饰符
-                AttributeModifier modifier = new AttributeModifier(
-                    modifierUuid, 
-                    elementType, 
-                    defaultValue, 
-                    AttributeModifier.Operation.ADDITION
-                );
-                
-                // 添加到初始修饰符列表
-                data.addInitialModifier(new WeaponData.AttributeModifierEntry(elementType, modifier));
-            }
-        }
     }
 
     /**
@@ -981,10 +877,6 @@ public class WeaponConfig {
                     + "      \"Usage\": [\n"
                     + "        [\"SLASH\", 5.0],\n"
                     + "        [\"CRITICAL_CHANCE\", 0.1]\n"
-                    + "      ],\n"
-                    + "      \"Def\": [\n"
-                    + "        [\"SLASH\", 3.0],\n"
-                    + "        [\"IMPACT\", 2.0]\n"
                     + "      ]\n"
                     + "    }\n"
                     + "  }\n"

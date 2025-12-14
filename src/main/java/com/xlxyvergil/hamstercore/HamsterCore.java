@@ -115,6 +115,9 @@ public class HamsterCore {
             // 6. 应用额外的元素属性配置
             int additionalAppliedCount = AdditionalConfigApplier.applyConfigToItem();
             
+            // 记录应用结果
+            LOGGER.info("Weapon configuration applied - Normal: {}, TACZ: {}, SlashBlade: {}, Additional: {}", 
+                normalAppliedCount, tacZAppliedCount, slashBladeAppliedCount, additionalAppliedCount);
             
         } catch (Exception e) {
             e.printStackTrace();

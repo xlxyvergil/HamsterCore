@@ -14,7 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
-    private static final Logger LOGGER = LogManager.getLogger();
     public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_faction");
     public static final Capability<EntityFactionCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 

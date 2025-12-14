@@ -2,9 +2,10 @@ package com.xlxyvergil.hamstercore.config;
 
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.util.WeaponDataNBTUtil;
-import com.xlxyvergil.hamstercore.compat.ModCompat;
+
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Set;
@@ -28,36 +29,66 @@ public class SlashBladeConfigApplier {
      * @return 成功应用配置的物品数量
      */
     public static int applyConfigs() {
+        int appliedCount = 0;
+        
         // 检查拔刀剑是否已加载
-        if (!ModCompat.isSlashBladeLoaded()) {
+        if (!SlashBladeItemsFetcher.isSlashBladeLoaded()) {
             return 0;
         }
-        
-        int appliedCount = 0;
         
         // 获取所有拔刀剑物品translationKeys
         Set<String> slashBladeKeys = SlashBladeItemsFetcher.getSlashBladeTranslationKeys();
         for (String translationKey : slashBladeKeys) {
-            // 创建物品堆（使用默认的slahblade物品）
-            ItemStack stack = new ItemStack(ModCompat.getSlashBladeItem());
-            
-            // 设置translationKey到NBT
-            if (stack.hasTag()) {
-                stack.getTag().putString("TranslationKey", translationKey);
-            } else {
-                stack.getOrCreateTag().putString("TranslationKey", translationKey);
-            }
-            
-            // 获取拔刀剑物品配置
-            WeaponData weaponData = WeaponConfig.getSlashBladeWeaponConfig(stack);
-            if (weaponData != null) {
-                // 应用配置到物品NBT
-                WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            if (applySlashBladeAttributes(translationKey)) {
                 appliedCount++;
             }
         }
         
         return appliedCount;
+    }
+    
+    /**
+     * 为拔刀剑应用属性 - 基于旧版本逻辑
+     */
+    private static boolean applySlashBladeAttributes(String translationKey) {
+        try {
+            // 从配置中获取对应的武器数据
+            WeaponData weaponData = WeaponConfig.getWeaponConfigByTranslationKey(translationKey);
+            if (weaponData == null) {
+                return false;
+            }
+            
+            // 创建基础物品栈 - 使用配置中的物品ID而不是硬编码
+            ResourceLocation itemKey;
+            if (weaponData.modid != null && weaponData.itemId != null) {
+                itemKey = new ResourceLocation(weaponData.modid, weaponData.itemId);
+            } else {
+                // 默认使用slashblade:slashblade
+                itemKey = new ResourceLocation("slashblade", "slashblade");
+            }
+            
+            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey);
+            if (item == null) {
+                return false;
+            }
+            
+            ItemStack stack = new ItemStack(item);
+            
+            if (stack.isEmpty()) {
+                return false;
+            }
+            
+            // 设置translationKey到NBT - 这是拔刀剑物品的关键标识
+            stack.getOrCreateTag().putString("translationKey", translationKey);
+            
+            // 写入武器数据到NBT
+            WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     /**
@@ -70,8 +101,8 @@ public class SlashBladeConfigApplier {
             return false;
         }
         
-        // 检查是否为拔刀剑物品
-        if (!ModCompat.isSlashBlade(stack)) {
+        // 检查是否为拔刀剑物品 - 使用SlashBladeItemsFetcher
+        if (!SlashBladeItemsFetcher.isSlashBlade(stack)) {
             return false;
         }
         

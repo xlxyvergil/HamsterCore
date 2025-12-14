@@ -36,55 +36,37 @@ public class ElementModifierEventHandler {
      * 该方法从武器配置中获取真实的元素值，而不是使用默认值
      * 并使用ElementUUIDManager为每个元素实例生成唯一的UUID
      */
-    public static void applyElementModifiers(ItemAttributeModifierEvent event, Map<String, List<WeaponData.BasicEntry>> basicElements, Map<String, Double> usageElements) {
+    public static void applyElementModifiers(ItemAttributeModifierEvent event, Map<String, List<WeaponData.BasicEntry>> basicElements, List<WeaponData.AttributeModifierEntry> initialModifiers) {
         // 获取所有元素附魔类型，避免与附魔系统冲突
         Set<ElementType> enchantedElementTypes = event.getItemStack().getAllEnchantments().keySet().stream()
             .filter(enchantment -> enchantment instanceof ElementEnchantment)
             .map(enchantment -> ((ElementEnchantment) enchantment).getElementType())
             .collect(Collectors.toSet());
 
-        // 遍历所有基础元素并应用对应的属性修饰符
-        for (Map.Entry<String, List<WeaponData.BasicEntry>> entry : basicElements.entrySet()) {
-            String elementTypeName = entry.getKey();
-            List<WeaponData.BasicEntry> elements = entry.getValue();
-            
-            // 根据元素类型名称获取元素类型
-            ElementType elementType = ElementType.byName(elementTypeName);
-            if (elementType == null) {
-                continue; // 未知元素类型，跳过
-            }
-            
-            // 如果该元素类型已经有附魔，则跳过，避免重复添加
-            if (enchantedElementTypes.contains(elementType)) {
-                continue;
-            }
-            
-            // 获取注册的元素属性
-            ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-            if (elementAttribute == null) {
-                continue; // 未注册的元素属性，跳过
-            }
-            
-            // 获取物品的武器配置数据以获取元素值
-            ItemStack stack = event.getItemStack();
-            double elementValue = 0.0; // 默认值
-            
-            // 如果有使用层数据，则使用计算后的值
-            if (usageElements != null && usageElements.containsKey(elementTypeName)) {
-                elementValue = usageElements.get(elementTypeName);
-            }
-            
-            // 确保元素值不小于0
-            elementValue = Math.max(0, elementValue);
-            
-            // 为每个元素实例创建修饰符
-            for (int i = 0; i < elements.size(); i++) {
-                // 使用ElementUUIDManager为每个元素实例生成唯一的UUID
-                UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, elementType, i);
-                AttributeModifier modifier = new AttributeModifier(modifierId, "hamstercore:" + elementType.getName(), elementValue, AttributeModifier.Operation.ADDITION);
+        // 遍历所有初始修饰符并应用对应的属性修饰符
+        if (initialModifiers != null) {
+            for (int i = 0; i < initialModifiers.size(); i++) {
+                WeaponData.AttributeModifierEntry modifierEntry = initialModifiers.get(i);
+                
+                // 根据元素类型名称获取元素类型
+                ElementType elementType = ElementType.byName(modifierEntry.getName());
+                if (elementType == null) {
+                    continue; // 未知元素类型，跳过
+                }
+                
+                // 如果该元素类型已经有附魔，则跳过，避免重复添加
+                if (enchantedElementTypes.contains(elementType)) {
+                    continue;
+                }
+                
+                // 获取注册的元素属性
+                ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
+                if (elementAttribute == null) {
+                    continue; // 未注册的元素属性，跳过
+                }
                 
                 // 应用修饰符到物品的攻击伤害属性上
-                event.addModifier(Attributes.ATTACK_DAMAGE, modifier);
+                event.addModifier(Attributes.ATTACK_DAMAGE, modifierEntry.getModifier());
             }
         }
     }
@@ -103,7 +85,7 @@ public class ElementModifierEventHandler {
             WeaponData weaponData = WeaponDataManager.loadElementData(stack);
             if (weaponData != null && weaponData.getBasicElements() != null) {
                 // 应用元素修饰符
-                applyElementModifiers(event, weaponData.getBasicElements(), weaponData.getUsageElements());
+                applyElementModifiers(event, weaponData.getBasicElements(), weaponData.getInitialModifiers());
             }
         }
     }

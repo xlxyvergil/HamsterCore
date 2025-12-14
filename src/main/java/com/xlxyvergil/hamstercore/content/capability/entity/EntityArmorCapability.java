@@ -9,11 +9,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.util.INBTSerializable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
-    private static final Logger LOGGER = LogManager.getLogger();
     public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_armor");
     public static final Capability<EntityArmorCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
@@ -48,7 +45,6 @@ public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
             baseArmor = config.getDefaultArmor();
         }
         
-        LOGGER.debug("Base armor for entity {}: {}", entityType.getDescriptionId(), baseArmor);
         return baseArmor;
     }
     
@@ -80,8 +76,7 @@ public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
         // 限制护甲值上限为2700
         this.armor = Math.min(this.armor, 2700.0);
         
-        LOGGER.debug("Calculated armor: baseArmor={}, level={}, baseLevel={}, levelDiff={}, armorMultiplier={}, final armor={}",
-                baseArmor, level, baseLevel, levelDiff, armorMultiplier, this.armor);
+
     }
 
     @Override

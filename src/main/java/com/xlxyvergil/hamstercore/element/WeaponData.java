@@ -10,7 +10,7 @@ import java.util.*;
 
 /**
  * 武器数据类
- * 存储三层NBT数据结构：Basic层、Usage层和Def层
+ * 存储三层NBT数据结构：Basic层、Usage层和InitialModifiers层
  */
 public class WeaponData {
     // MOD相关信息字段
@@ -24,9 +24,6 @@ public class WeaponData {
     
     // Usage层：元素复合后的元素类型和数值
     private final Map<String, Double> usageElements = new HashMap<>();
-    
-    // Def层：默认元素数据
-    private final Map<String, Double> defElements = new HashMap<>();
     
     // 初始修饰符列表
     private final List<AttributeModifierEntry> initialModifiers = new ArrayList<>();
@@ -114,6 +111,44 @@ public class WeaponData {
         public net.minecraft.world.entity.ai.attributes.AttributeModifier getModifier() {
             return modifier;
         }
+        
+        /**
+         * 将AttributeModifierEntry转换为NBT标签
+         */
+        public CompoundTag toNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("name", name);
+            
+            // 序列化AttributeModifier
+            CompoundTag modifierTag = new CompoundTag();
+            modifierTag.putUUID("uuid", modifier.getId());
+            modifierTag.putString("name", modifier.getName());
+            modifierTag.putDouble("amount", modifier.getAmount());
+            modifierTag.putInt("operation", modifier.getOperation().toValue());
+            tag.put("modifier", modifierTag);
+            
+            return tag;
+        }
+        
+        /**
+         * 从NBT标签创建AttributeModifierEntry
+         */
+        public static AttributeModifierEntry fromNBT(CompoundTag tag) {
+            String name = tag.getString("name");
+            
+            // 反序列化AttributeModifier
+            CompoundTag modifierTag = tag.getCompound("modifier");
+            UUID uuid = modifierTag.getUUID("uuid");
+            String modifierName = modifierTag.getString("name");
+            double amount = modifierTag.getDouble("amount");
+            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation operation = 
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.fromValue(modifierTag.getInt("operation"));
+            
+            net.minecraft.world.entity.ai.attributes.AttributeModifier modifier = 
+                new net.minecraft.world.entity.ai.attributes.AttributeModifier(uuid, modifierName, amount, operation);
+            
+            return new AttributeModifierEntry(name, modifier);
+        }
     }
     
     /**
@@ -180,13 +215,6 @@ public class WeaponData {
     }
     
     /**
-     * 设置Def层元素
-     */
-    public void setDefElement(String type, double value) {
-        defElements.put(type, value);
-    }
-    
-    /**
      * 获取Basic层元素
      */
     public Map<String, List<BasicEntry>> getBasicElements() {
@@ -212,13 +240,6 @@ public class WeaponData {
     }
     
     /**
-     * 获取Def层元素
-     */
-    public Map<String, Double> getDefElements() {
-        return defElements;
-    }
-    
-    /**
      * 清空Usage层元素
      */
     public void clearUsageElements() {
@@ -240,7 +261,7 @@ public class WeaponData {
     }
     
     /**
-     * 计算Usage层数据（基于Def层和Basic层数据）
+     * 计算Usage层数据（基于initialModifiers层和Basic层数据）
      * 这个方法在物品属性被查询时调用，用于动态计算元素值
      */
     public void computeUsageData(ItemStack stack) {
@@ -272,12 +293,12 @@ public class WeaponData {
         }
         tag.put("usage", usageTag);
         
-        // 保存Def层数据
-        CompoundTag defTag = new CompoundTag();
-        for (Map.Entry<String, Double> entry : defElements.entrySet()) {
-            defTag.putDouble(entry.getKey(), entry.getValue());
+        // 保存InitialModifiers层数据
+        ListTag initialModifiersTag = new ListTag();
+        for (AttributeModifierEntry entry : initialModifiers) {
+            initialModifiersTag.add(entry.toNBT());
         }
-        tag.put("def", defTag);
+        tag.put("initialModifiers", initialModifiersTag);
         
         return tag;
     }
@@ -310,11 +331,12 @@ public class WeaponData {
             }
         }
         
-        // 读取Def层数据
-        if (tag.contains("def", Tag.TAG_COMPOUND)) {
-            CompoundTag defTag = tag.getCompound("def");
-            for (String key : defTag.getAllKeys()) {
-                data.defElements.put(key, defTag.getDouble(key));
+        // 读取InitialModifiers层数据
+        if (tag.contains("initialModifiers", Tag.TAG_LIST)) {
+            ListTag initialModifiersTag = tag.getList("initialModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < initialModifiersTag.size(); i++) {
+                CompoundTag entryTag = initialModifiersTag.getCompound(i);
+                data.initialModifiers.add(AttributeModifierEntry.fromNBT(entryTag));
             }
         }
         
@@ -328,11 +350,11 @@ public class WeaponData {
         WeaponData that = (WeaponData) o;
         return Objects.equals(basicElements, that.basicElements) &&
                Objects.equals(usageElements, that.usageElements) &&
-               Objects.equals(defElements, that.defElements);
+               Objects.equals(initialModifiers, that.initialModifiers);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(basicElements, usageElements, defElements);
+        return Objects.hash(basicElements, usageElements, initialModifiers);
     }
 }

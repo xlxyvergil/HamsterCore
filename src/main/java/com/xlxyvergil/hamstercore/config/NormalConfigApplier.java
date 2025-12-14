@@ -24,27 +24,80 @@ public class NormalConfigApplier {
     public static int applyConfigToItem() {
         int appliedCount = 0;
         
-        // 遍历所有已注册的物品
-        for (Map.Entry<net.minecraft.resources.ResourceKey<Item>, Item> entry : ForgeRegistries.ITEMS.getEntries()) {
-            ResourceLocation itemKey = entry.getKey().location();
-            Item item = entry.getValue();
+        // 确保配置已加载
+        WeaponConfig.load();
+        
+        // 获取所有武器配置
+        Map<ResourceLocation, WeaponData> allWeaponConfigs = WeaponConfig.getAllWeaponConfigs();
+        
+        // 遍历所有配置，过滤掉MOD特殊物品
+        for (Map.Entry<ResourceLocation, WeaponData> entry : allWeaponConfigs.entrySet()) {
+            ResourceLocation itemKey = entry.getKey();
+            WeaponData weaponData = entry.getValue();
             
-            // 检查物品是否为武器或工具
-            if (WeaponJudgeUtil.isWeaponOrTool(item)) {
-                // 创建物品堆
-                ItemStack stack = new ItemStack(item);
-                
-                // 获取物品配置
-                WeaponData weaponData = WeaponConfig.getWeaponConfig(stack);
-                if (weaponData != null) {
-                    // 应用配置到物品NBT
-                    WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
-                    appliedCount++;
-                }
+            // 检查是否为MOD特殊物品
+            if (isModSpecialItem(itemKey)) {
+                continue; // 跳过MOD特殊物品，由其他应用器处理
+            }
+            
+            // 为普通物品应用元素属性
+            if (applyElementAttributesToNormalItem(itemKey, weaponData)) {
+                appliedCount++;
             }
         }
         
         return appliedCount;
+    }
+    
+    /**
+     * 判断是否为MOD特殊物品
+     */
+    private static boolean isModSpecialItem(ResourceLocation itemKey) {
+        String itemKeyStr = itemKey.toString();
+        
+        // 检查是否为TACZ枪械
+        if ("tacz:modern_kinetic_gun".equals(itemKeyStr)) {
+            return true;
+        }
+        
+        // 检查是否为拔刀剑
+        if ("slashblade:slashblade".equals(itemKeyStr)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 为普通物品应用元素属性
+     */
+    private static boolean applyElementAttributesToNormalItem(ResourceLocation itemKey, WeaponData weaponData) {
+        if (weaponData == null) {
+            return false;
+        }
+        
+        try {
+            // 创建实际的ItemStack用于存储元素属性
+            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey);
+            if (item == null) {
+                return false;
+            }
+            
+            ItemStack stack = new ItemStack(item);
+            
+            // 确保物品栈有效
+            if (stack.isEmpty()) {
+                return false;
+            }
+            
+            // 将WeaponData写入NBT - 使用当前的NBT工具类
+            WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     /**

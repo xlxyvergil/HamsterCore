@@ -22,24 +22,53 @@ public class AdditionalConfigApplier {
     public static int applyConfigToItem() {
         int appliedCount = 0;
         
+        // 确保配置已加载
+        WeaponConfig.load();
+        
         // 遍历所有额外配置的物品
         for (Map.Entry<ResourceLocation, WeaponData> entry : WeaponConfig.getAdditionalWeaponConfigs().entrySet()) {
             ResourceLocation itemKey = entry.getKey();
             WeaponData weaponData = entry.getValue();
             
-            // 获取物品
-            Item item = ForgeRegistries.ITEMS.getValue(itemKey);
-            if (item != null) {
-                // 创建物品堆
-                ItemStack stack = new ItemStack(item);
-                
-                // 应用配置到物品NBT
-                WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            if (applyAdditionalItemAttributes(itemKey, weaponData)) {
                 appliedCount++;
             }
         }
         
         return appliedCount;
+    }
+    
+    /**
+     * 为额外物品应用属性
+     */
+    private static boolean applyAdditionalItemAttributes(ResourceLocation itemKey, WeaponData weaponData) {
+        if (weaponData == null) {
+            return false;
+        }
+        
+        try {
+            // 获取物品
+            Item item = ForgeRegistries.ITEMS.getValue(itemKey);
+            if (item == null) {
+                return false;
+            }
+            
+            // 创建物品堆
+            ItemStack stack = new ItemStack(item);
+            
+            // 确保物品栈有效
+            if (stack.isEmpty()) {
+                return false;
+            }
+            
+            // 应用配置到物品NBT
+            WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     /**

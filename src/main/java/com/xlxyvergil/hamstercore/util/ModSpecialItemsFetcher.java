@@ -1,7 +1,9 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.tacz.guns.api.TimelessAPI;
+import com.tacz.guns.api.item.IGun;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 
 import java.util.Collections;
@@ -81,5 +83,47 @@ public class ModSpecialItemsFetcher {
             }
         }
         
+    }
+    
+    /**
+     * 检查物品是否为TACZ枪械
+     * 直接调用TACZ的API
+     * @param stack 物品堆
+     * @return 如果是TACZ枪械返回true
+     */
+    public static boolean isTacZGun(ItemStack stack) {
+        try {
+            if (!ModList.get().isLoaded("tacz")) {
+                return false;
+            }
+            // 直接调用TACZ的API
+            return IGun.getIGunOrNull(stack) != null;
+        } catch (Exception e) {
+            // API调用失败，返回false
+            return false;
+        }
+    }
+    
+    /**
+     * 获取TACZ枪械的ID
+     * @param stack 物品堆
+     * @return 枪械ID，如果不是TACZ枪械则返回null
+     */
+    public static String getTacZGunId(ItemStack stack) {
+        try {
+            if (!isTacZGun(stack)) {
+                return null;
+            }
+            IGun iGun = IGun.getIGunOrNull(stack);
+            if (iGun != null) {
+                ResourceLocation gunId = iGun.getGunId(stack);
+                if (gunId != null && !gunId.toString().equals("tacz:empty")) {
+                    return gunId.toString();
+                }
+            }
+        } catch (Exception e) {
+            // API调用失败，返回null
+        }
+        return null;
     }
 }

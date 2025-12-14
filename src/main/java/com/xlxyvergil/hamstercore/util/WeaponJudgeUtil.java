@@ -1,7 +1,7 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.google.common.collect.Multimap;
-import com.xlxyvergil.hamstercore.compat.ModCompat;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;

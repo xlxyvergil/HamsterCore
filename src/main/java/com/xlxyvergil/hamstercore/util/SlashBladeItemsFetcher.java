@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -191,5 +192,58 @@ public class SlashBladeItemsFetcher {
     public static void clearData() {
         slashBladeIDs.clear();
         slashBladeTranslationKeys.clear();
+    }
+    
+    /**
+     * 检查物品是否为SlashBlade拔刀剑
+     * 直接调用SlashBlade的API
+     * @param stack 物品堆
+     * @return 如果是拔刀剑返回true
+     */
+    public static boolean isSlashBlade(ItemStack stack) {
+        if (!isSlashBladeLoaded()) {
+            return false;
+        }
+        
+        try {
+            // 直接使用SlashBlade的类，在try-catch中处理NoClassDefFoundError
+            return stack.getItem() instanceof mods.flammpfeil.slashblade.item.ItemSlashBlade;
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明SlashBlade未正确加载
+            return false;
+        } catch (Exception e) {
+            // 其他异常，返回false
+            return false;
+        }
+    }
+    
+    /**
+     * 获取SlashBlade的translationKey
+     * 直接调用SlashBlade的API
+     * @param stack 物品堆
+     * @return translationKey，如果不是拔刀剑则返回null
+     */
+    public static String getSlashBladeTranslationKey(ItemStack stack) {
+        if (!isSlashBlade(stack)) {
+            return null;
+        }
+        
+        try {
+            // 直接使用SlashBlade的Capability API
+            var bladeState = stack.getCapability(mods.flammpfeil.slashblade.item.ItemSlashBlade.BLADESTATE);
+            if (bladeState.isPresent()) {
+                String translationKey = bladeState.resolve().get().getTranslationKey();
+                if (translationKey != null && !translationKey.isBlank()) {
+                    return translationKey;
+                }
+            }
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明SlashBlade未正确加载
+            return null;
+        } catch (Exception e) {
+            // API调用失败，返回null
+        }
+        
+        return null;
     }
 }
