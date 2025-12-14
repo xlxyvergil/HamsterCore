@@ -10,6 +10,7 @@ import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -89,12 +90,15 @@ public class EntityInfoDisplayHandler {
             if (!weapon.isEmpty()) {
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
                 
-                // 获取缓存中的激活元素数据，用于显示暴击率、暴击伤害和触发率
-                List<Map.Entry<ElementType, Double>> activeElements = ElementDamageManager.getActiveElements(weapon);
+                // 先调用一遍计算，确保缓存是最新的
+                ElementDamageManager.getActiveElements(weapon);
                 
-                // 显示暴击率（使用缓存中的计算数据）
+                // 从缓存中获取元素列表
+                List<Map.Entry<ElementType, Double>> cachedElements = ElementDamageManager.getActiveElements(weapon);
+                
+                // 显示暴击率（从ForgeAttributeValueReader获取计算后的值）
                 double critChance = 0.0;
-                for (Map.Entry<ElementType, Double> entry : activeElements) {
+                for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.CRITICAL_CHANCE == entry.getKey()) {
                         critChance = entry.getValue();
                         break;
@@ -105,9 +109,9 @@ public class EntityInfoDisplayHandler {
                     message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
                 }
                 
-                // 显示暴击伤害（使用缓存中的计算数据）
+                // 显示暴击伤害（从ForgeAttributeValueReader获取计算后的值）
                 double critDamage = 0.0;
-                for (Map.Entry<ElementType, Double> entry : activeElements) {
+                for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.CRITICAL_DAMAGE == entry.getKey()) {
                         critDamage = entry.getValue();
                         break;
@@ -118,9 +122,9 @@ public class EntityInfoDisplayHandler {
                     message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", critDamage * 100)).withStyle(ChatFormatting.YELLOW));
                 }
                 
-                // 显示触发率（使用缓存中的计算数据）
+                // 显示触发率（从ForgeAttributeValueReader获取计算后的值）
                 double triggerChance = 0.0;
-                for (Map.Entry<ElementType, Double> entry : activeElements) {
+                for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.TRIGGER_CHANCE == entry.getKey()) {
                         triggerChance = entry.getValue();
                         break;
@@ -131,24 +135,20 @@ public class EntityInfoDisplayHandler {
                     message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
                 }
 
-                // 添加武器元素属性信息（使用缓存中的计算数据）
-                WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
-                Set<String> elementTypes = new HashSet<>();
-                if (weaponData != null) {
-                    // 获取Usage层所有元素类型（Usage层不包含特殊属性和派系增伤）
-                    elementTypes = ElementNBTUtils.getAllUsageElementTypes(weapon);
-                }
+                // 添加武器元素属性信息（从Usage层获取计算后的基础元素和复合元素）
+                Set<String> elementTypes = ElementNBTUtils.getAllUsageElementTypes(weapon);
                 
                 if (!elementTypes.isEmpty()) {
+                    // 添加元素属性标题
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
                     
-                    // 使用之前获取的缓存中的激活元素数据
-                    for (Map.Entry<ElementType, Double> entry : activeElements) {
+                    // 从缓存中获取激活元素数据，遍历所有基础元素和复合元素
+                    for (Map.Entry<ElementType, Double> entry : cachedElements) {
                         ElementType elementType = entry.getKey();
                         double elementValue = entry.getValue();
                         
-                        // 只显示物理元素、基础元素和复合元素，不显示特殊属性
-                        if (elementType != null && (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex())) {
+                        // 只显示基础元素和复合元素，不显示特殊属性和派系元素
+                        if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
                             String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
                             message.append(Component.literal(String.format("  %s: %.2f", elementName, elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
@@ -156,7 +156,7 @@ public class EntityInfoDisplayHandler {
                     }
                 }
 
-                // 添加派系增伤信息（从修饰符系统获取计算后的值）
+                // 添加派系增伤信息（从ForgeAttributeValueReader获取计算后的值）
                 addFactionModifiersToMessage(message, weapon);
             }
             
@@ -199,32 +199,22 @@ public class EntityInfoDisplayHandler {
      * @param weapon 武器物品堆
      */
     private static void addFactionModifiersToMessage(MutableComponent message, ItemStack weapon) {
-        // 获取派系数据（从Basic层获取）并从修饰符系统获取计算后的值
-        WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
-        Set<String> factions = new HashSet<>();
-        if (weaponData != null && weaponData.getBasicElements() != null) {
-            for (String elementType : weaponData.getBasicElements().keySet()) {
-                if (isFactionType(elementType)) {
-                    factions.add(elementType);
-                }
-            }
-        }
+        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
         
-        // 如果没有派系增伤数据，则直接返回
-        if (factions.isEmpty()) {
-            return;
-        }
+        // 定义所有可能的派系类型
+        String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
         
-        // 添加每个派系的增伤数值（从修饰符系统获取计算后的值）
-        for (String faction : factions) {
-            double modifier = ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.byName(faction));
+        // 添加每个派系的增伤数值（从ForgeAttributeValueReader获取计算后的值）
+        for (String faction : factionTypes) {
+            Double factionModifier = specialAndFactionValues.get(faction);
             
             // 只显示非零的派系增伤
-            if (modifier != 0) {
+            if (factionModifier != null && factionModifier > 0) {
                 message.append(
                     net.minecraft.network.chat.Component.translatable(
                         "hamstercore.ui.faction_damage_bonus." + faction.toLowerCase())
-                        .append(":" + String.format("%.1f%%", modifier * 100))
+                        .append(":" + String.format("%.1f%%", factionModifier * 100))
                         .withStyle(net.minecraft.ChatFormatting.GOLD)
                 );
             }

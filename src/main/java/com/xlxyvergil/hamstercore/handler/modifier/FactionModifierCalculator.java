@@ -31,4 +31,22 @@ public class FactionModifierCalculator {
         // 从修饰符系统获取派系增伤值
         return ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.byName(targetFaction.toLowerCase()));
     }
+    
+    /**
+     * 计算派系伤害修饰符（使用预计算的特殊元素和派系元素值）
+     * @param specialAndFactionValues 特殊元素和派系元素值（从Forge属性系统预计算）
+     * @param targetFaction 目标派系
+     * @return 派系伤害修饰符
+     */
+    public static double calculateFactionModifier(Map<String, Double> specialAndFactionValues, String targetFaction) {
+        // 从预计算的值中获取派系增伤值
+        if (specialAndFactionValues != null) {
+            String factionName = targetFaction.toLowerCase();
+            Double modifier = specialAndFactionValues.get(factionName);
+            if (modifier != null) {
+                return modifier;
+            }
+        }
+        return 0.0;
+    }
 }

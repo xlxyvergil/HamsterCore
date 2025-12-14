@@ -6,6 +6,7 @@ import com.xlxyvergil.hamstercore.element.WeaponData;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
+import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -43,22 +44,22 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
+     * @param specialAndFactionValues 特殊元素和派系元素值（可选，从Forge属性系统预计算）
      * @return 元素伤害数据
      */
-    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
+    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, Map<String, Double> specialAndFactionValues) {
         // 构建缓存键
         ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         
         try {
             // 尝试从缓存中获取结果
             ElementCache.CacheValue<ElementDamageData> cached = DAMAGE_CACHE.get(key);
-            return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor));
+            return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues));
         } catch (Exception e) {
             // 如果缓存出错，则直接计算而不使用缓存
-            return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
+            return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
         }
     }
-    
 
     
     /**
@@ -69,9 +70,10 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
+     * @param specialAndFactionValues 特殊元素和派系元素值（可选，从Forge属性系统预计算）
      * @return 元素伤害数据
      */
-    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
+    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, Map<String, Double> specialAndFactionValues) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
         // 对于空的武器栈，直接返回基础数据
@@ -84,9 +86,9 @@ public class ElementDamageManager {
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
         // 计算各部分的伤害修正系数
-        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction); // HM
-        damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker); // 元素总倍率
-        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon); // 暴击伤害
+        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction, specialAndFactionValues); // HM
+        damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker, data); // 元素总倍率
+        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, specialAndFactionValues); // 暴击伤害
         damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
         
         // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
@@ -209,7 +211,7 @@ public class ElementDamageManager {
         String targetFaction = key.getTargetFaction();
         Double targetArmor = key.getTargetArmor();
         
-        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
+        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, null);
     }
     
     /**

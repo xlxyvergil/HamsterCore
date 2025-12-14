@@ -1,11 +1,13 @@
 package com.xlxyvergil.hamstercore.handler;
 
 import java.util.List;
+import java.util.Map;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
+import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,8 +27,6 @@ public class FactionDamageHandler {
     public static double lastCriticalMultiplier = 1.0;
     public static List<ElementType> lastTriggeredElements = null;
     
-    // 基础等级
-    private static final int BASE_LEVEL = 20;
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -62,9 +62,12 @@ public class FactionDamageHandler {
             // BD = 基础伤害
             float baseDamage = event.getAmount();
             
+            // 从Forge属性系统获取特殊元素和派系元素值
+            Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
+            
             // 使用元素伤害管理器计算最终伤害
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor);
+                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
             
             // 设置最终伤害
             event.setAmount(damageData.getFinalDamage());
