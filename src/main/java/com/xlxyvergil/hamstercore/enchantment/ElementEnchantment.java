@@ -77,13 +77,13 @@ public class ElementEnchantment extends Enchantment {
     }
     
     public Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
+        // 基类提供默认实现，子类可以重写以自定义数值计算
         if (slot == EquipmentSlot.MAINHAND) {
             // 获取元素属性
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
-                // 创建属性修饰符
+                // 创建默认的属性修饰符（基类的默认实现）
                 double value = elementAttribute.getDefaultValue() * level;
-                // 使用ElementUUIDManager生成UUID
                 UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
                 AttributeModifier modifier = new AttributeModifier(
                     modifierId, 
@@ -92,7 +92,6 @@ public class ElementEnchantment extends Enchantment {
                     elementAttribute.getOperation()
                 );
                 
-                // 返回包含修饰符的集合
                 Collection<AttributeModifier> modifiers = new ArrayList<>();
                 modifiers.add(modifier);
                 return modifiers;
@@ -102,24 +101,8 @@ public class ElementEnchantment extends Enchantment {
         return Collections.emptyList();
     }
     
-    @SubscribeEvent
-    public static void onItemAttributeModifier(ItemAttributeModifierEvent event) {
-        ItemStack stack = event.getItemStack();
-        
-        // 遍历物品上的所有附魔
-        for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
-            if (entry.getKey() instanceof ElementEnchantment elementEnchantment) {
-                // 获取附魔等级
-                int level = entry.getValue();
-                
-                // 获取应该添加的属性修饰符
-                Collection<AttributeModifier> modifiers = elementEnchantment.getEntityAttributes(stack, event.getSlotType(), level);
-                
-                // 添加所有修饰符到事件中
-                for (AttributeModifier modifier : modifiers) {
-                    event.addModifier(Attributes.ATTACK_DAMAGE, modifier);
-                }
-            }
-        }
-    }
+    // 移除直接事件处理，改为通过 ElementEnchantmentEventHandler 统一管理
+    // 这样可以避免重复处理和 NBT 不同步的问题
+    // @SubscribeEvent
+    // public static void onItemAttributeModifier(ItemAttributeModifierEvent event) { ... }
 }

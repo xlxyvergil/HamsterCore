@@ -7,7 +7,8 @@ import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
+import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -21,25 +22,17 @@ import java.util.Map;
  */
 public class FactionModifierCalculator {
     
-    /**
-     * 计算派系伤害修饰符
-     * @param weapon 武器物品堆
-     * @param targetFaction 目标派系
-     * @return 派系伤害修饰符（从修饰符系统获取计算后的值）
-     */
-    public static double calculateFactionModifier(ItemStack weapon, String targetFaction) {
-        // 从修饰符系统获取派系增伤值
-        return ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.byName(targetFaction.toLowerCase()));
-    }
+
     
     /**
      * 计算派系伤害修饰符（使用预计算的特殊元素和派系元素值）
-     * @param specialAndFactionValues 特殊元素和派系元素值（从Forge属性系统预计算）
+     * @param weapon 武器物品堆（不使用，保持参数兼容性）
      * @param targetFaction 目标派系
+     * @param specialAndFactionValues 特殊元素和派系元素值（从Forge属性系统预计算）
      * @return 派系伤害修饰符
      */
-    public static double calculateFactionModifier(Map<String, Double> specialAndFactionValues, String targetFaction) {
-        // 从预计算的值中获取派系增伤值
+    public static double calculateFactionModifier(ItemStack weapon, String targetFaction, Map<String, Double> specialAndFactionValues) {
+        // 直接使用预计算的派系修饰符值
         if (specialAndFactionValues != null) {
             String factionName = targetFaction.toLowerCase();
             Double modifier = specialAndFactionValues.get(factionName);
@@ -47,6 +40,7 @@ public class FactionModifierCalculator {
                 return modifier;
             }
         }
+        // 如果没有预计算的值，返回默认值0.0
         return 0.0;
     }
 }

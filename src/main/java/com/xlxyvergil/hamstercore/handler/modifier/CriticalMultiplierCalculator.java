@@ -3,7 +3,7 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,20 +18,28 @@ import java.util.Random;
 public class CriticalMultiplierCalculator {
     
     
+
+    
     /**
-     * 计算暴击倍率
+     * 计算暴击倍率（使用预计算的特殊元素和派系元素值）
      * @param attacker 攻击者
      * @param weapon 武器物品堆
+     * @param specialAndFactionValues 特殊元素和派系元素值（从Forge属性系统预计算）
      * @return 暴击倍率
      */
-    public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon) {
+    public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues) {
         double criticalMultiplier = 1.0; // 默认暴击倍率
         
         // 检查物品是否有元素属性
         if (ElementNBTUtils.hasAnyElements(weapon)) {
-            // 直接从修饰符系统获取暴击率和暴击伤害
-            double criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.CRITICAL_CHANCE);
-            double criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(weapon, ElementType.CRITICAL_DAMAGE);
+            // 直接使用预计算的暴击率和暴击伤害值
+            double criticalChance = 0.0;
+            double criticalDamage = 0.0;
+            
+            if (specialAndFactionValues != null) {
+                criticalChance = specialAndFactionValues.getOrDefault("critical_chance", 0.0);
+                criticalDamage = specialAndFactionValues.getOrDefault("critical_damage", 0.0);
+            }
             
             // 使用Random判断是否暴击
             Random random = new Random();

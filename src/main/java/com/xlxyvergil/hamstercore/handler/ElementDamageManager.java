@@ -51,14 +51,9 @@ public class ElementDamageManager {
         // 构建缓存键
         ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         
-        try {
-            // 尝试从缓存中获取结果
-            ElementCache.CacheValue<ElementDamageData> cached = DAMAGE_CACHE.get(key);
-            return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues));
-        } catch (Exception e) {
-            // 如果缓存出错，则直接计算而不使用缓存
-            return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
-        }
+        // 尝试从缓存中获取结果
+        ElementCache.CacheValue<ElementDamageData> cached = DAMAGE_CACHE.get(key);
+        return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues));
     }
 
     

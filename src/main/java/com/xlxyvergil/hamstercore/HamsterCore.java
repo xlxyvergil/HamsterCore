@@ -9,12 +9,9 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabil
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.api.element.ElementAttributeAPI;
 import com.xlxyvergil.hamstercore.api.element.RegisterElementsEvent;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
-import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
-import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
 import com.xlxyvergil.hamstercore.config.AdditionalConfigApplier;
@@ -23,24 +20,17 @@ import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
-import net.minecraft.ChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.util.thread.EffectiveSide;
 
 
 
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Mod(HamsterCore.MODID)
 public class HamsterCore {

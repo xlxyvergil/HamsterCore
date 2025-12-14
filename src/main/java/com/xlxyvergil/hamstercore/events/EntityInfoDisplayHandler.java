@@ -1,16 +1,19 @@
 package com.xlxyvergil.hamstercore.events;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.xlxyvergil.hamstercore.config.DisplayConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -20,11 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class EntityInfoDisplayHandler {
@@ -65,9 +63,12 @@ public class EntityInfoDisplayHandler {
             // 获取基础伤害（FactionDamageHandler处理前的伤害）
             float baseDamage = event.getAmount();
             
+            // 获取预计算的特殊元素和派系元素值
+            Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
+            
             // 使用ElementDamageManager计算真实的伤害数据
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor);
+                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor, specialAndFactionValues);
             
             // 获取经过完整计算后的实际伤害
             float inflictedDamage = damageData.getFinalDamage();

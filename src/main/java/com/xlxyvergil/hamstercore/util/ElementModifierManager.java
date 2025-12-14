@@ -101,6 +101,11 @@ public class ElementModifierManager {
             return;
         }
         
+        // 只在主手槽位时应用修饰符，避免工具提示显示其他槽位信息
+        if (slot != EquipmentSlot.MAINHAND) {
+            return;
+        }
+        
         for (ElementModifierData modifierData : modifiers) {
             try {
                 // 从属性标识符获取元素类型

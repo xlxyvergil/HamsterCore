@@ -89,15 +89,45 @@ public class WeaponData {
     
     /**
      * 计算Usage层数据（基于initialModifiers层和Basic层数据）
-     * 这个方法在物品属性被查询时调用，用于动态计算元素值
+     * 这个方法现在只初始化基础数据，避免递归调用
+     * 复合计算将在需要时通过其他方法动态进行
      */
     public void computeUsageData(ItemStack stack) {
-        // 使用ForgeAttributeValueReader获取基础元素和复合元素的预分类计算值
-        ForgeAttributeValueReader.ElementCategoryData categoryData = 
-            ForgeAttributeValueReader.getAllElementValuesByCategory(stack);
-        Map<String, Double> basicAndComplexValues = categoryData.getBasicAndComplexValues();
+        // 直接从InitialModifier层数据中获取基础元素和复合元素的数值，避免递归调用
+        Map<String, Double> basicAndComplexValues = new HashMap<>();
         
-        // 使用ElementCombinationModifier来计算复合元素
+        for (var modifierEntry : getInitialModifiers()) {
+            String elementName = modifierEntry.getName();
+            ElementType elementType = ElementType.byName(elementName);
+            if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
+                basicAndComplexValues.put(elementName, modifierEntry.getModifier().getAmount());
+                // 同时设置到Usage层
+                setUsageElement(elementName, modifierEntry.getModifier().getAmount());
+            }
+        }
+        
+        // 注意：这里不再调用 ElementCombinationModifier.computeElementCombinationsWithValues()
+        // 复合计算将在需要显示或使用时动态进行，避免在事件处理中递归
+    }
+    
+    /**
+     * 计算包含复合元素的完整Usage层数据（包括动态复合计算）
+     * 这个方法可以在安全的上下文中调用，例如UI显示或属性查询
+     */
+    public void computeFullUsageData() {
+        // 从InitialModifier层数据中获取基础元素和复合元素的数值
+        Map<String, Double> basicAndComplexValues = new HashMap<>();
+        
+        for (var modifierEntry : getInitialModifiers()) {
+            String elementName = modifierEntry.getName();
+            ElementType elementType = ElementType.byName(elementName);
+            if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
+                basicAndComplexValues.put(elementName, modifierEntry.getModifier().getAmount());
+                setUsageElement(elementName, modifierEntry.getModifier().getAmount());
+            }
+        }
+        
+        // 在安全的上下文中进行复合计算
         ElementCombinationModifier.computeElementCombinationsWithValues(this, basicAndComplexValues);
     }
     

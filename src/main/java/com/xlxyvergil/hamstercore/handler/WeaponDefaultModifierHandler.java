@@ -1,13 +1,16 @@
 package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
+import com.xlxyvergil.hamstercore.enchantment.ElementEnchantmentEventHandler;
+import com.xlxyvergil.hamstercore.handler.ElementModifierEventHandler;
 import com.xlxyvergil.hamstercore.util.ElementModifierManager;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -23,9 +26,7 @@ import java.util.Map;
  * 1. 在onItemAttributeModifier事件触发
  * 2. 调用ElementModifierEventHandler把NBT内的InitialModifier层数据转换为ElementModifierManager所需的修饰符数据
  * 3. 调用ElementModifierManager把数据作为修饰符应用进道具
- * 4. 调用ForgeAttributeValueReader读取经过Forge属性系统计算后的实际元素修饰符数值
- * 5. 把数值和元素类型，以及basic层数据传入ElementCombinationModifier计算
- * 6. ElementCombinationModifier把计算后的结果放入usage层
+ * 4. 把InitialModifier层数据按照数据需求放入usage层
  */
 @Mod.EventBusSubscriber
 public class WeaponDefaultModifierHandler {
@@ -48,7 +49,7 @@ public class WeaponDefaultModifierHandler {
             }
             
             // 2. 防止重复处理 - 同一个物品在同一事件中只处理一次
-            if (isProcessed(stack)) {
+            if (isProcessed(stack) || isProcessing(stack)) {
                 return;
             }
             
@@ -68,45 +69,18 @@ public class WeaponDefaultModifierHandler {
             
             // 4.2 使用ElementModifierManager应用转换后的修饰符到物品上
             if (!elementModifiers.isEmpty()) {
-                ElementModifierManager.applyElementModifiers(stack, elementModifiers, EquipmentSlot.MAINHAND);
+                ElementModifierManager.applyElementModifiers(stack, elementModifiers, event.getSlotType());
             }
             
-            // 5. 调用ForgeAttributeValueReader进行修饰符计算
-            // 5.1 验证修饰符应用成功
+            // 5. 应用修饰符后，保存初始数据到NBT（不进行复合计算）
             System.out.println("Debug: Applied " + elementModifiers.size() + " element modifiers to item");
             
-            // 5.2 强制刷新物品属性以确保Forge系统已处理修饰符
-            // 这里通过重新获取物品修饰符来触发Forge的计算过程
-            var appliedModifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
-            System.out.println("Debug: Total modifiers on item after application: " + 
-                             (appliedModifiers != null ? appliedModifiers.size() : 0));
-            
-            // 6. 使用ForgeAttributeValueReader获取分类后的元素数值
-            ForgeAttributeValueReader.ElementCategoryData categoryData = 
-                ForgeAttributeValueReader.getAllElementValuesByCategory(stack);
-            
-            // 6.1 显示计算结果
-            System.out.println("Debug: ForgeAttributeValueReader分类计算结果:");
-            System.out.println("  - 基础元素: " + categoryData.getBasicValues());
-            System.out.println("  - 复合元素: " + categoryData.getComplexValues());
-            System.out.println("  - 特殊元素: " + categoryData.getSpecialValues());
-            System.out.println("  - 派系元素: " + categoryData.getFactionValues());
-            
-            // 7. 传递预分类的基础元素和复合元素数据到ElementCombinationModifier
-            Map<String, Double> basicAndComplexValues = categoryData.getBasicAndComplexValues();
-            
-            // 7.1 显示传入的数据
-            System.out.println("Debug: 传入ElementCombinationModifier的预分类数据:");
-            System.out.println("  - basicAndComplexValues: " + basicAndComplexValues);
-            System.out.println("  - basicElements: " + weaponData.getBasicElements().keySet());
-            
-            // 7.2 使用预分类的数值进行元素组合计算
-            ElementCombinationModifier.computeElementCombinationsWithValues(weaponData, basicAndComplexValues);
-            
-            System.out.println("Debug: ElementCombinationModifier计算完成，结果已保存到Usage层");
-            
-            // 8. 保存更新后的武器数据
+            // 6. 保存初始武器数据到NBT，复合计算将在需要时动态进行
             WeaponDataManager.saveElementData(stack, weaponData);
+            
+            // 7. 标记需要同步附魔修饰符，让 ElementEnchantmentEventHandler 在低优先级时处理
+            // 这样可以避免在同一事件周期中重复处理修饰符
+            stack.getOrCreateTag().putBoolean("HamsterCore_NeedsEnchantmentSync", true);
             
             // 标记为处理完成
             markAsProcessed(stack);

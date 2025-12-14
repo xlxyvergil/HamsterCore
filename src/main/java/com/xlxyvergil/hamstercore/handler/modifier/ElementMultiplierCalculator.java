@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.WeaponData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,39 +16,44 @@ import java.util.Map;
 public class ElementMultiplierCalculator {
     
     /**
-     * 计算元素总倍率
+     * 计算元素总倍率（使用WeaponData中的usage层数据）
      * @param attacker 攻击者
+     * @param data 武器数据（包含usage层数据）
      * @return 元素总倍率
      */
-    public static double calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker) {
+    public static double calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker, WeaponData data) {
         double totalElementMultiplier = 1.0; // 默认元素倍率为1.0（无加成）
         
-        // 确保攻击者是玩家
-        if (attacker instanceof Player player) {
-            // 获取玩家主手物品
-            ItemStack weapon = player.getMainHandItem();
-            
-            // 从ElementDamageManager缓存中获取激活的元素列表
-            List<Map.Entry<ElementType, Double>> activeElements = ElementDamageManager.getActiveElements(weapon);
-            
-            // 计算元素总倍率（所有元素倍率之和）
-            double elementTotalRatio = 0.0;
-            
-            // 遍历激活的元素，只计算基础元素和复合元素的倍率
-            // Usage层只包含基础元素和复合元素，不包含特殊属性和派系增伤，所以可以直接累加
-            for (Map.Entry<ElementType, Double> entry : activeElements) {
-                ElementType elementType = entry.getKey();
-                double value = entry.getValue();
-                
-                // 计算基础元素和复合元素的倍率
-                if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                    elementTotalRatio += value;
-                }
-            }
-            
-            // 元素总倍率 = 1.0 + 所有元素倍率之和
-            totalElementMultiplier = 1.0 + elementTotalRatio;
+        // 如果数据为空，返回默认值
+        if (data == null) {
+            return totalElementMultiplier;
         }
+        
+        // 计算元素总倍率（所有元素倍率之和）
+        double elementTotalRatio = 0.0;
+        
+        // 从WeaponData的usage层数据中获取基础元素和复合元素
+        String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
+        String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
+        
+        // 添加基础元素倍率
+        for (String type : basicTypes) {
+            Double value = data.getUsageValue(type);
+            if (value != null && value > 0) {
+                elementTotalRatio += value;
+            }
+        }
+        
+        // 添加复合元素倍率
+        for (String type : complexTypes) {
+            Double value = data.getUsageValue(type);
+            if (value != null && value > 0) {
+                elementTotalRatio += value;
+            }
+        }
+        
+        // 元素总倍率 = 1.0 + 所有元素倍率之和
+        totalElementMultiplier = 1.0 + elementTotalRatio;
         
         return totalElementMultiplier;
     }

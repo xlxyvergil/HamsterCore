@@ -173,26 +173,7 @@ dependencies {
     compileOnly files('libs/SlashBladeResharped-1.20.1-1.8.61.jar')
     
     // 强制使用 Minecraft 提供的 Log4j 版本，避免版本冲突
-    constraints {
-        implementation('org.apache.logging.log4j:log4j-api') {
-            version {
-                strictly '[2.19.0,2.19.0]'
-            }
-            because('Minecraft 1.20.1 uses Log4j 2.19.0')
-        }
-        implementation('org.apache.logging.log4j:log4j-core') {
-            version {
-                strictly '[2.19.0,2.19.0]'
-            }
-            because('Minecraft 1.20.1 uses Log4j 2.19.0')
-        }
-        implementation('org.apache.logging.log4j:log4j-slf4j-impl') {
-            version {
-                strictly '[2.19.0,2.19.0]'
-            }
-            because('Minecraft 1.20.1 uses Log4j 2.19.0')
-        }
-    }
+    // 完全排除任何外部 Log4j 依赖，只使用 Minecraft 自带的版本
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -266,10 +247,16 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
 }
 
-// 防止依赖冲突的配置
+// 防止依赖冲突的配置 - 完全排除所有外部 Log4j 依赖
 configurations {
-    implementation {
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
-        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    all {
+        exclude group: 'org.apache.logging.log4j'
+        exclude group: 'org.slf4j'
+        exclude group: 'ch.qos.logback'
+        exclude group: 'commons-logging'
+        exclude module: 'log4j-slf4j-impl'
+        exclude module: 'slf4j-log4j12'
+        exclude module: 'logback-classic'
+        exclude module: 'commons-logging'
     }
 }

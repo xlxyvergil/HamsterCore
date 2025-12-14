@@ -46,7 +46,7 @@ public class ElementUUIDManager {
                 
                 // 如果找到了匹配的元素类型和索引，返回已有的UUID
                 if (entryElementType.equals(elementType.getName()) && entryIndex == index) {
-                    return NbtUtils.loadUUID(entry.get("UUID"));
+                    return entry.getUUID("UUID");
                 }
             }
         }
@@ -59,7 +59,7 @@ public class ElementUUIDManager {
         CompoundTag newEntry = new CompoundTag();
         newEntry.putString(ELEMENT_TYPE_TAG, elementType.getName());
         newEntry.putInt(ELEMENT_INDEX_TAG, index);
-        newEntry.put("UUID", NbtUtils.createUUID(newUUID));
+        newEntry.putUUID("UUID", newUUID);
         uuidList.add(newEntry);
         
         uuidTag.put(ELEMENT_UUID_LIST_TAG, uuidList);
@@ -134,7 +134,7 @@ public class ElementUUIDManager {
             
             // 如果找到了匹配的元素类型和索引，返回UUID
             if (entryElementType.equals(elementType.getName()) && entryIndex == index) {
-                return NbtUtils.loadUUID(entry.get("UUID"));
+                return entry.getUUID("UUID");
             }
         }
         
@@ -161,7 +161,7 @@ public class ElementUUIDManager {
         ListTag uuidList = uuidTag.getList(ELEMENT_UUID_LIST_TAG, Tag.TAG_COMPOUND);
         for (Tag tag : uuidList) {
             CompoundTag entry = (CompoundTag) tag;
-            UUID uuid = NbtUtils.loadUUID(entry.get("UUID"));
+            UUID uuid = entry.getUUID("UUID");
             uuids.add(uuid);
         }
         
