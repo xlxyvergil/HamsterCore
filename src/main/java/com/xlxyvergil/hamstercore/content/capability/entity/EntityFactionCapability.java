@@ -10,8 +10,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.util.INBTSerializable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
     public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_faction");

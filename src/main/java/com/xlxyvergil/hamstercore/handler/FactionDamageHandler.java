@@ -1,15 +1,12 @@
 package com.xlxyvergil.hamstercore.handler;
 
+import java.util.List;
+
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
-import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
-import com.xlxyvergil.hamstercore.handler.ElementCache;
-import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.handler.modifier.FactionModifierCalculator;
-import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -18,16 +15,9 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class FactionDamageHandler {
-    private static final Logger LOGGER = LogManager.getLogger();
     
     // 添加静态变量存储最近一次战斗信息
     public static boolean lastAttackWasCritical = false;

@@ -2,8 +2,6 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import net.minecraft.world.entity.LivingEntity;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * 护甲减免计算器

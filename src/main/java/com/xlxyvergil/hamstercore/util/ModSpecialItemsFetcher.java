@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.util;
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.api.item.IGun;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 
@@ -20,6 +21,14 @@ public class ModSpecialItemsFetcher {
     
     private static boolean tacZChecked = false;
     private static Set<ResourceLocation> tacZGunIDs = null;
+    
+    /**
+     * 检查TACZ模组是否已加载
+     * @return 如果TACZ模组已加载返回true
+     */
+    public static boolean isTaczLoaded() {
+        return ModList.get().isLoaded("tacz");
+    }
     
     /**
      * 获取所有TACZ枪械ID
@@ -67,22 +76,27 @@ public class ModSpecialItemsFetcher {
     private static void loadTacZGunIDsDirectAPI() {
         // 直接调用TimelessAPI.getAllCommonGunIndex()，不使用反射
         // 修复类型不匹配问题：使用 Map.Entry<ResourceLocation, ?> 而不是具体的 CommonGunIndex 类型
-        @SuppressWarnings("unchecked")
-        Set<Map.Entry<ResourceLocation, ?>> gunEntries = (Set<Map.Entry<ResourceLocation, ?>>) (Object) TimelessAPI.getAllCommonGunIndex();
-        tacZGunIDs = new HashSet<>();
-        
-        
-        for (Map.Entry<ResourceLocation, ?> entry : gunEntries) {
-            ResourceLocation gunId = entry.getKey();
+        try {
+            @SuppressWarnings("unchecked")
+            Set<Map.Entry<ResourceLocation, ?>> gunEntries = (Set<Map.Entry<ResourceLocation, ?>>) (Object) TimelessAPI.getAllCommonGunIndex();
+            tacZGunIDs = new HashSet<>();
             
-            // 验证枪械ID是否有效（使用原版反射逻辑）
-            if (TimelessAPI.getCommonGunIndex(gunId).isPresent()) {
-                // 添加所有有效的枪械ID，包括其他枪械包的枪械
-                tacZGunIDs.add(gunId);
-            } else {
+            for (Map.Entry<ResourceLocation, ?> entry : gunEntries) {
+                ResourceLocation gunId = entry.getKey();
+                
+                // 验证枪械ID是否有效（直接调用API）
+                if (TimelessAPI.getCommonGunIndex(gunId).isPresent()) {
+                    // 添加所有有效的枪械ID，包括其他枪械包的枪械
+                    tacZGunIDs.add(gunId);
+                } else {
+                }
             }
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明TACZ未正确加载
+            tacZGunIDs = Collections.emptySet();
+        } catch (Exception e) {
+            tacZGunIDs = Collections.emptySet();
         }
-        
     }
     
     /**
@@ -92,15 +106,42 @@ public class ModSpecialItemsFetcher {
      * @return 如果是TACZ枪械返回true
      */
     public static boolean isTacZGun(ItemStack stack) {
+        if (!ModList.get().isLoaded("tacz")) {
+            return false;
+        }
+        
         try {
-            if (!ModList.get().isLoaded("tacz")) {
-                return false;
-            }
             // 直接调用TACZ的API
             return IGun.getIGunOrNull(stack) != null;
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明TACZ未正确加载
+            return false;
         } catch (Exception e) {
             // API调用失败，返回false
             return false;
+        }
+    }
+    
+    /**
+     * 获取TACZ枪械物品实例
+     * @return TACZ枪械物品实例
+     */
+    public static Item getTaczGunItem() {
+        // 检查TACZ模组是否已加载
+        if (!isTaczLoaded()) {
+            return null;
+        }
+
+        try {
+            // 直接使用TACZ的API获取枪械物品
+            // 注意：这里使用了编译时依赖，但在运行时只有当TACZ确实加载时才会执行此代码
+            return com.tacz.guns.init.ModItems.MODERN_KINETIC_GUN.get();
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明TACZ未正确加载
+            return null;
+        } catch (Exception e) {
+            // 其他异常
+            return null;
         }
     }
     
@@ -110,10 +151,11 @@ public class ModSpecialItemsFetcher {
      * @return 枪械ID，如果不是TACZ枪械则返回null
      */
     public static String getTacZGunId(ItemStack stack) {
+        if (!isTacZGun(stack)) {
+            return null;
+        }
+        
         try {
-            if (!isTacZGun(stack)) {
-                return null;
-            }
             IGun iGun = IGun.getIGunOrNull(stack);
             if (iGun != null) {
                 ResourceLocation gunId = iGun.getGunId(stack);
@@ -121,6 +163,9 @@ public class ModSpecialItemsFetcher {
                     return gunId.toString();
                 }
             }
+        } catch (NoClassDefFoundError e) {
+            // 类不存在，说明TACZ未正确加载
+            return null;
         } catch (Exception e) {
             // API调用失败，返回null
         }

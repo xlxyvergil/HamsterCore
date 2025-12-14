@@ -8,7 +8,7 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
+import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
@@ -60,54 +60,51 @@ public class WeaponAttributeRenderer {
         // 添加Usage层标题
         tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.YELLOW));
         
-        // 分离特殊属性和元素属性
-        Double criticalChance = null;
-        Double criticalDamage = null;
-        Double triggerChance = null;
+        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(stack);
         
-        // 通过ElementModifierValueUtil获取特殊属性值（从属性修饰符系统获取Forge计算后的值）
-        criticalChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_CHANCE);
-        criticalDamage = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.CRITICAL_DAMAGE);
-        triggerChance = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.TRIGGER_CHANCE);
-        
-        // 添加特殊属性（全部从属性修饰符系统获取Forge计算后的值）
-        if (criticalChance != null && criticalChance > 0) {
-            String criticalChanceText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.critical_chance").getString(), 
-                criticalChance * 100);
-            tooltipElements.add(Component.literal(criticalChanceText));
+        // 添加特殊属性（从ForgeAttributeValueReader获取计算后的值）
+        String[] specialElements = {"critical_chance", "critical_damage", "trigger_chance"};
+        for (String specialElement : specialElements) {
+            Double value = specialAndFactionValues.get(specialElement);
+            if (value != null && value > 0) {
+                String translationKey = "hamstercore.ui." + specialElement.replace("_", "");
+                String formattedText;
+                
+                switch (specialElement) {
+                    case "critical_chance":
+                        formattedText = String.format("%s: %.1f%%", 
+                            Component.translatable("hamstercore.ui.critical_chance").getString(), 
+                            value * 100);
+                        break;
+                    case "critical_damage":
+                        formattedText = String.format("%s: %.1f%%", 
+                            Component.translatable("hamstercore.ui.critical_damage").getString(), 
+                            value * 100);
+                        break;
+                    case "trigger_chance":
+                        formattedText = String.format("%s: %.1f%%", 
+                            Component.translatable("hamstercore.ui.trigger_chance").getString(), 
+                            value * 100);
+                        break;
+                    default:
+                        continue;
+                }
+                tooltipElements.add(Component.literal(formattedText));
+            }
         }
         
-        if (criticalDamage != null && criticalDamage > 0) {
-            String criticalDamageText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.critical_damage").getString(), 
-                criticalDamage * 100);
-            tooltipElements.add(Component.literal(criticalDamageText));
-        }
-        
-        if (triggerChance != null && triggerChance > 0) {
-            String triggerChanceText = String.format("%s: %.1f%%", 
-                Component.translatable("hamstercore.ui.trigger_chance").getString(), 
-                triggerChance * 100);
-            tooltipElements.add(Component.literal(triggerChanceText));
-        }
-        
-        // 添加元素属性（从Usage层获取）
+        // 添加元素属性（从Usage层获取，仅包含基础元素和复合元素）
         // 获取所有元素类型
         Set<String> elementTypes = ElementNBTUtils.getAllUsageElementTypes(stack);
         boolean hasElements = false;
         
         // 添加元素属性标题
         if (!elementTypes.isEmpty()) {
-            hasElements = true;
-            tooltipElements.add(
-                Component.translatable("hamstercore.ui.element_ratios").append(":")
-            );
-            
-            // 添加每个元素的数值
+            // 遍历所有usage层元素，只处理基础元素和复合元素
             for (String elementTypeName : elementTypes) {
                 ElementType elementType = ElementType.byName(elementTypeName);
-                if (elementType != null) {
+                if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
                     List<Double> values = ElementNBTUtils.getUsageElementValue(stack, elementTypeName);
                     if (values.isEmpty()) {
                         continue;
@@ -119,6 +116,14 @@ public class WeaponAttributeRenderer {
                     // 跳过无效值
                     if (value <= 0) {
                         continue;
+                    }
+                    
+                    // 如果有有效的元素，添加标题（只添加一次）
+                    if (!hasElements) {
+                        tooltipElements.add(
+                            Component.translatable("hamstercore.ui.element_ratios").append(":")
+                        );
+                        hasElements = true;
                     }
                     
                     // 创建元素名称和数值的文本组件，使用元素颜色
@@ -144,73 +149,72 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 添加派系增伤属性到工具提示（从属性修饰符系统获取Forge计算后的值）
+     * 添加派系增伤属性到工具提示（从ForgeAttributeValueReader获取Forge计算后的值）
      */
     private static void addFactionAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 获取派系数据（从属性修饰符系统获取Forge计算后的值）
+        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(stack);
         
         // 定义所有可能的派系类型
         String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
         
-        // 添加空行分隔
-        tooltipElements.add(Component.literal(""));
-        
-        // 添加派系增伤标题
-        tooltipElements.add(
-            Component.translatable("hamstercore.ui.faction_damage_bonus").append(":")
-        );
-        
         boolean hasFactionBonuses = false;
         
-        // 添加每个派系的增伤数值（从属性修饰符系统获取Forge计算后的值）
+        // 先检查是否有任何派系增伤
         for (String faction : factionTypes) {
-            // 从属性修饰符系统获取派系增伤值
-            double factionModifier = ElementModifierValueUtil.getElementValueFromAttributes(stack, ElementType.byName(faction));
-            
-            // 只显示非零的派系增伤
-            if (factionModifier > 0) {
+            Double factionModifier = specialAndFactionValues.get(faction);
+            if (factionModifier != null && factionModifier > 0) {
                 hasFactionBonuses = true;
-                String factionText = String.format("  %s: %.1f%%", 
-                    Component.translatable("element." + faction + ".name").getString(), 
-                    factionModifier * 100);
-                
-                // 根据派系设置颜色
-                ChatFormatting color = ChatFormatting.WHITE; // 默认颜色
-                switch (faction.toUpperCase()) {
-                    case "GRINEER":
-                        color = ChatFormatting.RED;
-                        break;
-                    case "INFESTED":
-                        color = ChatFormatting.GREEN;
-                        break;
-                    case "CORPUS":
-                        color = ChatFormatting.BLUE;
-                        break;
-                    case "OROKIN":
-                        color = ChatFormatting.LIGHT_PURPLE;
-                        break;
-                    case "SENTIENT":
-                        color = ChatFormatting.DARK_RED;
-                        break;
-                    case "MURMUR":
-                        color = ChatFormatting.AQUA;
-                        break;
-                }
-                
-                Component factionComponent = Component.literal(factionText).withStyle(color);
-                tooltipElements.add(factionComponent);
+                break;
             }
         }
         
-        // 如果没有任何派系增伤，则移除标题和空行
-        if (!hasFactionBonuses) {
-            // 移除派系增伤标题
-            if (!tooltipElements.isEmpty()) {
-                tooltipElements.remove(tooltipElements.size() - 1);
-            }
-            // 移除空行分隔
-            if (!tooltipElements.isEmpty()) {
-                tooltipElements.remove(tooltipElements.size() - 1);
+        // 只有在有派系增伤时才添加标题和空行
+        if (hasFactionBonuses) {
+            // 添加空行分隔
+            tooltipElements.add(Component.literal(""));
+            
+            // 添加派系增伤标题
+            tooltipElements.add(
+                Component.translatable("hamstercore.ui.faction_damage_bonus").append(":")
+            );
+            
+            // 添加每个派系的增伤数值（从ForgeAttributeValueReader获取计算后的值）
+            for (String faction : factionTypes) {
+                Double factionModifier = specialAndFactionValues.get(faction);
+                
+                // 只显示非零的派系增伤
+                if (factionModifier != null && factionModifier > 0) {
+                    String factionText = String.format("  %s: %.1f%%", 
+                        Component.translatable("element." + faction + ".name").getString(), 
+                        factionModifier * 100);
+                    
+                    // 根据派系设置颜色
+                    ChatFormatting color = ChatFormatting.WHITE; // 默认颜色
+                    switch (faction.toUpperCase()) {
+                        case "GRINEER":
+                            color = ChatFormatting.RED;
+                            break;
+                        case "INFESTED":
+                            color = ChatFormatting.GREEN;
+                            break;
+                        case "CORPUS":
+                            color = ChatFormatting.BLUE;
+                            break;
+                        case "OROKIN":
+                            color = ChatFormatting.LIGHT_PURPLE;
+                            break;
+                        case "SENTIENT":
+                            color = ChatFormatting.DARK_RED;
+                            break;
+                        case "MURMUR":
+                            color = ChatFormatting.AQUA;
+                            break;
+                    }
+                    
+                    Component factionComponent = Component.literal(factionText).withStyle(color);
+                    tooltipElements.add(factionComponent);
+                }
             }
         }
     }

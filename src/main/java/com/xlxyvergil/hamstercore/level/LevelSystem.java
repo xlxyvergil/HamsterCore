@@ -65,12 +65,9 @@ public class LevelSystem {
         BlockPos entityPos = entity.blockPosition();
         
         // 输出调试日志
-        HamsterCore.LOGGER.info("Entity position: {}", entityPos);
-        HamsterCore.LOGGER.info("Spawn position: {}", spawnPoint);
         
         // 计算实体与出生点的水平距离（忽略Y轴），参考ScalingHealth的实现
         double distance = Math.sqrt(entityPos.distSqr(spawnPoint));
-        HamsterCore.LOGGER.info("Distance to spawn: {}", distance);
         
         return distance;
     }

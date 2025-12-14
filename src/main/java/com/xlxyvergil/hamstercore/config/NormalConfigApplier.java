@@ -1,7 +1,7 @@
 package com.xlxyvergil.hamstercore.config;
 
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.util.WeaponDataNBTUtil;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.util.WeaponJudgeUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -77,21 +77,15 @@ public class NormalConfigApplier {
         }
         
         try {
-            // 创建实际的ItemStack用于存储元素属性
-            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemKey);
-            if (item == null) {
-                return false;
+            // 将配置保存到全局配置映射中，以便在游戏中使用
+            WeaponConfig.cacheWeaponConfig(itemKey, weaponData);
+            
+            // 创建物品堆并保存元素数据到NBT
+            Item item = BuiltInRegistries.ITEM.get(itemKey);
+            if (item != null) {
+                ItemStack stack = new ItemStack(item);
+                WeaponDataManager.saveElementData(stack, weaponData);
             }
-            
-            ItemStack stack = new ItemStack(item);
-            
-            // 确保物品栈有效
-            if (stack.isEmpty()) {
-                return false;
-            }
-            
-            // 将WeaponData写入NBT - 使用当前的NBT工具类
-            WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
             
             return true;
         } catch (Exception e) {
@@ -123,7 +117,7 @@ public class NormalConfigApplier {
         }
         
         // 应用配置到物品NBT
-        WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+        WeaponDataManager.saveElementData(stack, weaponData);
         
         return true;
     }
@@ -134,7 +128,7 @@ public class NormalConfigApplier {
      * @return 武器数据，如果不存在则返回null
      */
     public static WeaponData readWeaponDataFromItem(ItemStack stack) {
-        return WeaponDataNBTUtil.readWeaponDataFromNBT(stack);
+        return WeaponDataManager.loadElementData(stack);
     }
     
     /**
@@ -143,6 +137,6 @@ public class NormalConfigApplier {
      * @return 是否包含武器数据
      */
     public static boolean hasWeaponData(ItemStack stack) {
-        return WeaponDataNBTUtil.hasWeaponData(stack);
+        return WeaponDataManager.loadElementData(stack) != null;
     }
 }

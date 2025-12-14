@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
@@ -17,7 +18,7 @@ public class ElementNBTUtils {
      * @return 是否包含元素数据
      */
     public static boolean hasAnyElements(ItemStack stack) {
-        return WeaponDataNBTUtil.hasWeaponData(stack);
+        return WeaponDataManager.readElementData(stack) != null;
     }
     
     /**
@@ -26,7 +27,7 @@ public class ElementNBTUtils {
      * @return 元素类型集合
      */
     public static Set<String> getAllUsageElementTypes(ItemStack stack) {
-        WeaponData data = WeaponDataNBTUtil.readWeaponDataFromNBT(stack);
+        WeaponData data = WeaponDataManager.readElementData(stack);
         if (data != null) {
             return data.getUsageElements().keySet();
         }
@@ -40,9 +41,14 @@ public class ElementNBTUtils {
      * @return 元素值列表
      */
     public static List<Double> getUsageElementValue(ItemStack stack, String elementTypeName) {
-        WeaponData data = WeaponDataNBTUtil.readWeaponDataFromNBT(stack);
+        WeaponData data = WeaponDataManager.readElementData(stack);
         if (data != null) {
-            return data.getUsageValue(elementTypeName);
+            Double value = data.getUsageValue(elementTypeName);
+            if (value != null) {
+                List<Double> result = new ArrayList<>();
+                result.add(value);
+                return result;
+            }
         }
         return new ArrayList<>();
     }

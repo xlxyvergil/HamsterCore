@@ -6,8 +6,6 @@ import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementModifierValueUtil;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +17,6 @@ import java.util.Random;
  */
 public class CriticalMultiplierCalculator {
     
-    private static final Logger LOGGER = LogManager.getLogger();
     
     /**
      * 计算暴击倍率
@@ -68,7 +65,6 @@ public class CriticalMultiplierCalculator {
             double totalCriticalDamage = criticalDamage; // 简化处理，暂不考虑暴击倍率增益
             criticalMultiplier = 1 + criticalLevel * (totalCriticalDamage - 1);
             
-            LOGGER.info("Critical hit! Level: " + criticalLevel + ", Damage multiplied by " + criticalMultiplier);
             
             // 如果攻击者是玩家，向玩家发送暴击信息
             if (attacker instanceof Player player) {

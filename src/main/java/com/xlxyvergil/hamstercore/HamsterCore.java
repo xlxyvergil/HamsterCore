@@ -21,6 +21,8 @@ import com.xlxyvergil.hamstercore.config.AdditionalConfigApplier;
 import com.xlxyvergil.hamstercore.config.NormalConfigApplier;
 import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
+import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
+import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -34,8 +36,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 
 
 import java.util.Set;
@@ -44,7 +45,6 @@ import java.util.stream.Collectors;
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
-    public static final Logger LOGGER = LogManager.getLogger();
 
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -66,10 +66,7 @@ public class HamsterCore {
             ElementRegistry::register,
             ElementType::register
         ));
-        
-        // 初始化元素系统（不再需要显式调用init方法）
-        LOGGER.info("Element system initialized");
-        
+                
         
         // 初始化网络包
         PacketHandler.init();
@@ -86,6 +83,7 @@ public class HamsterCore {
     
     
     
+    
 
     /**
      * 服务器启动完成事件处理
@@ -93,32 +91,47 @@ public class HamsterCore {
      */
     private void onServerStarted(ServerStartedEvent event) {
         
-        try {            
+        try {                  
             // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
-            SlashBladeItemsFetcher.init();
-        
+            // 只有在模组加载后才初始化对应的获取器
+            
             // 2. 让SlashBladeItemsFetcher获取数据
-            if (SlashBladeItemsFetcher.isSlashBladeLoaded()) {
+            // 直接检查模组是否加载，避免触发类初始化
+            if (ModList.get().isLoaded("slashblade")) {
                 SlashBladeItemsFetcher.getSlashBladeTranslationKeys(event.getServer());
             }
 
             // 3. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
             WeaponConfig.load();
             
+            // 生成TACZ配置文件
+            if (ModList.get().isLoaded("tacz")) {
+                TacZWeaponConfig.generateTacZWeaponsConfig();
+            }
+            
+            // 生成拔刀剑配置文件
+            if (ModList.get().isLoaded("slashblade")) {
+                SlashBladeWeaponConfig.generateSlashBladeWeaponsConfig();
+            }
+            
             // 4. 应用普通物品元素属性
             int normalAppliedCount = NormalConfigApplier.applyConfigToItem();
             
             // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
-            int tacZAppliedCount = TacZConfigApplier.applyConfigs();
-            int slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigs();
+            int tacZAppliedCount = 0;
+            int slashBladeAppliedCount = 0;
             
-            // 6. 应用额外的元素属性配置
+            // 只有在对应模组加载时才应用配置
+            if (ModList.get().isLoaded("tacz")) {
+                tacZAppliedCount = TacZConfigApplier.applyConfigs();
+            }
+            
+            if (ModList.get().isLoaded("slashblade")) {
+                slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigs();
+            }
+            
+            // 6. 应用额外配置
             int additionalAppliedCount = AdditionalConfigApplier.applyConfigToItem();
-            
-            // 记录应用结果
-            LOGGER.info("Weapon configuration applied - Normal: {}, TACZ: {}, SlashBlade: {}, Additional: {}", 
-                normalAppliedCount, tacZAppliedCount, slashBladeAppliedCount, additionalAppliedCount);
-            
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,21 +5,16 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-
 import com.xlxyvergil.hamstercore.element.BasicEntry;
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
-
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
-
-import java.io.File;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.ModList;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,114 +24,88 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
- * 武器配置管理器
- * 负责加载、保存和管理所有武器的元素配置
- * 已适配新的两层NBT数据结构
- * 注意：TACZ和拔刀剑的配置已移至独立的配置类中
+ * 拔刀剑武器配置管理器
+ * 负责加载、保存和管理拔刀剑的元素配置
  */
-public class WeaponConfig {
+public class SlashBladeWeaponConfig {
+    
+    private static final String SLASHBLADE_MOD_ID = "slashblade";
     
     // 默认特殊属性值
     private static final double DEFAULT_CRITICAL_CHANCE = 0.05; // 5%暴击率
     private static final double DEFAULT_CRITICAL_DAMAGE = 1.5;  // 1.5倍暴击伤害
     private static final double DEFAULT_TRIGGER_CHANCE = 0.1;   // 10%触发率
     
-    // 默认物理元素占比
-    private static final double DEFAULT_SLASH = 0.33;
-    private static final double DEFAULT_IMPACT = 0.33;
-    private static final double DEFAULT_PUNCTURE = 0.34;
+    // 默认物理元素占比（拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%）
+    private static final double DEFAULT_SLASH = 0.7;
+    private static final double DEFAULT_IMPACT = 0.2;
+    private static final double DEFAULT_PUNCTURE = 0.1;
     
     // 配置文件路径
     private static final String CONFIG_DIR = "config/hamstercore/";
     private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
-    private static final String NORMAL_WEAPONS_FILE = WEAPON_DIR + "normal_weapons.json";
-    private static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
+    private static final String SLASHBLADE_WEAPONS_FILE = WEAPON_DIR + "slashblade_weapons.json";
     
-    // 武器配置映射表
-    private static Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
+    // 拔刀剑配置缓存
+    private static Map<String, WeaponData> slashBladeConfigCache = new HashMap<>();
+    
+    // 拔刀剑translationKey到配置的映射表
+    private static Map<String, WeaponData> translationKeyToConfigMap = new HashMap<>();
     
     /**
-     * 加载武器配置
-     * 如果配置文件不存在，则生成默认配置
+     * 生成拔刀剑武器配置文件
      */
-    public static void load() {
-        // 检查配置文件是否存在，如果不存在则生成默认配置
-        File normalFile = new File(NORMAL_WEAPONS_FILE);
-        
-        if (!normalFile.exists()) {
-            // 配置文件不存在，生成默认配置
-            generateDefaultConfigs();
-        } else {
-            // 配置文件存在，加载配置
-            loadWeaponConfigs();
+    public static void generateSlashBladeWeaponsConfig() {
+        // 只有当SlashBlade模组加载时才生成配置
+        if (!ModList.get().isLoaded(SLASHBLADE_MOD_ID)) {
+            return;
         }
-    }
-    
-    /**
-     * 生成默认武器配置
-     */
-    private static void generateDefaultConfigs() {
-        weaponConfigs.clear();
         
-        // 生成普通武器配置文件
-        generateNormalWeaponsConfig();
+        Map<String, Object> slashBladeConfigs = new HashMap<>();
         
-        // 生成额外的配置文件
-        createDefaultAdditionalNormalWeaponsConfig();
-    }
-    
-    /**
-     * 生成普通武器配置文件
-     */
-    private static void generateNormalWeaponsConfig() {
-        Map<String, Object> normalConfigs = new HashMap<>();
+        // 获取所有拔刀剑translationKey
+        Set<String> translationKeys = SlashBladeItemsFetcher.getSlashBladeTranslationKeys();
+        List<JsonObject> weaponsList = new ArrayList<>();
         
-        // 查找所有可应用元素属性的普通物品
-        Set<ResourceLocation> applicableItems = com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder.findApplicableItems();
-        
-        // 过滤掉MOD特殊物品
-        Set<ResourceLocation> modSpecialItems = new HashSet<>();
-        
-        // 为每个普通物品创建配置
-        for (ResourceLocation itemKey : applicableItems) {
-            if (!modSpecialItems.contains(itemKey)) {
-                WeaponData weaponData = createNormalWeaponData(itemKey);
-                if (weaponData != null) {
-                    JsonObject itemJson = createNormalWeaponConfigJson(weaponData);
-                    normalConfigs.put(itemKey.toString(), itemJson);
-                    
-                    // 同时存储到内存映射表
-                    weaponConfigs.put(itemKey, weaponData);
-                }
+        for (String translationKey : translationKeys) {
+            WeaponData weaponData = createSlashBladeWeaponData(translationKey);
+            if (weaponData != null) {
+                JsonObject itemJson = createSlashBladeWeaponConfigJson(weaponData);
+                // 添加translationKey字段到配置中
+                itemJson.addProperty("translationKey", translationKey);
+                weaponsList.add(itemJson);
             }
         }
         
-        // 保存普通武器配置文件
-        saveWeaponConfigToFile(normalConfigs, NORMAL_WEAPONS_FILE);
+        // 使用统一的物品ID作为键名，值为武器配置数组
+        slashBladeConfigs.put("slashblade:slashblade", weaponsList);
+        
+        // 保存拔刀剑武器配置文件
+        saveWeaponConfigToFile(slashBladeConfigs, SLASHBLADE_WEAPONS_FILE);
     }
     
     /**
-     * 为普通物品创建武器配置数据
+     * 为拔刀剑创建武器配置数据
      */
-    private static WeaponData createNormalWeaponData(ResourceLocation itemKey) {
+    private static WeaponData createSlashBladeWeaponData(String translationKey) {
         WeaponData data = new WeaponData();
         
         // 基本信息
-        if (itemKey != null) {
-            data.modid = itemKey.getNamespace();
-            data.itemId = itemKey.getPath();
-        }
+        data.modid = "slashblade";
+        data.itemId = "slashblade";
+        
+        // 拔刀剑特殊信息
+        data.translationKey = translationKey; // 具体的translationKey
         
         // 添加默认特殊属性
         data.addBasicElement("critical_chance", "CONFIG", 0);
         data.addBasicElement("critical_damage", "CONFIG", 1);
         data.addBasicElement("trigger_chance", "CONFIG", 2);
         
-        // 根据物品类型设置不同的默认元素占比
-        setDefaultElementRatiosForNormalItem(data, itemKey);
+        // 设置拔刀剑默认元素占比
+        setDefaultElementRatiosForSlashBlade(data, translationKey);
         
         // 添加初始修饰符
         addInitialModifiers(data);
@@ -145,44 +114,26 @@ public class WeaponConfig {
     }
     
     /**
-     * 为普通物品设置默认元素占比
+     * 为拔刀剑设置默认元素占比（统一配置）
      */
-    private static void setDefaultElementRatiosForNormalItem(WeaponData data, ResourceLocation itemKey) {
-        // 根据物品名称判断类型并设置不同的默认元素占比
-        if ("netherite_sword".equals(itemKey.getPath()) || 
-            "diamond_sword".equals(itemKey.getPath()) ||
-            "iron_sword".equals(itemKey.getPath()) ||
-            "golden_sword".equals(itemKey.getPath()) ||
-            "stone_sword".equals(itemKey.getPath()) ||
-            "wooden_sword".equals(itemKey.getPath())) {
-            // 剑类：主要是切割
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-        } else if ("netherite_axe".equals(itemKey.getPath()) ||
-                   "diamond_axe".equals(itemKey.getPath()) ||
-                   "iron_axe".equals(itemKey.getPath()) ||
-                   "golden_axe".equals(itemKey.getPath()) ||
-                   "stone_axe".equals(itemKey.getPath()) ||
-                   "wooden_axe".equals(itemKey.getPath())) {
-            // 斧类：主要是冲击和切割
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-        } else {
-            // 其他物品：默认物理元素占比
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
-        }
+    private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
+        // 拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%
+        data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
+        data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
+        data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
     }
     
     /**
-     * 创建普通武器配置的JSON对象
+     * 创建拔刀剑武器配置的JSON对象
      * 适配新的两层数据结构
      */
-    private static JsonObject createNormalWeaponConfigJson(WeaponData weaponData) {
+    private static JsonObject createSlashBladeWeaponConfigJson(WeaponData weaponData) {
         JsonObject itemJson = new JsonObject();
+        
+        // 添加translationKey（如果存在）
+        if (weaponData.translationKey != null && !weaponData.translationKey.isEmpty()) {
+            itemJson.addProperty("translationKey", weaponData.translationKey);
+        }
         
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
@@ -238,32 +189,16 @@ public class WeaponConfig {
             try (FileWriter writer = new FileWriter(configPath.toFile())) {
                 gson.toJson(configJson, writer);
             }
-            
-            
         } catch (IOException e) {
-        }
-    }
-    
-    /**
-     * 从配置文件加载武器配置
-     */
-    private static void loadWeaponConfigs() {
-        weaponConfigs.clear();
-        
-        try {
-            // 加载普通武器配置（使用对象格式）
-            loadNormalWeaponsConfig();
-            
-        } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
     /**
-     * 加载普通武器配置文件（对象格式）
+     * 加载拔刀剑配置（数组格式）
      */
-    private static void loadNormalWeaponsConfig() {
-        File configFile = new File(NORMAL_WEAPONS_FILE);
+    public static void loadSlashBladeConfigFile() {
+        File configFile = new File(SLASHBLADE_WEAPONS_FILE);
         if (!configFile.exists()) {
             return;
         }
@@ -275,33 +210,33 @@ public class WeaponConfig {
                 
                 if (loadedConfigs != null) {
                     for (Map.Entry<String, JsonElement> entry : loadedConfigs.entrySet()) {
-                        String itemKey = entry.getKey();
-                        JsonObject itemJson = entry.getValue().getAsJsonObject();
+                        String configKey = entry.getKey();
+                        JsonElement configValue = entry.getValue();
                         
-                        // 直接处理对象格式的配置
-                        processNormalWeaponConfig(itemJson, itemKey);
+                        // 遍历数组中的每个配置
+                        for (JsonElement arrayElement : configValue.getAsJsonArray()) {
+                            JsonObject itemJson = arrayElement.getAsJsonObject();
+                            processWeaponConfig(itemJson, configKey);
+                        }
                     }
                 }
             }
-            
-            
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
     /**
-     * 处理普通武器配置（数组格式）
+     * 处理单个武器配置（数组格式，用于拔刀剑）
      * 适配新的两层数据结构
      */
-    private static void processNormalWeaponConfig(JsonObject itemJson, String itemKey) {
+    private static void processWeaponConfig(JsonObject itemJson, String configKey) {
         // 创建WeaponData对象
         WeaponData weaponData = new WeaponData();
         
-        // 解析物品ID
-        ResourceLocation itemResourceKey = ResourceLocation.tryParse(itemKey);
-        if (itemResourceKey != null) {
-            weaponData.modid = itemResourceKey.getNamespace();
-            weaponData.itemId = itemResourceKey.getPath();
+        // 读取translationKey（如果存在）
+        if (itemJson.has("translationKey")) {
+            weaponData.translationKey = itemJson.get("translationKey").getAsString();
         }
         
         // 读取elementData
@@ -362,59 +297,71 @@ public class WeaponConfig {
             }
         }
         
-        // 使用物品ID作为键
-        if (itemResourceKey != null) {
-            weaponConfigs.put(itemResourceKey, weaponData);
+        // 根据配置类型决定内存映射的键名
+        if (weaponData.translationKey != null) {
+            // 拔刀剑使用统一的slashblade:slashblade作为键
+            translationKeyToConfigMap.put(weaponData.translationKey, weaponData);
         }
     }
     
     /**
-     * 获取物品的武器配置
+     * 获取拔刀剑武器配置（根据具体的刀）
      */
     public static WeaponData getWeaponConfig(ItemStack stack) {
-        if (stack.isEmpty()) return null;
-        
-        ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        if (itemKey == null || itemKey == BuiltInRegistries.ITEM.getDefaultKey()) return null;
-        
-        return weaponConfigs.get(itemKey);
-    }    
-    /**
-     * 检查物品是否有武器配置
-     */
-    public static boolean hasWeaponConfig(ItemStack stack) {
-        return getWeaponConfig(stack) != null;
-    }
-    
-    /**
-     * 获取所有武器配置
-     */
-    public static Map<ResourceLocation, WeaponData> getAllWeaponConfigs() {
-        return new HashMap<>(weaponConfigs);
-    }
-    
-    /**
-     * 缓存武器配置到全局映射中
-     */
-    public static void cacheWeaponConfig(ResourceLocation itemKey, WeaponData weaponData) {
-        if (itemKey != null && weaponData != null) {
-            weaponConfigs.put(itemKey, weaponData);
+        // 获取拔刀剑的translationKey - 使用SlashBladeItemsFetcher
+        String translationKey = com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher.getSlashBladeTranslationKey(stack);
+        if (translationKey != null) {
+            // 查找匹配的translationKey配置
+            return getWeaponConfigByTranslationKey(translationKey);
         }
+        // 如果没找到具体配置，返回统一的slashblade:slashblade配置
+        return null;
     }
     
     /**
-     * 获取额外武器配置（与getAllWeaponConfigs相同）
+     * 根据translationKey获取武器配置（用于拔刀剑）
      */
-    public static Map<ResourceLocation, WeaponData> getAdditionalWeaponConfigs() {
-        return new HashMap<>(weaponConfigs);
+    public static WeaponData getWeaponConfigByTranslationKey(String translationKey) {
+        // 首先检查缓存
+        if (slashBladeConfigCache.containsKey(translationKey)) {
+            return slashBladeConfigCache.get(translationKey);
+        }
+        
+        // 在映射表中查找
+        if (translationKeyToConfigMap.containsKey(translationKey)) {
+            WeaponData data = translationKeyToConfigMap.get(translationKey);
+            slashBladeConfigCache.put(translationKey, data); // 添加到缓存
+            return data;
+        }
+        
+        return null;
     }
     
     /**
-     * 缓存额外武器配置到全局映射中
+     * 获取拔刀剑配置
      */
-    public static void cacheAdditionalWeaponConfig(ResourceLocation itemKey, WeaponData weaponData) {
-        if (itemKey != null && weaponData != null) {
-            weaponConfigs.put(itemKey, weaponData);
+    public static Map<String, List<WeaponData>> getSlashBladeConfigs() {
+        // 构建拔刀剑配置映射
+        Map<String, List<WeaponData>> slashBladeConfigs = new HashMap<>();
+        
+        // 遍历translationKeyToConfigMap，将配置按照translationKey分组
+        for (Map.Entry<String, WeaponData> entry : translationKeyToConfigMap.entrySet()) {
+            String translationKey = entry.getKey();
+            WeaponData weaponData = entry.getValue();
+            
+            // 每个translationKey对应一个WeaponData列表（尽管通常只有一个）
+            slashBladeConfigs.computeIfAbsent(translationKey, k -> new ArrayList<>()).add(weaponData);
+        }
+        
+        return slashBladeConfigs;
+    }
+    
+    /**
+     * 缓存拔刀剑配置到全局映射中
+     */
+    public static void cacheSlashBladeConfig(String translationKey, WeaponData weaponData) {
+        if (translationKey != null && weaponData != null) {
+            translationKeyToConfigMap.put(translationKey, weaponData);
         }
     }
     
@@ -450,48 +397,6 @@ public class WeaponConfig {
             
             // 添加到初始修饰符列表
             data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
-        }
-    }
-
-    /**
-     * 创建默认的额外普通武器配置文件
-     */
-    private static void createDefaultAdditionalNormalWeaponsConfig() {
-        try {
-            // 确保目录存在
-            Path weaponDir = Paths.get(WEAPON_DIR);
-            if (!Files.exists(weaponDir)) {
-                Files.createDirectories(weaponDir);
-            }
-            
-            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
-            if (configFile.exists()) {
-                return; // 文件已存在，不需要重新创建
-            }
-            
-            // 创建默认配置内容（只包含注释和示例）
-            JsonObject defaultConfig = new JsonObject();
-            defaultConfig.addProperty("_comment", "在此添加您想要应用元素属性的额外普通物品，格式如下:");
-            defaultConfig.addProperty("_example_full", "{\n"
-                    + "  \"minecraft:diamond_sword\": {\n"
-                    + "    \"elementData\": {\n"
-                    + "      \"Basic\": [\n"
-                    + "        [\"SLASH\", \"CONFIG\", 0],\n"
-                    + "        [\"CRITICAL_CHANCE\", \"CONFIG\", 1]\n"
-                    + "      ],\n"
-                    + "      \"Usage\": [\n"
-                    + "        [\"SLASH\", 5.0],\n"
-                    + "        [\"CRITICAL_CHANCE\", 0.1]\n"
-                    + "      ]\n"
-                    + "    }\n"
-                    + "  }\n"
-                    + "}");
-            
-            // 保存文件
-            saveWeaponConfigToFile(Collections.singletonMap("_comment", defaultConfig), ADDITIONAL_NORMAL_WEAPONS_FILE);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

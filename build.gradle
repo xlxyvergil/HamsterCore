@@ -171,6 +171,28 @@ dependencies {
     // SlashBlade Resharped dependency (local file for compile only)
     // 将 SlashBladeResharped-1.20.1-1.8.61.jar 放在 libs 目录下
     compileOnly files('libs/SlashBladeResharped-1.20.1-1.8.61.jar')
+    
+    // 强制使用 Minecraft 提供的 Log4j 版本，避免版本冲突
+    constraints {
+        implementation('org.apache.logging.log4j:log4j-api') {
+            version {
+                strictly '[2.19.0,2.19.0]'
+            }
+            because('Minecraft 1.20.1 uses Log4j 2.19.0')
+        }
+        implementation('org.apache.logging.log4j:log4j-core') {
+            version {
+                strictly '[2.19.0,2.19.0]'
+            }
+            because('Minecraft 1.20.1 uses Log4j 2.19.0')
+        }
+        implementation('org.apache.logging.log4j:log4j-slf4j-impl') {
+            version {
+                strictly '[2.19.0,2.19.0]'
+            }
+            because('Minecraft 1.20.1 uses Log4j 2.19.0')
+        }
+    }
 
     // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -240,4 +262,14 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    // 防止类加载器冲突的额外配置
+    options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
+}
+
+// 防止依赖冲突的配置
+configurations {
+    implementation {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
 }

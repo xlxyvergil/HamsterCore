@@ -1,7 +1,7 @@
 package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
-import com.xlxyvergil.hamstercore.util.WeaponDataNBTUtil;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
@@ -10,8 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 武器数据管理器
  * 负责管理WeaponData实例的生命周期，提供缓存机制以提高性能
+ * 使用旧版类结构，但保持新的数据结构和使用方式
  */
 public class WeaponDataManager {
+    
+    // NBT标签常量
+    public static final String ELEMENT_DATA = "ElementData";
     
     // 缓存WeaponData实例，避免重复创建和解析
     private static final Map<String, WeaponData> weaponDataCache = new ConcurrentHashMap<>();
@@ -28,7 +32,7 @@ public class WeaponDataManager {
         }
         
         // 首先尝试从NBT中读取
-        WeaponData weaponData = WeaponDataNBTUtil.readWeaponDataFromNBT(stack);
+        WeaponData weaponData = readElementData(stack);
         if (weaponData != null) {
             return weaponData;
         }
@@ -37,7 +41,7 @@ public class WeaponDataManager {
         weaponData = WeaponConfig.getWeaponConfig(stack);
         if (weaponData != null) {
             // 将配置文件中的数据写入NBT
-            WeaponDataNBTUtil.writeWeaponDataToNBT(stack, weaponData);
+            saveElementData(stack, weaponData);
         }
         
         return weaponData;
@@ -54,15 +58,59 @@ public class WeaponDataManager {
         }
         
         // 从NBT中读取武器数据
-        WeaponData weaponData = WeaponDataNBTUtil.readWeaponDataFromNBT(stack);
-        if (weaponData == null) {
+        WeaponData weaponData = readElementData(stack);
+        if (weaponData != null) {
+            // 计算Usage层数据
+            weaponData.computeUsageData(stack);
+            return weaponData;
+        }
+        
+        // 如果NBT中没有数据，尝试从配置文件加载
+        weaponData = WeaponConfig.getWeaponConfig(stack);
+        if (weaponData != null) {
+            // 计算Usage层数据
+            weaponData.computeUsageData(stack);
+            // 将配置文件中的数据写入NBT，确保下次可以直接读取
+            saveElementData(stack, weaponData);
+            return weaponData;
+        }
+        
+        return null;
+    }
+    
+    /**
+     * 将武器元素数据保存到物品NBT中
+     * @param stack 物品堆
+     * @param data 武器数据
+     */
+    public static void saveElementData(ItemStack stack, WeaponData data) {
+        if (stack.isEmpty() || data == null) {
+            return;
+        }
+        
+        // 将数据写入NBT
+        CompoundTag nbt = data.toNBT();
+        stack.getOrCreateTag().put(ELEMENT_DATA, nbt);
+    }
+    
+    /**
+     * 从物品中读取武器元素数据
+     * @param stack 物品堆
+     * @return 武器数据，如果不存在则返回null
+     */
+    public static WeaponData readElementData(ItemStack stack) {
+        if (stack.isEmpty()) {
             return null;
         }
         
-        // 计算Usage层数据
-        weaponData.computeUsageData(stack);
+        // 检查物品是否有元素数据NBT
+        if (!stack.hasTag() || !stack.getTag().contains(ELEMENT_DATA)) {
+            return null;
+        }
         
-        return weaponData;
+        // 从NBT中读取数据
+        CompoundTag nbt = stack.getTag().getCompound(ELEMENT_DATA);
+        return WeaponData.fromNBT(nbt);
     }
     
     /**
