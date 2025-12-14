@@ -60,16 +60,16 @@ public class WeaponDataManager {
         // 从NBT中读取武器数据
         WeaponData weaponData = readElementData(stack);
         if (weaponData != null) {
-            // 计算Usage层数据
-            weaponData.computeUsageData(stack);
+            // 注意：这里不再调用computeFullUsageData，避免递归调用
+            // 需要usage层数据的地方应该自己计算
             return weaponData;
         }
         
         // 如果NBT中没有数据，尝试从配置文件加载
         weaponData = WeaponConfig.getWeaponConfig(stack);
         if (weaponData != null) {
-            // 计算Usage层数据
-            weaponData.computeUsageData(stack);
+            // 注意：这里不再调用computeFullUsageData，避免递归调用
+            // 需要usage层数据的地方应该自己计算
             // 将配置文件中的数据写入NBT，确保下次可以直接读取
             saveElementData(stack, weaponData);
             return weaponData;

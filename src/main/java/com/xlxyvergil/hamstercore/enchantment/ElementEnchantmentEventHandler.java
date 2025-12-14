@@ -19,16 +19,19 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 /**
  * 元素附魔事件处理器
  * 负责在附魔应用和移除时同步ElementModifierManager的属性修饰符
- * 参考 EnchantingInfuser 的实现模式
+ * 参考EnchantingInfuser 的实现模式
  */
 @Mod.EventBusSubscriber
 public class ElementEnchantmentEventHandler {
@@ -37,8 +40,8 @@ public class ElementEnchantmentEventHandler {
     private static final String LAST_ENCHANTMENT_CACHE = "HamsterCore_LastEnchantmentCache";
     
     /**
-     * 使用 ItemAttributeModifierEvent 来检测附魔变化
-     * 当附魔发生变化时，同步应用对应的元素修饰符
+     * 使用 ItemAttributeModifierEvent 直接添加元素修饰符
+     * 参考Apotheosis AttributeAffix 实现模式
      */
     @SubscribeEvent(priority = EventPriority.LOW) // 低优先级，在主要修饰符处理完后执行
     public static void onItemAttributeModifier(ItemAttributeModifierEvent event) {
@@ -52,19 +55,11 @@ public class ElementEnchantmentEventHandler {
             return;
         }
         
-        // 检测附魔变化或需要同步标记
-        boolean needsSync = hasEnchantmentChanged(stack);
+        // 直接应用当前附魔的修饰符
+        applyCurrentElementEnchantments(stack, event);
         
-        // 检查是否有其他处理器设置的同步标记
-        if (stack.hasTag() && stack.getTag().contains("HamsterCore_NeedsEnchantmentSync")) {
-            needsSync = true;
-            stack.getTag().remove("HamsterCore_NeedsEnchantmentSync"); // 清除标记
-        }
-        
-        if (needsSync) {
-            syncEnchantmentModifiers(stack);
-            updateEnchantmentCache(stack);
-        }
+        // 更新附魔缓存
+        updateEnchantmentCache(stack);
     }
     
     /**
@@ -114,102 +109,61 @@ public class ElementEnchantmentEventHandler {
     }
     
     /**
-     * 同步附魔修饰符
-     * 参考 EnchantingInfuser 的 setNewEnchantments 模式
+     * 使用与GunsmithLib相同的合并策略的修饰符缓冲区
      */
-    private static void syncEnchantmentModifiers(ItemStack stack) {
-        // 1. 首先清除所有元素附魔修饰符（类似 EnchantingInfuser 的做法）
-        clearElementEnchantmentModifiers(stack);
-        
-        // 2. 然后应用当前附魔对应的修饰符
-        applyCurrentElementEnchantments(stack);
-        
-        System.out.println("Debug: Synced enchantment modifiers using EnchantingInfuser pattern");
-    }
-    
-    /**
-     * 清除所有来自元素附魔的修饰符
-     * 通过修改 NBT 来清除元素属性修饰符
-     */
-    private static void clearElementEnchantmentModifiers(ItemStack stack) {
-        if (!stack.hasTag()) {
-            return;
-        }
-        
-        CompoundTag tag = stack.getTag();
-        
-        // 移除 AttributeModifiers 标签（这会清除所有属性修饰符）
-        tag.remove("AttributeModifiers");
-        
-        // 保存 NBT 变化
-        stack.setTag(tag);
-    }
-    
-
+    private static final ThreadLocal<Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier>> MERGE_BUFFER = ElementModifierManager.createThreadLocalMergeBuffer();
     
     /**
      * 应用当前元素附魔的修饰符
-     * 参考 EnchantingInfuser 的 applyEnchantments 模式
+     * 直接通过 ItemAttributeModifierEvent 添加修饰符，参考Apotheosis 实现模式
+     * 使用GunsmithLib的合并策略合并相同属性和操作的修饰符
      */
-    private static void applyCurrentElementEnchantments(ItemStack stack) {
-        List<ElementModifierManager.ElementModifierData> elementModifiers = new ArrayList<>();
+    private static void applyCurrentElementEnchantments(ItemStack stack, ItemAttributeModifierEvent event) {
+        // 确保stack和event不为null
+        if (stack == null || event == null) {
+            return;
+        }
         
-        for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
-            if (entry.getKey() instanceof ElementEnchantment elementEnchantment) {
-                int level = entry.getValue();
-                ElementType elementType = elementEnchantment.getElementType();
+        var buffer = MERGE_BUFFER.get();
+        try {
+            buffer.clear();
+            
+            for (Map.Entry<Enchantment, Integer> entry : stack.getAllEnchantments().entrySet()) {
+                // 确保entry、key和value不为null
+                if (entry == null || entry.getKey() == null || entry.getValue() == null) {
+                    continue;
+                }
                 
-                ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-                if (elementAttribute != null) {
-                    var modifiers = elementEnchantment.getEntityAttributes(stack, EquipmentSlot.MAINHAND, level);
+                if (entry.getKey() instanceof ElementEnchantment elementEnchantment && elementEnchantment.getElementType() != null) {
+                    int level = entry.getValue();
+                    ElementType elementType = elementEnchantment.getElementType();
                     
-                    for (AttributeModifier modifier : modifiers) {
-                        ElementModifierManager.ElementModifierData modifierData = new ElementModifierManager.ElementModifierData();
-                        modifierData.setAttribute(new net.minecraft.resources.ResourceLocation("hamstercore", elementType.getName()));
-                        modifierData.setId(modifier.getId());
-                        modifierData.setAmount(modifier.getAmount());
-                        modifierData.setName(modifier.getName());
-                        modifierData.setOperation(modifier.getOperation());
+                    // 确保elementType不为null
+                    if (elementType == null) {
+                        continue;
+                    }
+                    
+                    ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
+                    if (elementAttribute != null) {
+                        Collection<AttributeModifier> modifiers = elementEnchantment.getEntityAttributes(stack, EquipmentSlot.MAINHAND, level);
                         
-                        elementModifiers.add(modifierData);
+                        if (modifiers != null) {
+                            for (AttributeModifier modifier : modifiers) {
+                                // 确保修饰符不为null
+                                if (modifier != null) {
+                                    // 合并相同属性和操作的修饰符
+                                    ElementModifierManager.mergeModifier(buffer, elementAttribute, modifier);
+                                }
+                            }
+                        }
                     }
                 }
             }
+            
+            // 将合并后的修饰符添加到事件中
+            ElementModifierManager.applyMergedModifiers(buffer, event::addModifier);
+        } finally {
+            buffer.clear();
         }
-        
-        if (!elementModifiers.isEmpty()) {
-            // 使用 ElementModifierManager 应用修饰符（会重新创建 AttributeModifiers 标签）
-            ElementModifierManager.applyElementModifiers(stack, elementModifiers, EquipmentSlot.MAINHAND);
-        }
-    }
-    
-    /**
-     * 手动处理附魔移除的同步方法
-     * 这个方法可以在其他需要强制同步的地方调用
-     * @param stack 物品堆
-     */
-    public static void syncEnchantmentRemoval(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
-            return;
-        }
-        
-        // 直接调用同步方法，避免递归
-        syncEnchantmentModifiers(stack);
-        
-        System.out.println("Debug: Force synced enchantment modifiers");
-    }
-    
-    /**
-     * 从物品的NBT中读取附魔信息并同步修饰符
-     * 这个方法可以在物品加载时调用，确保修饰符同步
-     * @param stack 物品堆
-     */
-    public static void syncFromNBT(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
-            return;
-        }
-        
-        // 直接调用同步方法，避免递归
-        syncEnchantmentModifiers(stack);
     }
 }

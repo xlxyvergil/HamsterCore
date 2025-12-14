@@ -1,5 +1,6 @@
 package com.xlxyvergil.hamstercore.element;
 
+import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import java.util.UUID;
@@ -11,11 +12,13 @@ public class BaseElementModifier {
     private final ElementType elementType;
     private final double minValue;
     private final double maxValue;
+    private final AttributeModifier.Operation operation;
     
-    public BaseElementModifier(ElementType elementType, double minValue, double maxValue) {
+    public BaseElementModifier(ElementType elementType, double minValue, double maxValue, AttributeModifier.Operation operation) {
         this.elementType = elementType;
         this.minValue = minValue;
         this.maxValue = maxValue;
+        this.operation = operation;
     }
     
     /**
@@ -26,10 +29,10 @@ public class BaseElementModifier {
      * @return 属性修饰符
      */
     public AttributeModifier createModifier(ItemStack stack, double value, int index) {
-        UUID modifierUUID = ElementRegistry.getModifierUUID(elementType, index);
+        UUID modifierUUID = ElementUUIDManager.getOrCreateUUID(stack, elementType, index);
         String modifierName = ElementRegistry.getModifierName(elementType, index);
         
-        return new AttributeModifier(modifierUUID, modifierName, value, AttributeModifier.Operation.ADDITION);
+        return new AttributeModifier(modifierUUID, modifierName, value, this.operation);
     }
     
     /**

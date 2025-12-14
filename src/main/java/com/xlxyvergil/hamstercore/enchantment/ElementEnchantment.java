@@ -53,7 +53,7 @@ public class ElementEnchantment extends Enchantment {
     
     @Override
     public boolean canEnchant(ItemStack stack) {
-        // 使用WeaponItemIds来判断物品是否可以应用元素附魔
+        // 使用WeaponItemIds来判断物品是否可以应用元素附�?
         ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return WeaponItemIds.isConfiguredWeapon(itemKey);
     }
@@ -78,18 +78,20 @@ public class ElementEnchantment extends Enchantment {
     
     public Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         // 基类提供默认实现，子类可以重写以自定义数值计算
-        if (slot == EquipmentSlot.MAINHAND) {
+        if (slot == EquipmentSlot.MAINHAND && this.elementType != null) {
             // 获取元素属性
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 创建默认的属性修饰符（基类的默认实现）
                 double value = elementAttribute.getDefaultValue() * level;
                 UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
+                // 确保元素类型名称不为null
+                String elementName = this.elementType.getName() != null ? this.elementType.getName() : "unknown";
                 AttributeModifier modifier = new AttributeModifier(
                     modifierId, 
-                    "hamstercore:" + elementType.getName(), 
+                    "hamstercore:" + elementName, 
                     value, 
-                    elementAttribute.getOperation()
+                    AttributeModifier.Operation.ADDITION
                 );
                 
                 Collection<AttributeModifier> modifiers = new ArrayList<>();
@@ -101,8 +103,4 @@ public class ElementEnchantment extends Enchantment {
         return Collections.emptyList();
     }
     
-    // 移除直接事件处理，改为通过 ElementEnchantmentEventHandler 统一管理
-    // 这样可以避免重复处理和 NBT 不同步的问题
-    // @SubscribeEvent
-    // public static void onItemAttributeModifier(ItemAttributeModifierEvent event) { ... }
 }

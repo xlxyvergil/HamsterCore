@@ -110,26 +110,8 @@ public class WeaponData {
         // 复合计算将在需要显示或使用时动态进行，避免在事件处理中递归
     }
     
-    /**
-     * 计算包含复合元素的完整Usage层数据（包括动态复合计算）
-     * 这个方法可以在安全的上下文中调用，例如UI显示或属性查询
-     */
-    public void computeFullUsageData() {
-        // 从InitialModifier层数据中获取基础元素和复合元素的数值
-        Map<String, Double> basicAndComplexValues = new HashMap<>();
-        
-        for (var modifierEntry : getInitialModifiers()) {
-            String elementName = modifierEntry.getName();
-            ElementType elementType = ElementType.byName(elementName);
-            if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                basicAndComplexValues.put(elementName, modifierEntry.getModifier().getAmount());
-                setUsageElement(elementName, modifierEntry.getModifier().getAmount());
-            }
-        }
-        
-        // 在安全的上下文中进行复合计算
-        ElementCombinationModifier.computeElementCombinationsWithValues(this, basicAndComplexValues);
-    }
+    // 移除computeFullUsageData方法，避免在事件处理中递归
+    // 使用方需要直接调用ForgeAttributeValueReader和ElementCombinationModifier来计算usage层值
     
     /**
      * 将WeaponData转换为NBT标签

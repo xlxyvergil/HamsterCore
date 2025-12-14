@@ -45,7 +45,7 @@ public class ElementComputedAPI {
             modifierId, 
             "hamstercore:" + elementType.getName(), 
             value, 
-            elementAttribute.getOperation()
+            AttributeModifier.Operation.ADDITION
         );
         
         // 应用修饰符到物品的攻击伤害属性上

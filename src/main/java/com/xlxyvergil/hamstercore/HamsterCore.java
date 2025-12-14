@@ -46,6 +46,9 @@ public class HamsterCore {
         // 注册附魔
         ModEnchantments.register(modEventBus);
         
+        // 注册元素属性
+        ElementRegistry.REGISTRY.register(modEventBus);
+        
         // 初始化配置
         FactionConfig.load();
         ArmorConfig.load();

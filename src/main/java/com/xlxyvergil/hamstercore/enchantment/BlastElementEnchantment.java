@@ -21,19 +21,21 @@ public class BlastElementEnchantment extends ElementEnchantment {
     
     @Override
     public Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
-        if (slot == EquipmentSlot.MAINHAND) {
-            // 获取元素属性
+        if (slot == EquipmentSlot.MAINHAND && this.elementType != null) {
+            // 获取元素属�?
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.3
                 double value = 0.3 * level;
                 // 使用ElementUUIDManager生成UUID
                 UUID modifierId = ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
+                // 确保元素类型名称不为null
+                String elementName = this.elementType.getName() != null ? this.elementType.getName() : "unknown";
                 AttributeModifier modifier = new AttributeModifier(
                     modifierId, 
-                    "hamstercore:" + elementType.getName(), 
+                    "hamstercore:" + elementName, 
                     value, 
-                    elementAttribute.getOperation()
+                    AttributeModifier.Operation.ADDITION
                 );
                 
                 // 返回包含修饰符的集合

@@ -7,6 +7,7 @@ import java.util.Set;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
@@ -15,6 +16,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -27,7 +29,7 @@ public class WeaponAttributeRenderer {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new WeaponAttributeRenderer());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         
@@ -39,6 +41,20 @@ public class WeaponAttributeRenderer {
         // 获取现有的工具提示行
         List<Component> tooltipElements = event.getToolTip();
         
+        // 移除Minecraft自动生成的属性修饰符文本和Curios添加的槽位文本
+        // 这些文本通常包含"attribute.modifier."、"attribute.name.hamstercore."或"curios.modifiers."等关键字
+        tooltipElements.removeIf(component -> {
+            String text = component.getString();
+            return text.contains("attribute.modifier.") || 
+                   text.contains("attribute.name.hamstercore.") ||
+                   text.contains("curios.modifiers.") ||
+                   text.contains("在身上") || 
+                   text.contains("在任意") || 
+                   text.contains("在头上") || 
+                   text.contains("在腿上") || 
+                   text.contains("在脚上");
+        });
+        
         // 添加Usage层属性到工具提示（仅包含基础元素和复合元素）
         addUsageAttributes(tooltipElements, stack);
     }
@@ -48,6 +64,22 @@ public class WeaponAttributeRenderer {
      * 仅包含：基础元素和复合元素
      */
     private static void addUsageAttributes(List<Component> tooltipElements, ItemStack stack) {
+        // 确保Usage层数据是最新的
+        WeaponData weaponData = WeaponDataManager.loadElementData(stack);
+        
+        // 直接从ForgeAttributeValueReader获取最新的基础元素和复合元素值
+        // 这里使用ElementCombinationModifier直接计算usage层值，避免递归
+        if (weaponData != null) {
+            ForgeAttributeValueReader.ElementCategoryData elementData = ForgeAttributeValueReader.getAllElementValuesByCategory(stack);
+            Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
+            
+            // ElementCombinationModifier只处理基础元素和复合元素
+            // 物理元素、特殊元素和派系元素直接通过修饰符获取值
+            
+            // 在安全的上下文中进行复合计算
+            ElementCombinationModifier.computeElementCombinationsWithValues(weaponData, basicAndComplexValues);
+        }
+        
         // 先调用一遍计算，确保缓存是最新的
         ElementDamageManager.getActiveElements(stack);
         
@@ -94,53 +126,99 @@ public class WeaponAttributeRenderer {
             }
         }
         
-        // 添加元素属性（从Usage层获取，仅包含基础元素和复合元素）
-        // 获取所有元素类型
-        Set<String> elementTypes = ElementNBTUtils.getAllUsageElementTypes(stack);
+        // 添加元素属性（从WeaponData获取，包括基础元素、复合元素和物理元素）
         boolean hasElements = false;
         
-        // 添加元素属性标题
-        if (!elementTypes.isEmpty()) {
-            // 遍历所有usage层元素，只处理基础元素和复合元素
-            for (String elementTypeName : elementTypes) {
-                ElementType elementType = ElementType.byName(elementTypeName);
-                if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                    List<Double> values = ElementNBTUtils.getUsageElementValue(stack, elementTypeName);
-                    if (values.isEmpty()) {
-                        continue;
-                    }
-                    
-                    // 获取第一个值
-                    double value = values.get(0);
-                    
-                    // 跳过无效值
-                    if (value <= 0) {
-                        continue;
-                    }
-                    
-                    // 如果有有效的元素，添加标题（只添加一次）
-                    if (!hasElements) {
-                        tooltipElements.add(
-                            Component.translatable("hamstercore.ui.element_ratios").append(":")
-                        );
-                        hasElements = true;
-                    }
-                    
-                    // 创建元素名称和数值的文本组件，使用元素颜色
-                    String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-                    String elementText = String.format("  %s: %.2f", elementName, value);
-                    
-                    // 检查颜色是否有效，避免NullPointerException
-                    Integer colorValue = elementType.getColor().getColor();
-                    if (colorValue != null) {
-                        Component elementComponent = Component.literal(elementText)
-                            .withStyle(style -> style.withColor(colorValue));
-                        tooltipElements.add(elementComponent);
-                    } else {
-                        // 如果没有有效颜色，使用默认样式
-                        tooltipElements.add(Component.literal(elementText));
-                    }
+        // 遍历所有基础元素和复合元素类型
+        String[] allElementTypes = {"heat", "cold", "electricity", "toxin", 
+                                   "blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
+        
+        for (String elementTypeName : allElementTypes) {
+            ElementType elementType = ElementType.byName(elementTypeName);
+            if (elementType == null) {
+                continue;
+            }
+            
+            double value = 0.0;
+            if (weaponData != null) {
+                // 从WeaponData获取元素值
+                Double weaponValue = weaponData.getUsageValue(elementTypeName);
+                if (weaponValue != null) {
+                    value = weaponValue;
                 }
+            }
+            
+            // 如果WeaponData中没有值，尝试从ForgeAttributeValueReader获取
+            if (value <= 0) {
+                value = ForgeAttributeValueReader.getElementValueFromItem(stack, elementType);
+            }
+            
+            // 跳过无效值
+            if (value <= 0) {
+                continue;
+            }
+            
+            // 如果有有效的元素，添加标题（只添加一次）
+            if (!hasElements) {
+                tooltipElements.add(
+                    Component.translatable("hamstercore.ui.element_ratios").append(":")
+                );
+                hasElements = true;
+            }
+            
+            // 创建元素名称和数值的文本组件，使用元素颜色
+            String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
+            String elementText = String.format("  %s: %.2f", elementName, value);
+            
+            // 检查颜色是否有效，避免NullPointerException
+            Integer colorValue = elementType.getColor().getColor();
+            if (colorValue != null) {
+                Component elementComponent = Component.literal(elementText)
+                    .withStyle(style -> style.withColor(colorValue));
+                tooltipElements.add(elementComponent);
+            } else {
+                // 如果没有有效颜色，使用默认样式
+                tooltipElements.add(Component.literal(elementText));
+            }
+        }
+        
+        // 处理物理元素（slash, impact, puncture）- 直接从修饰符获取值
+        String[] physicalElements = {"slash", "impact", "puncture"};
+        for (String physicalType : physicalElements) {
+            ElementType elementType = ElementType.byName(physicalType);
+            if (elementType == null) {
+                continue;
+            }
+            
+            // 直接从修饰符获取物理元素值
+            double value = ForgeAttributeValueReader.getElementValueFromItem(stack, elementType);
+            
+            // 跳过无效值
+            if (value <= 0) {
+                continue;
+            }
+            
+            // 如果有有效的元素，添加标题（只添加一次）
+            if (!hasElements) {
+                tooltipElements.add(
+                    Component.translatable("hamstercore.ui.element_ratios").append(":")
+                );
+                hasElements = true;
+            }
+            
+            // 创建元素名称和数值的文本组件，使用元素颜色
+            String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
+            String elementText = String.format("  %s: %.2f", elementName, value);
+            
+            // 检查颜色是否有效，避免NullPointerException
+            Integer colorValue = elementType.getColor().getColor();
+            if (colorValue != null) {
+                Component elementComponent = Component.literal(elementText)
+                    .withStyle(style -> style.withColor(colorValue));
+                tooltipElements.add(elementComponent);
+            } else {
+                // 如果没有有效颜色，使用默认样式
+                tooltipElements.add(Component.literal(elementText));
             }
         }
         

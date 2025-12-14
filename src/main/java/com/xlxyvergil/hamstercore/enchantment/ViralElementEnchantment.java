@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class ViralElementEnchantment extends ElementEnchantment {
     public ViralElementEnchantment() {
@@ -11,7 +12,7 @@ public class ViralElementEnchantment extends ElementEnchantment {
     @Override
     public java.util.Collection<net.minecraft.world.entity.ai.attributes.AttributeModifier> getEntityAttributes(net.minecraft.world.item.ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
-            // 获取元素属性
+            // 获取元素属�?
             com.xlxyvergil.hamstercore.element.ElementAttribute elementAttribute = com.xlxyvergil.hamstercore.element.ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.4（复合元素更强）
@@ -22,7 +23,7 @@ public class ViralElementEnchantment extends ElementEnchantment {
                     modifierId, 
                     "hamstercore:" + elementType.getName(), 
                     value, 
-                    elementAttribute.getOperation()
+                    AttributeModifier.Operation.ADDITION
                 );
                 
                 // 返回包含修饰符的集合

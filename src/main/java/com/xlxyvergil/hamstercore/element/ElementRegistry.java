@@ -2,9 +2,12 @@ package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.api.element.RegisterElementsEvent;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,7 +21,11 @@ import java.util.function.Consumer;
  */
 @Mod.EventBusSubscriber(modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ElementRegistry {
+    // 使用DeferredRegister注册属性
+    public static final DeferredRegister<Attribute> REGISTRY = DeferredRegister.create(ForgeRegistries.ATTRIBUTES, HamsterCore.MODID);
+    
     private static final Map<ElementType, ElementAttribute> ELEMENT_ATTRIBUTES = new HashMap<>();
+    private static final Map<ElementType, RegistryObject<ElementAttribute>> ELEMENT_ATTRIBUTE_REGISTRY_OBJECTS = new HashMap<>();
     
     // 注册所有内置元素属性
     static {
@@ -60,8 +67,25 @@ public class ElementRegistry {
      * @param attribute 元素属性
      */
     public static void register(ElementAttribute attribute) {
+        if (attribute == null || attribute.getElementType() == null) {
+            return;
+        }
+        
+        // 生成属性名称
+        String name = attribute.getElementType().getName();
+        if (name == null) {
+            name = "unknown";
+        }
+        
+        // 注册到DeferredRegister
+        RegistryObject<ElementAttribute> registryObject = REGISTRY.register(name, () -> attribute);
+        
+        // 存储到映射中
         ELEMENT_ATTRIBUTES.put(attribute.getElementType(), attribute);
+        ELEMENT_ATTRIBUTE_REGISTRY_OBJECTS.put(attribute.getElementType(), registryObject);
     }
+    
+
     
     /**
      * 获取指定类型的元素属性

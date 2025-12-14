@@ -295,6 +295,7 @@ public class ElementCombinationModifier {
         for (ElementEntry remainingElement : remainingElements) {
             String baseType = remainingElement.type;
             double baseValue = remainingElement.value;
+            boolean foundComposite = false;
             
             // 按照Basic层中的复合元素顺序找到首个可以由这个基础元素合成的复合元素
             for (ElementEntry element : reorderedElements) {
@@ -307,9 +308,15 @@ public class ElementCombinationModifier {
                         // 将基础元素值加到复合元素中
                         double newValue = compositeResults.get(element.type) + baseValue;
                         compositeResults.put(element.type, newValue);
+                        foundComposite = true;
                         break; // 只处理第一个匹配的复合元素
                     }
                 }
+            }
+            
+            // 如果没有找到可以合成的复合元素，则直接添加基础元素
+            if (!foundComposite) {
+                compositeResults.put(baseType, baseValue);
             }
         }
     }

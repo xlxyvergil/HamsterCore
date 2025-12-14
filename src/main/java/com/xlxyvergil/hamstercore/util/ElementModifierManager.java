@@ -10,12 +10,17 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * 元素修饰符管理器
@@ -89,15 +94,17 @@ public class ElementModifierManager {
     }
     
     /**
-     * 应用元素修饰符到物品（标准化方法）
+     * 应用元素修饰符到事件处理器
      * @param stack 目标物品堆
      * @param modifiers 标准化的修饰符数据列表
      * @param slot 装备槽位
+     * @param consumer 修饰符添加回调
      */
     public static void applyElementModifiers(ItemStack stack, 
                                            List<ElementModifierData> modifiers, 
-                                           EquipmentSlot slot) {
-        if (modifiers == null || stack == null) {
+                                           EquipmentSlot slot,
+                                           BiConsumer<Attribute, AttributeModifier> consumer) {
+        if (modifiers == null || stack == null || consumer == null) {
             return;
         }
         
@@ -131,14 +138,26 @@ public class ElementModifierManager {
                     modifierData.getOperation()
                 );
                 
-                // 应用修饰符到物品的元素属性上
-                stack.addAttributeModifier(elementAttribute, modifier, slot);
+                // 通过回调添加修饰符到事件中
+                consumer.accept(elementAttribute, modifier);
                 
             } catch (Exception e) {
                 System.err.println("Error applying element modifier for " + modifierData.getAttribute() + ": " + e.getMessage());
                 e.printStackTrace();
             }
         }
+    }
+    
+    /**
+     * 应用元素修饰符到物品（保留旧方法以兼容现有代码）
+     * @param stack 目标物品堆
+     * @param modifiers 标准化的修饰符数据列表
+     * @param slot 装备槽位
+     */
+    public static void applyElementModifiers(ItemStack stack, 
+                                           List<ElementModifierData> modifiers, 
+                                           EquipmentSlot slot) {
+        applyElementModifiers(stack, modifiers, slot, (attr, mod) -> stack.addAttributeModifier(attr, mod, slot));
     }
     
     /**
@@ -254,6 +273,11 @@ public class ElementModifierManager {
             return;
         }
         
+        // 只在主手槽位时应用修饰符，避免工具提示显示其他槽位信息
+        if (slot != EquipmentSlot.MAINHAND) {
+            return;
+        }
+        
         try {
             // 创建标准化的修饰符数据
             ElementModifierData modifierData = createModifierData(elementType, amount, operation, stack, 0);
@@ -337,6 +361,87 @@ public class ElementModifierManager {
             nbt.remove("AttributeModifiers");
         } else {
             nbt.put("AttributeModifiers", newModifiersList);
+        }
+    }
+    
+    /**
+     * 创建一个新的修饰符合并缓冲区
+     * 用于合并相同属性和操作类型的修饰符
+     * @return 修饰符合并缓冲区
+     */
+    public static Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> createMergeBuffer() {
+        return new HashMap<>();
+    }
+    
+    /**
+     * 使用线程局部存储创建修饰符合并缓冲区
+     * 确保线程安全，适用于多线程环境
+     * @return 线程安全的修饰符合并缓冲区
+     */
+    public static ThreadLocal<Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier>> createThreadLocalMergeBuffer() {
+        return ThreadLocal.withInitial(HashMap::new);
+    }
+    
+    /**
+     * 合并相同属性和操作的修饰符到缓冲区中
+     * 参考GunsmithLib的实现模式
+     * @param buffer 合并缓冲区
+     * @param attribute 要合并的属性
+     * @param modifier 要合并的修饰符
+     */
+    public static void mergeModifier(Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> buffer,
+                                    Attribute attribute,
+                                    AttributeModifier modifier) {
+        var operation = modifier.getOperation();
+        var key = Pair.of(attribute, operation);
+        var currentModifier = buffer.get(key);
+        
+        if (currentModifier == null) {
+            buffer.put(key, modifier);
+            return;
+        }
+        
+        var newAmount = switch (operation) {
+            case ADDITION, MULTIPLY_BASE -> currentModifier.getAmount() + modifier.getAmount();
+            case MULTIPLY_TOTAL -> (1 + currentModifier.getAmount()) * (1 + modifier.getAmount()) - 1;
+            default -> currentModifier.getAmount() + modifier.getAmount(); // 默认使用加法处理未知操作类型
+        };
+        
+        var newModifier = new AttributeModifier(currentModifier.getId(), currentModifier.getName(), newAmount, operation);
+        buffer.put(key, newModifier);
+    }
+    
+    /**
+     * 批量合并多个修饰符到缓冲区中
+     * @param buffer 合并缓冲区
+     * @param attribute 属性
+     * @param modifiers 要合并的修饰符集合
+     */
+    public static void mergeModifiers(Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> buffer,
+                                     Attribute attribute,
+                                     java.util.Collection<AttributeModifier> modifiers) {
+        if (modifiers == null) {
+            return;
+        }
+        
+        for (AttributeModifier modifier : modifiers) {
+            mergeModifier(buffer, attribute, modifier);
+        }
+    }
+    
+    /**
+     * 将合并后的修饰符应用到目标对象
+     * @param buffer 合并后的修饰符缓冲区
+     * @param consumer 修饰符应用回调
+     */
+    public static void applyMergedModifiers(Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> buffer,
+                                           BiConsumer<Attribute, AttributeModifier> consumer) {
+        if (buffer == null || consumer == null) {
+            return;
+        }
+        
+        for (Map.Entry<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> entry : buffer.entrySet()) {
+            consumer.accept(entry.getKey().getLeft(), entry.getValue());
         }
     }
 }

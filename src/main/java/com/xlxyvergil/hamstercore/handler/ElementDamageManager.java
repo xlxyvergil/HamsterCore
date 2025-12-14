@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.handler;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
@@ -80,9 +81,20 @@ public class ElementDamageManager {
         // 获取武器数据并重新计算Usage层数据以确保准确性
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
+        // 更新元素组合：使用Forge计算后的元素值重新计算复合元素
+        if (data != null) {
+            // 使用ForgeAttributeValueReader获取最新的基础元素和复合元素值
+            ForgeAttributeValueReader.ElementCategoryData elementData = ForgeAttributeValueReader.getAllElementValuesByCategory(weapon);
+            Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
+            
+            // 使用ElementCombinationModifier直接计算usage层值，避免递归
+            ElementCombinationModifier.computeElementCombinationsWithValues(data, basicAndComplexValues);
+        }
+        
         // 计算各部分的伤害修正系数
         damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction, specialAndFactionValues); // HM
         damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker, data); // 元素总倍率
+        damageData.physicalElementMultiplier = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, data); // 物理元素总倍率
         damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, specialAndFactionValues); // 暴击伤害
         damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
         
@@ -96,9 +108,10 @@ public class ElementDamageManager {
         // 设置激活的元素列表
         damageData.setActiveElements(getActiveElements(weapon));
         
-        // 计算最终伤害
+        // 计算最终伤害：将物理元素总倍率与元素倍率相加（减去1.0是因为两者都以1.0为基准）
         damageData.finalDamage = (float) (baseDamage * (1.0 + damageData.factionModifier) 
-                                         * damageData.elementMultiplier * damageData.criticalMultiplier 
+                                         * (damageData.elementMultiplier + damageData.physicalElementMultiplier - 1.0) 
+                                         * damageData.criticalMultiplier 
                                          * damageData.armorReduction);
         
         // 确保伤害不会小于0
@@ -234,6 +247,7 @@ public class ElementDamageManager {
         private float finalDamage;
         private double factionModifier;
         private double elementMultiplier;
+        private double physicalElementMultiplier;
         private double criticalMultiplier;
         private double armorReduction;
         private List<Map.Entry<ElementType, Double>> activeElements;
@@ -243,6 +257,7 @@ public class ElementDamageManager {
             this.finalDamage = baseDamage;
             this.factionModifier = 0.0;
             this.elementMultiplier = 1.0;
+            this.physicalElementMultiplier = 1.0;
             this.criticalMultiplier = 1.0;
             this.armorReduction = 1.0;
             this.activeElements = new ArrayList<>();
@@ -263,6 +278,10 @@ public class ElementDamageManager {
         
         public double getElementMultiplier() {
             return elementMultiplier;
+        }
+        
+        public double getPhysicalElementMultiplier() {
+            return physicalElementMultiplier;
         }
         
         public double getCriticalMultiplier() {

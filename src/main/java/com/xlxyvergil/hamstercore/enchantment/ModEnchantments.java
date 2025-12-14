@@ -79,7 +79,7 @@ public class ModEnchantments {
     public static final RegistryObject<MurmurElementEnchantment> MURMUR_ELEMENT = ENCHANTMENTS.register(
             "murmur_element", MurmurElementEnchantment::new);
 
-    // 特殊属性附魔
+    // 特殊属性附�?
     public static final RegistryObject<CriticalChanceElementEnchantment> CRITICAL_CHANCE_ELEMENT = ENCHANTMENTS.register(
             "critical_chance_element", CriticalChanceElementEnchantment::new);
             
@@ -89,7 +89,7 @@ public class ModEnchantments {
     public static final RegistryObject<TriggerChanceElementEnchantment> TRIGGER_CHANCE_ELEMENT = ENCHANTMENTS.register(
             "trigger_chance_element", TriggerChanceElementEnchantment::new);
 
-    // 元素附魔映射表
+    // 元素附魔映射�?
     public static final Map<ElementType, RegistryObject<? extends ElementEnchantment>> ELEMENT_ENCHANTMENTS = new HashMap<>();
     
     static {
@@ -120,7 +120,7 @@ public class ModEnchantments {
         ELEMENT_ENCHANTMENTS.put(ElementType.SENTIENT, SENTIENT_ELEMENT);
         ELEMENT_ENCHANTMENTS.put(ElementType.MURMUR, MURMUR_ELEMENT);
         
-        // 特殊属性
+        // 特殊属�?
         ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_CHANCE, CRITICAL_CHANCE_ELEMENT);
         ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_DAMAGE, CRITICAL_DAMAGE_ELEMENT);
         ELEMENT_ENCHANTMENTS.put(ElementType.TRIGGER_CHANCE, TRIGGER_CHANCE_ELEMENT);

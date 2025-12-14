@@ -19,7 +19,7 @@ public class InfestedElementEnchantment extends ElementEnchantment {
     @Override
     public java.util.Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
-            // 获取元素属性
+            // 获取元素属�?
             ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.3
@@ -30,7 +30,7 @@ public class InfestedElementEnchantment extends ElementEnchantment {
                     modifierId, 
                     "hamstercore:" + elementType.getName(), 
                     value, 
-                    elementAttribute.getOperation()
+                    AttributeModifier.Operation.ADDITION
                 );
                 
                 // 返回包含修饰符的集合
