@@ -12,7 +12,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilit
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+import com.xlxyvergil.hamstercore.util.ElementHelper;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -64,7 +64,7 @@ public class EntityInfoDisplayHandler {
             float baseDamage = event.getAmount();
             
             // 获取预计算的特殊元素和派系元素值
-            Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
+            Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(weapon);
             
             // 使用ElementDamageManager计算真实的伤害数据
             ElementDamageManager.ElementDamageData damageData = 
@@ -97,7 +97,7 @@ public class EntityInfoDisplayHandler {
                 // 从缓存中获取元素列表
                 List<Map.Entry<ElementType, Double>> cachedElements = ElementDamageManager.getActiveElements(weapon);
                 
-                // 显示暴击率（从ForgeAttributeValueReader获取计算后的值）
+                // 显示暴击率（从ElementHelper获取计算后的值）
                 double critChance = 0.0;
                 for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.CRITICAL_CHANCE == entry.getKey()) {
@@ -110,7 +110,7 @@ public class EntityInfoDisplayHandler {
                     message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
                 }
                 
-                // 显示暴击伤害（从ForgeAttributeValueReader获取计算后的值）
+                // 显示暴击伤害（从ElementHelper获取计算后的值）
                 double critDamage = 0.0;
                 for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.CRITICAL_DAMAGE == entry.getKey()) {
@@ -123,7 +123,7 @@ public class EntityInfoDisplayHandler {
                     message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", critDamage * 100)).withStyle(ChatFormatting.YELLOW));
                 }
                 
-                // 显示触发率（从ForgeAttributeValueReader获取计算后的值）
+                // 显示触发率（从ElementHelper获取计算后的值）
                 double triggerChance = 0.0;
                 for (Map.Entry<ElementType, Double> entry : cachedElements) {
                     if (ElementType.TRIGGER_CHANCE == entry.getKey()) {
@@ -157,7 +157,7 @@ public class EntityInfoDisplayHandler {
                     }
                 }
 
-                // 添加派系增伤信息（从ForgeAttributeValueReader获取计算后的值）
+                // 添加派系增伤信息（从ElementHelper获取计算后的值）
                 addFactionModifiersToMessage(message, weapon);
             }
             
@@ -200,13 +200,13 @@ public class EntityInfoDisplayHandler {
      * @param weapon 武器物品堆
      */
     private static void addFactionModifiersToMessage(MutableComponent message, ItemStack weapon) {
-        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
-        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
+        // 从ElementHelper获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(weapon);
         
         // 定义所有可能的派系类型
         String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
         
-        // 添加每个派系的增伤数值（从ForgeAttributeValueReader获取计算后的值）
+        // 添加每个派系的增伤数值（从ElementHelper获取计算后的值）
         for (String faction : factionTypes) {
             Double factionModifier = specialAndFactionValues.get(faction);
             

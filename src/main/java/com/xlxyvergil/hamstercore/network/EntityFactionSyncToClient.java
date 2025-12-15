@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.network;
 
-import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import net.minecraft.client.Minecraft;

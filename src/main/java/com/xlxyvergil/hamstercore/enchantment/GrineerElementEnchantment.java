@@ -1,12 +1,13 @@
 package com.xlxyvergil.hamstercore.enchantment;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
+
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
-import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -19,8 +20,8 @@ public class GrineerElementEnchantment extends ElementEnchantment {
     @Override
     public java.util.Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
-            // 获取元素属�?
-            ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
+            // 获取元素属性
+            ElementBasedAttribute elementAttribute = ElementRegistry.Attributes.getAttributeValue(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.3
                 double value = 0.3 * level;

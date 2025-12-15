@@ -1,13 +1,7 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-import java.util.Map;
 
 /**
  * 元素倍率计算器

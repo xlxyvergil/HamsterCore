@@ -1,19 +1,9 @@
 package com.xlxyvergil.hamstercore.util;
 
-import com.google.common.collect.Multimap;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.*;
-import net.minecraftforge.common.Tags;
 
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * 武器判断工具类

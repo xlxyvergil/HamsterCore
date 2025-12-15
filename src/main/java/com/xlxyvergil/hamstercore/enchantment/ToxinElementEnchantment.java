@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import com.xlxyvergil.hamstercore.element.ElementRegistry;
 
 public class ToxinElementEnchantment extends ElementEnchantment {
     public ToxinElementEnchantment() {
@@ -10,27 +11,25 @@ public class ToxinElementEnchantment extends ElementEnchantment {
     }
     
     @Override
-    public java.util.Collection<net.minecraft.world.entity.ai.attributes.AttributeModifier> getEntityAttributes(net.minecraft.world.item.ItemStack stack, EquipmentSlot slot, int level) {
-        if (slot == EquipmentSlot.MAINHAND) {
-            // 获取元素属�?
-            com.xlxyvergil.hamstercore.element.ElementAttribute elementAttribute = com.xlxyvergil.hamstercore.element.ElementRegistry.getAttribute(this.elementType);
-            if (elementAttribute != null) {
-                // 计算基于等级的数值：每级0.3
-                double value = 0.3 * level;
-                // 使用ElementUUIDManager生成UUID
-                java.util.UUID modifierId = com.xlxyvergil.hamstercore.util.ElementUUIDManager.getOrCreateUUID(stack, this.elementType, level);
-                net.minecraft.world.entity.ai.attributes.AttributeModifier modifier = new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                    modifierId, 
-                    "hamstercore:" + elementType.getName(), 
-                    value, 
-                    AttributeModifier.Operation.ADDITION
-                );
-                
-                // 返回包含修饰符的集合
-                java.util.Collection<net.minecraft.world.entity.ai.attributes.AttributeModifier> modifiers = new java.util.ArrayList<>();
-                modifiers.add(modifier);
-                return modifiers;
-            }
+    public java.util.Collection<AttributeModifier> getEntityAttributes(net.minecraft.world.item.ItemStack stack, EquipmentSlot slot, int level) {
+        // 获取元素属性注册对象
+        var attributeRegistry = ElementRegistry.getAttribute(this.elementType);
+        if (attributeRegistry != null && attributeRegistry.isPresent()) {
+            // 计算基于等级的数值：每级0.3
+            double value = 0.3 * level;
+            // 使用ElementRegistry生成UUID
+            java.util.UUID modifierId = ElementRegistry.getModifierUUID(this.elementType, level);
+            AttributeModifier modifier = new AttributeModifier(
+                modifierId, 
+                "hamstercore:" + elementType.getName(), 
+                value, 
+                AttributeModifier.Operation.ADDITION
+            );
+            
+            // 返回包含修饰符的集合
+            java.util.Collection<AttributeModifier> modifiers = new java.util.ArrayList<>();
+            modifiers.add(modifier);
+            return modifiers;
         }
         
         return java.util.Collections.emptyList();

@@ -2,14 +2,13 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+import com.xlxyvergil.hamstercore.util.ElementHelper;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
@@ -67,10 +66,10 @@ public class WeaponAttributeRenderer {
         // 确保Usage层数据是最新的
         WeaponData weaponData = WeaponDataManager.loadElementData(stack);
         
-        // 直接从ForgeAttributeValueReader获取最新的基础元素和复合元素值
+        // 直接从ElementHelper获取最新的基础元素和复合元素值
         // 这里使用ElementCombinationModifier直接计算usage层值，避免递归
         if (weaponData != null) {
-            ForgeAttributeValueReader.ElementCategoryData elementData = ForgeAttributeValueReader.getAllElementValuesByCategory(stack);
+            ElementHelper.ElementCategoryData elementData = ElementHelper.getAllElementValuesByCategory(stack);
             Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
             
             // ElementCombinationModifier只处理基础元素和复合元素
@@ -92,10 +91,10 @@ public class WeaponAttributeRenderer {
         // 添加Usage层标题
         tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.YELLOW));
         
-        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
-        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(stack);
+        // 从ElementHelper获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(stack);
         
-        // 添加特殊属性（从ForgeAttributeValueReader获取计算后的值）
+        // 添加特殊属性（从ElementHelper获取计算后的值）
         String[] specialElements = {"critical_chance", "critical_damage", "trigger_chance"};
         for (String specialElement : specialElements) {
             Double value = specialAndFactionValues.get(specialElement);
@@ -148,9 +147,9 @@ public class WeaponAttributeRenderer {
                 }
             }
             
-            // 如果WeaponData中没有值，尝试从ForgeAttributeValueReader获取
+            // 如果WeaponData中没有值，尝试从ElementHelper获取
             if (value <= 0) {
-                value = ForgeAttributeValueReader.getElementValueFromItem(stack, elementType);
+                value = ElementHelper.getElementValueFromItem(stack, elementType);
             }
             
             // 跳过无效值
@@ -191,7 +190,7 @@ public class WeaponAttributeRenderer {
             }
             
             // 直接从修饰符获取物理元素值
-            double value = ForgeAttributeValueReader.getElementValueFromItem(stack, elementType);
+            double value = ElementHelper.getElementValueFromItem(stack, elementType);
             
             // 跳过无效值
             if (value <= 0) {
@@ -227,11 +226,11 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 添加派系增伤属性到工具提示（从ForgeAttributeValueReader获取Forge计算后的值）
+     * 添加派系增伤属性到工具提示（从ElementHelper获取Forge计算后的值）
      */
     private static void addFactionAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 从ForgeAttributeValueReader获取特殊元素和派系元素的计算值
-        Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(stack);
+        // 从ElementHelper获取特殊元素和派系元素的计算值
+        Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(stack);
         
         // 定义所有可能的派系类型
         String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
@@ -257,7 +256,7 @@ public class WeaponAttributeRenderer {
                 Component.translatable("hamstercore.ui.faction_damage_bonus").append(":")
             );
             
-            // 添加每个派系的增伤数值（从ForgeAttributeValueReader获取计算后的值）
+            // 添加每个派系的增伤数值（从ElementHelper获取计算后的值）
             for (String faction : factionTypes) {
                 Double factionModifier = specialAndFactionValues.get(faction);
                 

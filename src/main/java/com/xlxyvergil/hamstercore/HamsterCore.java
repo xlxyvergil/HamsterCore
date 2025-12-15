@@ -8,8 +8,6 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.api.element.RegisterElementsEvent;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
@@ -47,20 +45,13 @@ public class HamsterCore {
         ModEnchantments.register(modEventBus);
         
         // 注册元素属性
-        ElementRegistry.REGISTRY.register(modEventBus);
+        ElementRegistry.Attributes.getRegistry().register(modEventBus);
         
         // 初始化配置
         FactionConfig.load();
         ArmorConfig.load();
         LevelSystem.init();
-        
-        // 发布元素注册事件，允许其他模组注册自定义元素
-        modEventBus.post(new RegisterElementsEvent(
-            ElementRegistry::register,
-            ElementType::register
-        ));
                 
-        
         // 初始化网络包
         PacketHandler.init();
     }

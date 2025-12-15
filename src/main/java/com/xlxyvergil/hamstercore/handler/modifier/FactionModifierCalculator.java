@@ -1,19 +1,6 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
-
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.faction.Faction;
-import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
-
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
 import java.util.Map;
 
 /**

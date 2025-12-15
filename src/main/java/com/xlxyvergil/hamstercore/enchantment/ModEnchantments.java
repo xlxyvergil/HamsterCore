@@ -10,9 +10,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import com.google.common.collect.Maps;
 
 public class ModEnchantments {
     public static final DeferredRegister<Enchantment> ENCHANTMENTS =
@@ -79,7 +77,7 @@ public class ModEnchantments {
     public static final RegistryObject<MurmurElementEnchantment> MURMUR_ELEMENT = ENCHANTMENTS.register(
             "murmur_element", MurmurElementEnchantment::new);
 
-    // 特殊属性附�?
+    // 特殊属性附魔
     public static final RegistryObject<CriticalChanceElementEnchantment> CRITICAL_CHANCE_ELEMENT = ENCHANTMENTS.register(
             "critical_chance_element", CriticalChanceElementEnchantment::new);
             
@@ -89,7 +87,7 @@ public class ModEnchantments {
     public static final RegistryObject<TriggerChanceElementEnchantment> TRIGGER_CHANCE_ELEMENT = ENCHANTMENTS.register(
             "trigger_chance_element", TriggerChanceElementEnchantment::new);
 
-    // 元素附魔映射�?
+    // 元素附魔映射
     public static final Map<ElementType, RegistryObject<? extends ElementEnchantment>> ELEMENT_ENCHANTMENTS = new HashMap<>();
     
     static {

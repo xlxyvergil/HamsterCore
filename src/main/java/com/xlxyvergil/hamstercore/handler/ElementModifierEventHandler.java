@@ -1,14 +1,12 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
-import com.xlxyvergil.hamstercore.util.ElementModifierManager;
+import com.xlxyvergil.hamstercore.element.modifier.ElementAttributeModifierEntry;
 
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,19 +17,19 @@ import java.util.List;
 
 /**
  * 元素修饰符事件处理器
- * 读取道具InitialModifier层数据，然后转换为符合ElementModifierManager要求的修饰符
+ * 读取道具InitialModifier层数据，然后转换为ElementAttributeModifierEntry
  */
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class ElementModifierEventHandler {
     
     /**
-     * 将InitialModifier层数据转换为ElementModifierData格式
+     * 将InitialModifier层数据转换为ElementAttributeModifierEntry格式
      * @param initialModifiers InitialModifier层数据
-     * @return 符合ElementModifierManager要求的修饰符数据列表
+     * @return ElementAttributeModifierEntry列表
      */
-    public static List<ElementModifierManager.ElementModifierData> convertToElementModifierData(
+    public static List<ElementAttributeModifierEntry> convertToElementModifierEntries(
             List<InitialModifierEntry> initialModifiers) {
-        List<ElementModifierManager.ElementModifierData> elementModifiers = new ArrayList<>();
+        List<ElementAttributeModifierEntry> elementModifiers = new ArrayList<>();
         
         if (initialModifiers == null || initialModifiers.isEmpty()) {
             return elementModifiers;
@@ -54,25 +52,15 @@ public class ElementModifierEventHandler {
                     continue;
                 }
                 
-                // 验证元素属性是否已注册
-                ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-                if (elementAttribute == null) {
-                    System.err.println("Unregistered element attribute: " + elementName);
-                    continue;
-                }
-                
-                // 创建符合ElementModifierManager要求的修饰符数据
-                ResourceLocation attributeLocation = new ResourceLocation("hamstercore", elementType.getName());
-                
-                ElementModifierManager.ElementModifierData modifierData = new ElementModifierManager.ElementModifierData(
-                    attributeLocation,                           // 属性标识符
-                    originalModifier.getId(),                   // 修饰符ID
-                    originalModifier.getAmount(),              // 修饰符数值
-                    originalModifier.getName(),                // 修饰符名称
-                    originalModifier.getOperation()           // 运算模式
+                // 创建ElementAttributeModifierEntry
+                ElementAttributeModifierEntry modifierEntry = new ElementAttributeModifierEntry(
+                    elementType,
+                    originalModifier.getId(),
+                    originalModifier.getAmount(),
+                    originalModifier.getOperation()
                 );
                 
-                elementModifiers.add(modifierData);
+                elementModifiers.add(modifierEntry);
                 
             } catch (Exception e) {
                 System.err.println("Error converting InitialModifierEntry for " + entry.getName() + ": " + e.getMessage());
@@ -85,41 +73,39 @@ public class ElementModifierEventHandler {
     /**
      * 通过事件应用转换后的元素修饰符
      * @param event ItemAttributeModifierEvent事件
-     * @param elementModifiers 转换后的元素修饰符数据
+     * @param elementModifiers ElementAttributeModifierEntry列表
      */
     private static void applyElementModifiersViaEvent(
-            ItemAttributeModifierEvent event,
-            List<ElementModifierManager.ElementModifierData> elementModifiers) {
+            ItemAttributeModifierEvent event, List<ElementAttributeModifierEntry> elementModifiers) {
         
-        for (ElementModifierManager.ElementModifierData modifierData : elementModifiers) {
+        for (ElementAttributeModifierEntry modifierEntry : elementModifiers) {
             try {
-                // 从属性标识符获取元素类型
-                String elementName = modifierData.getAttribute().getPath();
-                ElementType elementType = ElementType.byName(elementName);
+                // 从修饰符数据获取元素类型
+                ElementType elementType = modifierEntry.getElementType();
                 if (elementType == null) {
                     continue;
                 }
                 
                 // 获取对应的元素属性
-                ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-                if (elementAttribute == null) {
+                var attributeRegistry = ElementRegistry.getAttribute(elementType);
+                if (attributeRegistry == null || !attributeRegistry.isPresent()) {
                     continue;
                 }
                 
                 // 创建Minecraft AttributeModifier
                 net.minecraft.world.entity.ai.attributes.AttributeModifier minecraftModifier = 
                     new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                        modifierData.getId(),
-                        modifierData.getName(),
-                        modifierData.getAmount(),
-                        modifierData.getOperation()
+                        modifierEntry.getId(),
+                        modifierEntry.getName(),
+                        modifierEntry.getAmount(),
+                        modifierEntry.getOperation()
                     );
                 
                 // 通过事件应用修饰符
-                event.addModifier(elementAttribute, minecraftModifier);
+                event.addModifier(attributeRegistry.get(), minecraftModifier);
                 
             } catch (Exception e) {
-                System.err.println("Error applying element modifier for " + modifierData.getAttribute() + ": " + e.getMessage());
+                System.err.println("Error applying element modifier for " + modifierEntry.getElementType().getName() + ": " + e.getMessage());
             }
         }
     }
@@ -147,9 +133,9 @@ public class ElementModifierEventHandler {
                 // 1. 读取InitialModifier层数据
                 List<InitialModifierEntry> initialModifiers = weaponData.getInitialModifiers();
                 
-                // 2. 转换为符合ElementModifierManager要求的格式
-                List<ElementModifierManager.ElementModifierData> elementModifiers = 
-                    convertToElementModifierData(initialModifiers);
+                // 2. 转换为ElementAttributeModifierEntry格式
+                List<ElementAttributeModifierEntry> elementModifiers = 
+                    convertToElementModifierEntries(initialModifiers);
                 
                 // 3. 通过事件应用转换后的修饰符
                 if (!elementModifiers.isEmpty()) {

@@ -7,7 +7,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+import com.xlxyvergil.hamstercore.util.ElementHelper;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -63,7 +63,7 @@ public class FactionDamageHandler {
             float baseDamage = event.getAmount();
             
             // 从Forge属性系统获取特殊元素和派系元素值
-            Map<String, Double> specialAndFactionValues = ForgeAttributeValueReader.getAllSpecialAndFactionValues(weapon);
+            Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(weapon);
             
             // 使用元素伤害管理器计算最终伤害
             ElementDamageManager.ElementDamageData damageData = 

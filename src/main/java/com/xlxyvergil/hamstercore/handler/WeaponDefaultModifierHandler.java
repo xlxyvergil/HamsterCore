@@ -1,31 +1,22 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
-import com.xlxyvergil.hamstercore.enchantment.ElementEnchantmentEventHandler;
-import com.xlxyvergil.hamstercore.handler.ElementModifierEventHandler;
-import com.xlxyvergil.hamstercore.util.ElementModifierManager;
+import com.xlxyvergil.hamstercore.element.modifier.ElementAttributeModifierEntry;
 
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 武器默认修饰符处理器
  * 负责完整的元素修饰符处理流程：
  * 1. 在onItemAttributeModifier事件触发
- * 2. 调用ElementModifierEventHandler把NBT内的InitialModifier层数据转换为ElementModifierManager所需的修饰符数据
- * 3. 调用ElementModifierManager把数据作为修饰符应用进道具
+ * 2. 调用ElementModifierEventHandler把NBT内的InitialModifier层数据转换为ElementAttributeModifierEntry格式
+ * 3. 调用ElementAttributeModifierEntry把数据作为修饰符应用进道具
  * 4. 把InitialModifier层数据按照数据需求放入usage层
  */
 @Mod.EventBusSubscriber
@@ -62,14 +53,14 @@ public class WeaponDefaultModifierHandler {
             // 标记为开始处理
             markAsProcessing(stack);
             
-            // 4. 调用ElementModifierEventHandler把NBT内的InitialModifier层数据转换为ElementModifierManager所需的修饰符数据
-            // 4.1 转换InitialModifiers层数据为ElementModifierManager所需的格式
-            List<ElementModifierManager.ElementModifierData> elementModifiers = 
-                ElementModifierEventHandler.convertToElementModifierData(weaponData.getInitialModifiers());
+            // 4. 调用ElementModifierEventHandler把NBT内的InitialModifier层数据转换为ElementAttributeModifierEntry格式
+            // 4.1 转换InitialModifiers层数据为ElementAttributeModifierEntry格式
+            List<ElementAttributeModifierEntry> elementModifiers = 
+                ElementModifierEventHandler.convertToElementModifierEntries(weaponData.getInitialModifiers());
             
-            // 4.2 使用ElementModifierManager应用转换后的修饰符到物品上
+            // 4.2 使用ElementAttributeModifierEntry应用转换后的修饰符到物品上
             if (!elementModifiers.isEmpty()) {
-                ElementModifierManager.applyElementModifiers(stack, elementModifiers, event.getSlotType());
+                ElementAttributeModifierEntry.applyModifiers(stack, elementModifiers, event.getSlotType());
             }
             
             // 5. 应用修饰符后，保存初始数据到NBT（不进行复合计算）
@@ -90,10 +81,6 @@ public class WeaponDefaultModifierHandler {
             e.printStackTrace();
         }
     }
-    
-
-    
-    
     
     /**
      * 检查物品是否已经被处理过

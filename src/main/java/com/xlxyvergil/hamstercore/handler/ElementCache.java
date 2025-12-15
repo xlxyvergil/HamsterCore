@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.util.LazyOptional;
 
 import java.util.Map;

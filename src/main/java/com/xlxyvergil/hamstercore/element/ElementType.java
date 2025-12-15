@@ -3,11 +3,9 @@ package com.xlxyvergil.hamstercore.element;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**

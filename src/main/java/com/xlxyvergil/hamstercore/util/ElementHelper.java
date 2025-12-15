@@ -1,25 +1,21 @@
 package com.xlxyvergil.hamstercore.util;
 
-import com.google.common.collect.Multimap;
-import com.xlxyvergil.hamstercore.element.ElementAttribute;
+import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Forge属性数值读取工具类
+ * 元素属性值读取工具类
  * 负责读取经过Forge属性系统计算后的实际元素修饰符数值
+ * 基于ForgeAttributeValueReader优化而来
  */
-public class ForgeAttributeValueReader {
+public class ElementHelper {
     
     /**
      * 从物品的属性修饰符中获取指定元素类型的实际数值
@@ -35,12 +31,35 @@ public class ForgeAttributeValueReader {
         }
         
         try {
-            // 获取对应的元素属性
-            ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-            if (elementAttribute == null) {
+            // 获取对应的元素属性注册对象
+            var attributeRegistry = ElementRegistry.getAttribute(elementType);
+            if (attributeRegistry == null || !attributeRegistry.isPresent()) {
                 return 0.0;
             }
+            ElementBasedAttribute elementAttribute = attributeRegistry.get();
             
+            return getElementValueFromItem(stack, elementAttribute);
+            
+        } catch (Exception e) {
+            System.err.println("Error reading element value from item: " + e.getMessage());
+            return 0.0;
+        }
+    }
+    
+    /**
+     * 从物品的属性修饰符中获取指定元素属性的实际数值
+     * 采用 GunsmithLib 的方式：手动重建Forge的计算逻辑
+     * 这个方法用于分析物品本身提供的属性，不需要玩家实际装备
+     * @param stack 物品堆
+     * @param elementAttribute 元素属性
+     * @return 经过Forge计算后的修饰符值，如果没有则返回0.0
+     */
+    public static double getElementValueFromItem(ItemStack stack, ElementBasedAttribute elementAttribute) {
+        if (stack == null || elementAttribute == null) {
+            return 0.0;
+        }
+        
+        try {
             // GunsmithLib 方式：固定使用主手槽位获取修饰符
             // 武器通常在主手，这是最合理的默认选择
             var modifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
@@ -83,8 +102,6 @@ public class ForgeAttributeValueReader {
             return 0.0;
         }
     }
-    
-
     
     /**
      * 获取物品上所有特殊元素和派系元素的Forge计算值

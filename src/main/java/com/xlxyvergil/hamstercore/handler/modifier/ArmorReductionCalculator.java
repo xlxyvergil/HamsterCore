@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import net.minecraft.world.entity.LivingEntity;
 
 /**

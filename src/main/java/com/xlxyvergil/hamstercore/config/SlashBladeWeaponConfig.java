@@ -11,7 +11,6 @@ import com.xlxyvergil.hamstercore.element.BasicEntry;
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;

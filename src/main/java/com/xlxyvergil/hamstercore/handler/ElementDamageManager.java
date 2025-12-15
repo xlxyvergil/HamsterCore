@@ -7,18 +7,14 @@ import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
+import com.xlxyvergil.hamstercore.util.ElementHelper;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.WeakHashMap;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -83,8 +79,8 @@ public class ElementDamageManager {
         
         // 更新元素组合：使用Forge计算后的元素值重新计算复合元素
         if (data != null) {
-            // 使用ForgeAttributeValueReader获取最新的基础元素和复合元素值
-            ForgeAttributeValueReader.ElementCategoryData elementData = ForgeAttributeValueReader.getAllElementValuesByCategory(weapon);
+            // 使用ElementHelper获取最新的基础元素和复合元素值
+            ElementHelper.ElementCategoryData elementData = ElementHelper.getAllElementValuesByCategory(weapon);
             Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
             
             // 使用ElementCombinationModifier直接计算usage层值，避免递归

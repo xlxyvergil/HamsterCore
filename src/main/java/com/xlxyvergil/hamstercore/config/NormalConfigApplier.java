@@ -2,12 +2,10 @@ package com.xlxyvergil.hamstercore.config;
 
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.util.WeaponJudgeUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Map;
 

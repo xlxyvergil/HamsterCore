@@ -2,11 +2,10 @@ package com.xlxyvergil.hamstercore.enchantment;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
-import com.xlxyvergil.hamstercore.element.ElementAttribute;
+
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -20,7 +19,7 @@ public class GasElementEnchantment extends ElementEnchantment {
     public java.util.Collection<AttributeModifier> getEntityAttributes(ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND && this.elementType != null) {
             // 获取元素属�?
-            ElementAttribute elementAttribute = ElementRegistry.getAttribute(this.elementType);
+            var elementAttribute = ElementRegistry.getAttributeValue(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.3
                 double value = 0.3 * level;

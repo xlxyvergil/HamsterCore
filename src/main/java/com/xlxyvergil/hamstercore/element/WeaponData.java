@@ -1,10 +1,6 @@
 package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
-import com.xlxyvergil.hamstercore.util.ForgeAttributeValueReader;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
