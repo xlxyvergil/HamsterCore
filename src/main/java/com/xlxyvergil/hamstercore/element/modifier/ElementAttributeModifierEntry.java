@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.element.modifier;
 
-import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -18,8 +18,14 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.common.collect.Maps;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
+import com.xlxyvergil.hamstercore.element.ElementAttributes;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
  * 元素属性修饰符条目，参考GunsmithLibAttributeModifierEntry实现
@@ -57,7 +63,7 @@ public class ElementAttributeModifierEntry {
     private AttributeModifier.Operation operation = AttributeModifier.Operation.ADDITION;
 
     // 缓存计算结果，提高性能
-    private transient Pair<ElementBasedAttribute, AttributeModifier> bakedResult;
+    private transient Pair<ElementAttribute, AttributeModifier> bakedResult;
     private transient int valid = 0;
 
     public ElementAttributeModifierEntry() {
@@ -132,7 +138,7 @@ public class ElementAttributeModifierEntry {
      * 获取元素类型对应的属性
      * @return 元素属性，如果未注册则返回空的Optional
      */
-    public Optional<ElementBasedAttribute> getAttribute() {
+    public Optional<ElementAttribute> getAttribute() {
         return Optional.ofNullable(ElementRegistry.getAttributeValue(elementType));
     }
 
@@ -140,7 +146,7 @@ public class ElementAttributeModifierEntry {
      * 获取完整的修饰符信息（属性+修饰符）
      * @return 包含属性和修饰符的Optional，如果属性未注册则返回空
      */
-    public Optional<Pair<ElementBasedAttribute, AttributeModifier>> getModifier() {
+    public Optional<Pair<ElementAttribute, AttributeModifier>> getModifier() {
         if (valid == -1) {
             return Optional.empty();
         }
@@ -173,7 +179,7 @@ public class ElementAttributeModifierEntry {
      * @return 包含属性和修饰符的Pair，如果属性未注册则返回null
      */
     @Nullable
-    private Pair<ElementBasedAttribute, AttributeModifier> bake() {
+    private Pair<ElementAttribute, AttributeModifier> bake() {
         if (id == null || elementType == null) {
             return null;
         }
@@ -193,7 +199,7 @@ public class ElementAttributeModifierEntry {
      */
     public void applyToItem(ItemStack stack, EquipmentSlot slot) {
         getModifier().ifPresent(modifierPair -> {
-            ElementBasedAttribute attribute = modifierPair.getLeft();
+            ElementAttribute attribute = modifierPair.getLeft();
             AttributeModifier modifier = modifierPair.getRight();
             stack.addAttributeModifier((Attribute) attribute, modifier, slot);
         });
@@ -221,7 +227,7 @@ public class ElementAttributeModifierEntry {
             return;
         }
         
-        var attributeId = attribute.getRegistryName();
+        var attributeId = ForgeRegistries.ATTRIBUTES.getKey((Attribute) attribute);
         if (attributeId == null) {
             return;
         }
@@ -283,7 +289,7 @@ public class ElementAttributeModifierEntry {
             return;
         }
         
-        var attributeId = attribute.getRegistryName();
+        var attributeId = ForgeRegistries.ATTRIBUTES.getKey(attribute);
         if (attributeId == null) {
             return;
         }
@@ -313,11 +319,40 @@ public class ElementAttributeModifierEntry {
             return;
         }
         
-        // 直接清空AttributeModifiers标签，提高效率
         if (stack.hasTag()) {
             var tag = stack.getTag();
             if (tag != null && tag.contains("AttributeModifiers")) {
-                tag.remove("AttributeModifiers");
+                var modifierTagList = tag.getList("AttributeModifiers", 10);
+                
+                // 获取所有元素属性的ResourceLocation
+                Set<ResourceLocation> elementAttributeIds = new HashSet<>();
+                for (Map.Entry<ElementType, RegistryObject<ElementAttribute>> entry : ElementAttributes.getAllAttributes().entrySet()) {
+                    RegistryObject<ElementAttribute> attributeObject = entry.getValue();
+                    if (attributeObject.isPresent()) {
+                        ElementAttribute attribute = attributeObject.get();
+                        ResourceLocation attributeId = ForgeRegistries.ATTRIBUTES.getKey(attribute);
+                        if (attributeId != null) {
+                            elementAttributeIds.add(attributeId);
+                        }
+                    }
+                }
+                
+                // 从后往前遍历，避免索引问题
+                for (int i = modifierTagList.size() - 1; i >= 0; i--) {
+                    var modifierTag = modifierTagList.getCompound(i);
+                    if (modifierTag.contains("AttributeName")) {
+                        String attributeName = modifierTag.getString("AttributeName");
+                        ResourceLocation attributeId = ResourceLocation.tryParse(attributeName);
+                        if (attributeId != null && elementAttributeIds.contains(attributeId)) {
+                            modifierTagList.remove(i);
+                        }
+                    }
+                }
+                
+                // 如果列表为空，移除整个标签
+                if (modifierTagList.isEmpty()) {
+                    tag.remove("AttributeModifiers");
+                }
             }
         }
     }
@@ -519,7 +554,7 @@ public class ElementAttributeModifierEntry {
     /**
      * 批量合并多个修饰符到缓冲区中
      * @param buffer 合并缓冲区
-     * @param attribute 属性
+     * @param attribute 要合并的属性
      * @param modifiers 要合并的修饰符集合
      */
     public static void mergeModifiers(Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> buffer,
@@ -568,10 +603,10 @@ public class ElementAttributeModifierEntry {
         }
         
         for (ElementAttributeModifierEntry entry : modifiers) {
-            Optional<Pair<ElementBasedAttribute, AttributeModifier>> bakedModifier = entry.getModifier();
+            Optional<Pair<ElementAttribute, AttributeModifier>> bakedModifier = entry.getModifier();
             
             bakedModifier.ifPresent(pair -> {
-                ElementBasedAttribute attribute = pair.getLeft();
+                ElementAttribute attribute = pair.getLeft();
                 AttributeModifier modifier = pair.getRight();
                 
                 // 应用到物品的AttributeModifiers NBT中
@@ -590,13 +625,24 @@ public class ElementAttributeModifierEntry {
         ElementAttributeModifierEntry that = (ElementAttributeModifierEntry) o;
         return Double.compare(that.amount, amount) == 0 && 
                elementType == that.elementType && 
+               operation == that.operation && 
                Objects.equals(id, that.id) && 
-               Objects.equals(name, that.name) && 
-               operation == that.operation;
+               Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(elementType, id, name, amount, operation);
+    }
+
+    @Override
+    public String toString() {
+        return "ElementAttributeModifierEntry{" +
+               "elementType=" + elementType +
+               ", id=" + id +
+               ", name='" + name + '\'' +
+               ", amount=" + amount +
+               ", operation=" + operation +
+               "}";
     }
 }

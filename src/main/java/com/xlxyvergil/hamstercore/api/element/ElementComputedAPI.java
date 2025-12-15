@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.api.element;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementAttribute;
-import com.xlxyvergil.hamstercore.handler.ElementModifierEventHandler;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -12,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.UUID;
 
@@ -35,10 +35,11 @@ public class ElementComputedAPI {
         UUID modifierId = ElementUUIDManager.getOrCreateUUID(event.getItemStack(), elementType, index);
         
         // 获取元素属性
-        ElementAttribute elementAttribute = ElementRegistry.getAttribute(elementType);
-        if (elementAttribute == null) {
+        RegistryObject<ElementAttribute> attributeObject = ElementRegistry.getAttribute(elementType);
+        if (attributeObject == null || !attributeObject.isPresent()) {
             return; // 如果没有找到元素属性，则不应用修饰符
         }
+        ElementAttribute elementAttribute = attributeObject.get();
         
         // 创建属性修饰符
         AttributeModifier modifier = new AttributeModifier(
@@ -48,8 +49,8 @@ public class ElementComputedAPI {
             AttributeModifier.Operation.ADDITION
         );
         
-        // 应用修饰符到物品的攻击伤害属性上
-        event.addModifier(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, modifier);
+        // 应用修饰符到自定义的元素属性上，而不是直接应用到攻击伤害
+        event.addModifier((Attribute) elementAttribute, modifier);
     }
     
     /**

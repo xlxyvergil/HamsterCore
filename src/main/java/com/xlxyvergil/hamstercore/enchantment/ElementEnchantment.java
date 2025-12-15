@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.enchantment;
 
-import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -68,7 +68,7 @@ public class ElementEnchantment extends Enchantment {
             var attributeRegistry = ElementRegistry.getAttribute(this.elementType);
             if (attributeRegistry != null && attributeRegistry.isPresent()) {
                 // 获取实际的元素属性
-                ElementBasedAttribute elementAttribute = attributeRegistry.get();
+                ElementAttribute elementAttribute = attributeRegistry.get();
                 // 创建默认的属性修饰符（基类的默认实现）
                 double value = elementAttribute.getDefaultValue() * level;
                 UUID modifierId = ElementRegistry.getModifierUUID(this.elementType, level);

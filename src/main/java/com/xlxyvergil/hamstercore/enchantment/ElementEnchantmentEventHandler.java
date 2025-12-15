@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.enchantment;
 
-import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.modifier.ElementAttributeModifierEntry;
@@ -130,7 +130,7 @@ public class ElementEnchantmentEventHandler {
         }
         
         ElementType elementType = elementEnchantment.getElementType();
-        RegistryObject<ElementBasedAttribute> elementAttribute = ElementRegistry.getAttribute(elementType);
+        RegistryObject<ElementAttribute> elementAttribute = ElementRegistry.getAttribute(elementType);
         
         if (elementAttribute != null && elementAttribute.isPresent()) {
             Collection<AttributeModifier> modifiers = elementEnchantment.getEntityAttributes(stack, slot, level);

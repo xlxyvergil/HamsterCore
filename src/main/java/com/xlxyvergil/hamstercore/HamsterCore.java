@@ -18,6 +18,7 @@ import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
+import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -26,6 +27,7 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import com.xlxyvergil.hamstercore.element.ElementAttributes;
 
 
 
@@ -33,6 +35,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
+    public static final DeferredHelper R = DeferredHelper.create(MODID);
 
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -45,7 +48,8 @@ public class HamsterCore {
         ModEnchantments.register(modEventBus);
         
         // 注册元素属性
-        ElementRegistry.Attributes.getRegistry().register(modEventBus);
+        ElementAttributes.bootstrap();
+        ElementRegistry.register(modEventBus);
         
         // 初始化配置
         FactionConfig.load();

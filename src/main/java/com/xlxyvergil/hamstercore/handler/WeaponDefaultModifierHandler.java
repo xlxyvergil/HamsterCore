@@ -60,7 +60,7 @@ public class WeaponDefaultModifierHandler {
             
             // 4.2 使用ElementAttributeModifierEntry应用转换后的修饰符到物品上
             if (!elementModifiers.isEmpty()) {
-                ElementAttributeModifierEntry.applyModifiers(stack, elementModifiers, event.getSlotType());
+                ElementAttributeModifierEntry.applyElementModifiers(stack, elementModifiers, event.getSlotType(), (attr, mod) -> event.addModifier(attr, mod));
             }
             
             // 5. 应用修饰符后，保存初始数据到NBT（不进行复合计算）
@@ -107,8 +107,8 @@ public class WeaponDefaultModifierHandler {
      * 标记物品为已处理
      */
     private static void markAsProcessed(ItemStack stack) {
-        stack.getOrCreateTag().putBoolean(PROCESSING_MARK, true);
-        stack.getOrCreateTag().remove(PROCESSING_MARK + "_Processing");
+        stack.getTag().putBoolean(PROCESSING_MARK, true);
+        stack.getTag().remove(PROCESSING_MARK + "_Processing");
     }
     
     /**

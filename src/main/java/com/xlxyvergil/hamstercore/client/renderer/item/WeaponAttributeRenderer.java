@@ -83,7 +83,8 @@ public class WeaponAttributeRenderer {
         ElementDamageManager.getActiveElements(stack);
         
         // 从缓存中获取元素列表
-        List<Map.Entry<ElementType, Double>> cachedElements = ElementDamageManager.getActiveElements(stack);
+        // 调用方法更新内部缓存 - 不需要直接使用返回值
+ElementDamageManager.getActiveElements(stack);
         
         // 添加空行分隔
         tooltipElements.add(Component.literal(""));
@@ -99,23 +100,23 @@ public class WeaponAttributeRenderer {
         for (String specialElement : specialElements) {
             Double value = specialAndFactionValues.get(specialElement);
             if (value != null && value > 0) {
-                String translationKey = "hamstercore.ui." + specialElement.replace("_", "");
+                String translationKey = "hamstercore.ui." + specialElement;
                 String formattedText;
                 
                 switch (specialElement) {
                     case "critical_chance":
                         formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable("hamstercore.ui.critical_chance").getString(), 
+                            Component.translatable(translationKey).getString(), 
                             value * 100);
                         break;
                     case "critical_damage":
                         formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable("hamstercore.ui.critical_damage").getString(), 
+                            Component.translatable(translationKey).getString(), 
                             value * 100);
                         break;
                     case "trigger_chance":
                         formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable("hamstercore.ui.trigger_chance").getString(), 
+                            Component.translatable(translationKey).getString(), 
                             value * 100);
                         break;
                     default:

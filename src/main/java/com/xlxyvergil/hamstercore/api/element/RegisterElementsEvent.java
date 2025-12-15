@@ -35,9 +35,10 @@ public class RegisterElementsEvent extends Event implements IModBusEvent {
      * @param defaultValue 默认值
      * @param min 最小值
      * @param max 最大值
+     * @param isPercentBased 是否为百分比属性
      */
-    public void register(ElementType type, double defaultValue, double min, double max) {
-        register(new ElementAttribute(type, defaultValue, min, max));
+    public void register(ElementType type, double defaultValue, double min, double max, boolean isPercentBased) {
+        register(new ElementAttribute(type, defaultValue, min, max, isPercentBased));
     }
     
     /**

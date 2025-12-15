@@ -2,7 +2,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
-import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -22,7 +22,7 @@ public class SlashElementEnchantment extends ElementEnchantment {
     public java.util.Collection<net.minecraft.world.entity.ai.attributes.AttributeModifier> getEntityAttributes(net.minecraft.world.item.ItemStack stack, EquipmentSlot slot, int level) {
         if (slot == EquipmentSlot.MAINHAND) {
             // 获取元素属�?
-            ElementBasedAttribute elementAttribute = ElementRegistry.Attributes.getAttributeValue(this.elementType);
+            ElementAttribute elementAttribute = ElementRegistry.getAttributeValue(this.elementType);
             if (elementAttribute != null) {
                 // 计算基于等级的数值：每级0.2
                 double value = 0.2 * level;

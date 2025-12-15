@@ -1,141 +1,96 @@
 package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.element.modifier.ElementAttributeModifierEntry;
-import com.xlxyvergil.hamstercore.util.ElementHelper;
-
+import com.xlxyvergil.hamstercore.HamsterCore;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
- * 元素属性API层
- * 参考GunsmithLib的GunAttributes实现方式，提供对元素属性的公共访问
+ * 元素属性注册类，使用DeferredHelper注册所有元素属性
+ * 完全参考Apotheosis的ALObjects.Attributes实现
  */
 public class ElementAttributes {
-    
+
+    // 存储已注册的元素属性映射
+    private static final Map<ElementType, RegistryObject<ElementAttribute>> ELEMENT_ATTRIBUTE_MAP = new HashMap<>();
+
     /**
-     * 获取元素类型对应的属性
-     * 
-     * @param elementType 元素类型
-     * @return 元素属性，以Optional包装
+     * 静态初始化，注册所有元素属性
      */
-    public static Optional<ElementBasedAttribute> getAttribute(ElementType elementType) {
-        return Optional.ofNullable(ElementRegistry.getAttributeValue(elementType));
+    public static void bootstrap() {
+        // 遍历所有元素类型并注册对应的属性
+        for (ElementType elementType : ElementType.getAllTypes()) {
+            // 为每种元素类型创建对应的属性
+            registerElementAttribute(elementType, 0.0, 0.0, Double.POSITIVE_INFINITY, false);
+        }
     }
-    
+
+    /**
+     * 注册元素属性
+     * @param elementType 元素类型
+     * @param defaultValue 默认值
+     * @param min 最小值
+     * @param max 最大值
+     * @return 注册的元素属性对象
+     */
+    public static RegistryObject<ElementAttribute> registerElementAttribute(ElementType elementType, double defaultValue, double min, double max) {
+        return registerElementAttribute(elementType, defaultValue, min, max, false);
+    }
+
+    /**
+     * 注册元素属性
+     * @param elementType 元素类型
+     * @param defaultValue 默认值
+     * @param min 最小值
+     * @param max 最大值
+     * @param isPercentBased 是否为百分比属性
+     * @return 注册的元素属性对象
+     */
+    public static RegistryObject<ElementAttribute> registerElementAttribute(ElementType elementType, double defaultValue, double min, double max, boolean isPercentBased) {
+        if (ELEMENT_ATTRIBUTE_MAP.containsKey(elementType)) {
+            return ELEMENT_ATTRIBUTE_MAP.get(elementType);
+        }
+
+        String name = elementType.getName();
+        String descriptionId = "attribute.name.hamstercore." + name;
+
+        // 使用DeferredHelper注册属性
+        RegistryObject<ElementAttribute> attribute = HamsterCore.R.attribute(name, () -> {
+            ElementAttribute elementAttribute = new ElementAttribute(elementType, defaultValue, min, max, isPercentBased);
+            return elementAttribute;
+        });
+
+        ELEMENT_ATTRIBUTE_MAP.put(elementType, attribute);
+        return attribute;
+    }
+
     /**
      * 获取元素类型对应的属性注册对象
-     * 
      * @param elementType 元素类型
-     * @return 元素属性注册对象，以Optional包装
+     * @return 属性注册对象
      */
-    public static Optional<RegistryObject<ElementBasedAttribute>> getAttributeRegistry(ElementType elementType) {
-        return Optional.ofNullable(ElementRegistry.getAttribute(elementType));
+    public static RegistryObject<ElementAttribute> getAttribute(ElementType elementType) {
+        return ELEMENT_ATTRIBUTE_MAP.get(elementType);
     }
-    
+
     /**
-     * 检查元素类型是否有对应的属性
-     * 
+     * 获取元素类型对应的属性
      * @param elementType 元素类型
-     * @return 如果有对应的属性则返回true，否则返回false
+     * @return 属性对象，如果未注册则返回null
      */
-    public static boolean hasAttribute(ElementType elementType) {
-        return getAttribute(elementType).isPresent();
+    public static ElementAttribute getAttributeValue(ElementType elementType) {
+        RegistryObject<ElementAttribute> attribute = getAttribute(elementType);
+        return attribute != null && attribute.isPresent() ? attribute.get() : null;
     }
-    
+
     /**
-     * 获取元素类型对应的属性值
-     * 
-     * @param elementType 元素类型
-     * @param itemStack 物品堆
-     * @return 属性值，如果属性不存在则返回0.0
+     * 获取所有已注册的元素属性
+     * @return 元素属性集合
      */
-    public static double getValue(ElementType elementType, ItemStack itemStack) {
-        return getAttribute(elementType)
-                .map(attribute -> ElementHelper.getElementValueFromItem(itemStack, attribute))
-                .orElse(0.0);
-    }
-    
-    /**
-     * 为元素类型创建属性修饰符条目
-     * 
-     * @param elementType 元素类型
-     * @param id 修饰符UUID
-     * @param amount 修饰符数值
-     * @param operation 修饰符操作类型
-     * @param name 修饰符名称
-     * @return 元素属性修饰符条目，以Optional包装
-     */
-    public static Optional<ElementAttributeModifierEntry> createModifierEntry(
-            ElementType elementType, 
-            java.util.UUID id, 
-            double amount, 
-            AttributeModifier.Operation operation, 
-            String name) {
-        if (!hasAttribute(elementType)) {
-            return Optional.empty();
-        }
-        
-        return Optional.of(new ElementAttributeModifierEntry(elementType, id, amount, name, operation));
-    }
-    
-    /**
-     * 为元素类型创建属性修饰符条目（使用默认名称）
-     * 
-     * @param elementType 元素类型
-     * @param id 修饰符UUID
-     * @param amount 修饰符数值
-     * @param operation 修饰符操作类型
-     * @return 元素属性修饰符条目，以Optional包装
-     */
-    public static Optional<ElementAttributeModifierEntry> createModifierEntry(
-            ElementType elementType, 
-            java.util.UUID id, 
-            double amount, 
-            AttributeModifier.Operation operation) {
-        if (!hasAttribute(elementType)) {
-            return Optional.empty();
-        }
-        
-        return Optional.of(new ElementAttributeModifierEntry(elementType, id, amount, elementType.getDisplayName(), operation));
-    }
-    
-    /**
-     * 检查属性是否为元素属性
-     * 
-     * @param attribute 属性对象
-     * @return 如果是元素属性则返回true，否则返回false
-     */
-    public static boolean isElementAttribute(Attribute attribute) {
-        return attribute instanceof ElementBasedAttribute;
-    }
-    
-    /**
-     * 将属性转换为元素属性
-     * 
-     * @param attribute 属性对象
-     * @return 元素属性，以Optional包装
-     */
-    public static Optional<ElementBasedAttribute> asElementAttribute(Attribute attribute) {
-        if (isElementAttribute(attribute)) {
-            return Optional.of((ElementBasedAttribute) attribute);
-        }
-        return Optional.empty();
-    }
-    
-    /**
-     * 获取元素属性的元素类型
-     * 
-     * @param attribute 元素属性
-     * @return 元素类型，以Optional包装
-     */
-    public static Optional<ElementType> getElementType(ElementBasedAttribute attribute) {
-        if (attribute != null) {
-            return Optional.of(attribute.getElementType());
-        }
-        return Optional.empty();
+    public static Map<ElementType, RegistryObject<ElementAttribute>> getAllAttributes() {
+        return ELEMENT_ATTRIBUTE_MAP;
     }
 }

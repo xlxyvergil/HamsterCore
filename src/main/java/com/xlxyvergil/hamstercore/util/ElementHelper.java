@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.util;
 
-import com.xlxyvergil.hamstercore.element.ElementBasedAttribute;
+import com.xlxyvergil.hamstercore.element.ElementAttribute;
 import com.xlxyvergil.hamstercore.element.ElementRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -36,7 +36,7 @@ public class ElementHelper {
             if (attributeRegistry == null || !attributeRegistry.isPresent()) {
                 return 0.0;
             }
-            ElementBasedAttribute elementAttribute = attributeRegistry.get();
+            ElementAttribute elementAttribute = attributeRegistry.get();
             
             return getElementValueFromItem(stack, elementAttribute);
             
@@ -54,7 +54,7 @@ public class ElementHelper {
      * @param elementAttribute 元素属性
      * @return 经过Forge计算后的修饰符值，如果没有则返回0.0
      */
-    public static double getElementValueFromItem(ItemStack stack, ElementBasedAttribute elementAttribute) {
+    public static double getElementValueFromItem(ItemStack stack, ElementAttribute elementAttribute) {
         if (stack == null || elementAttribute == null) {
             return 0.0;
         }

@@ -127,11 +127,24 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
+    
+    // 阿里云镜像，方便国内开发
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public/")
+    }
 
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:flat_dir_resolver
     flatDir {
         dir 'libs'
+        content {
+            includeGroup "dev.shadowsoffire"
+        }
+    }
+    
+    maven {
+        // Shadows (for Placebo)
+        url "https://maven.shadowsoffire.dev/releases"
         content {
             includeGroup "dev.shadowsoffire"
         }
@@ -151,6 +164,25 @@ repositories {
             includeGroup "snownee.jade"
         }
     }
+    
+    // JEI repositories (from TouhouLittleMaid)
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+        content {
+            includeGroup "mezz.jei"
+        }
+    }
+    
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+        content {
+            includeGroup "mezz.jei"
+        }
+    }
 }
 
 dependencies {
@@ -161,25 +193,29 @@ dependencies {
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Jade dependency
-    implementation fg.deobf("curse.maven:jade-324717:4654448")
+    // Placebo dependency (required for DeferredHelper)
+    implementation fg.deobf("dev.shadowsoffire:Placebo:${minecraft_version}-${placeboVersion}")
     
-    // TACZ dependency (local file for compile only)
+    // JEI dependency (optional) - following TouhouLittleMaid's implementation
+    if(project.hasProperty('jeiVersion')) {
+        compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jeiVersion}")
+        compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jeiVersion}")
+        runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jeiVersion}")
+    }
+    
+    // Jade dependency (optional)
+    if(project.hasProperty('jadeVersion')) compileOnly fg.deobf("curse.maven:jade-324717:${jadeVersion}")
+    
+    // TACZ dependency (local file for compile only, optional)
     // 将 tacz-1.20.1-1.1.7.jar 放在 libs 目录下
-    compileOnly files('libs/tacz-1.20.1-1.1.7.jar')
+    if(project.hasProperty('taczVersion')) compileOnly files("libs/tacz-${taczVersion}.jar")
     
-    // SlashBlade Resharped dependency (local file for compile only)
+    // SlashBlade Resharped dependency (local file for compile only, optional)
     // 将 SlashBladeResharped-1.20.1-1.8.61.jar 放在 libs 目录下
-    compileOnly files('libs/SlashBladeResharped-1.20.1-1.8.61.jar')
+    if(project.hasProperty('slashbladeVersion')) compileOnly files("libs/SlashBladeResharped-${slashbladeVersion}.jar")
     
     // 强制使用 Minecraft 提供的 Log4j 版本，避免版本冲突
     // 完全排除任何外部 Log4j 依赖，只使用 Minecraft 自带的版本
-
-    // Example mod dependency with JEI - using fg.deobf() ensures the dependency is remapped to your development mappings
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}")
-    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}")
-    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}")
 
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
