@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.util.ElementHelper;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,13 +32,14 @@ public class ElementTriggerHandler {
         Player player = (Player) attacker;
         ItemStack weapon = player.getMainHandItem();
         
+        // 获取武器上的元素属性（只获取实际生效的元素，从缓存中获取）
+        List<Map.Entry<ElementType, Double>> elementList = ElementDamageManager.getActiveElements(weapon);
+        
         // 检查武器是否有元素属性
-        if (!ElementNBTUtils.hasAnyElements(weapon)) {
+        if (elementList.isEmpty()) {
             return;
         }
         
-        // 获取武器上的元素属性（只获取实际生效的元素，从缓存中获取）
-        List<Map.Entry<ElementType, Double>> elementList = ElementDamageManager.getActiveElements(weapon);
         Map<ElementType, Map.Entry<ElementType, Double>> elements = new HashMap<>();
         
         // 只收集物理、基础和复合元素

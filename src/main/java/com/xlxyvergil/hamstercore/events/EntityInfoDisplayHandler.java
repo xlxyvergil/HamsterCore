@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.events;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +11,6 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilit
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -100,7 +98,7 @@ public class EntityInfoDisplayHandler {
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
                 
                 // 显示暴击率
-                double critChance = cacheData.getCriticalStats().getOrDefault("critical_rate", 0.0);
+                double critChance = cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0);
                 if (critChance > 0) {
                     message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
                 }
@@ -112,7 +110,7 @@ public class EntityInfoDisplayHandler {
                 }
                 
                 // 显示触发率
-                double triggerChance = cacheData.getCriticalStats().getOrDefault("trigger_rate", 0.0);
+                double triggerChance = cacheData.getCriticalStats().getOrDefault("trigger_chance", 0.0);
                 if (triggerChance > 0) {
                     message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
                 }

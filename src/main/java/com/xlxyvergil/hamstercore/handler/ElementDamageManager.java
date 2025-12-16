@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
+
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import net.minecraftforge.common.util.LazyOptional;
 
 
@@ -108,7 +107,7 @@ public class ElementDamageManager {
         damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
         
         // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
-        if (!ElementNBTUtils.hasAnyElements(weapon)) {
+        if (data == null) {
             // 无元素武器：只应用护甲减免
             damageData.finalDamage = (float) (baseDamage * damageData.armorReduction);
             return damageData;

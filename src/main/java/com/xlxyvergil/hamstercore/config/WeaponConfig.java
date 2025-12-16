@@ -10,6 +10,7 @@ import com.xlxyvergil.hamstercore.element.WeaponData;
 
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.io.FileReader;
@@ -43,9 +44,9 @@ public class WeaponConfig {
     private static final double DEFAULT_PUNCTURE = 0.2;  // 20%穿刺伤害
     
     // 配置文件路径
-    private static final String WEAPON_DIR = "config/hamstercore/weapons/";
-    private static final String DEFAULT_WEAPONS_FILE = WEAPON_DIR + "default_weapons.json";
-    private static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
+    private static final Path WEAPON_DIR = FMLPaths.CONFIGDIR.get().resolve("hamstercore/weapons/");
+    private static final Path DEFAULT_WEAPONS_FILE = WEAPON_DIR.resolve("default_weapons.json");
+    private static final Path ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR.resolve("additional_normal_weapons.json");
     
     // 武器配置映射
     private static final Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
@@ -161,7 +162,7 @@ public class WeaponConfig {
     private static void createDefaultWeaponConfigs() {
         try {
             // 确保目录存在
-            Path weaponDir = Paths.get(WEAPON_DIR);
+            Path weaponDir = WEAPON_DIR;
             if (!Files.exists(weaponDir)) {
                 Files.createDirectories(weaponDir);
             }
@@ -180,7 +181,7 @@ public class WeaponConfig {
      * 创建默认武器配置文件
      */
     private static void createDefaultWeaponConfigFile() throws IOException {
-        File configFile = new File(DEFAULT_WEAPONS_FILE);
+        File configFile = DEFAULT_WEAPONS_FILE.toFile();
         if (configFile.exists()) {
             return; // 文件已存在，不需要重新创建
         }
@@ -203,12 +204,12 @@ public class WeaponConfig {
     private static void createDefaultAdditionalNormalWeaponsConfig() {
         try {
             // 确保目录存在
-            Path weaponDir = Paths.get(WEAPON_DIR);
+            Path weaponDir = WEAPON_DIR;
             if (!Files.exists(weaponDir)) {
                 Files.createDirectories(weaponDir);
             }
             
-            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
+            File configFile = ADDITIONAL_NORMAL_WEAPONS_FILE.toFile();
             if (configFile.exists()) {
                 return; // 文件已存在，不需要重新创建
             }
@@ -257,7 +258,7 @@ public class WeaponConfig {
      */
     private static void loadAdditionalNormalWeaponConfigs() {
         try {
-            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
+            File configFile = ADDITIONAL_NORMAL_WEAPONS_FILE.toFile();
             if (!configFile.exists()) {
                 return;
             }
