@@ -93,12 +93,12 @@ public class WeaponData {
         Map<String, Double> basicAndComplexValues = new HashMap<>();
         
         for (var modifierEntry : getInitialModifiers()) {
-            String elementName = modifierEntry.getName();
+            String elementName = modifierEntry.getElementType();
             ElementType elementType = ElementType.byName(elementName);
             if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                basicAndComplexValues.put(elementName, modifierEntry.getModifier().getAmount());
+                basicAndComplexValues.put(elementName, modifierEntry.getAmount());
                 // 同时设置到Usage层
-                setUsageElement(elementName, modifierEntry.getModifier().getAmount());
+                setUsageElement(elementName, modifierEntry.getAmount());
             }
         }
         

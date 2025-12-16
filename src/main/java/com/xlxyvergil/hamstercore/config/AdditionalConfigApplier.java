@@ -23,7 +23,7 @@ public class AdditionalConfigApplier {
         int appliedCount = 0;
         
         // 确保配置已加载
-        WeaponConfig.load();
+        WeaponConfig.init();
         
         // 获取所有额外配置
         Map<ResourceLocation, WeaponData> additionalConfigs = WeaponConfig.getAdditionalWeaponConfigs();

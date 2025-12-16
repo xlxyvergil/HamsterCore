@@ -23,7 +23,7 @@ public class NormalConfigApplier {
         int appliedCount = 0;
         
         // 确保配置已加载
-        WeaponConfig.load();
+        WeaponConfig.init();
         
         // 获取所有武器配置
         Map<ResourceLocation, WeaponData> allWeaponConfigs = WeaponConfig.getAllWeaponConfigs();

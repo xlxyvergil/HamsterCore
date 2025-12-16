@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -12,19 +11,43 @@ import java.util.UUID;
  */
 public class InitialModifierEntry {
     private final String name;
-    private final AttributeModifier modifier;
+    private final String elementType;
+    private final double amount;
+    private final String operation;
+    private final UUID uuid;
+    private final String source;
     
-    public InitialModifierEntry(String name, AttributeModifier modifier) {
+    public InitialModifierEntry(String name, String elementType, double amount, String operation, UUID uuid, String source) {
         this.name = name;
-        this.modifier = modifier;
+        this.elementType = elementType;
+        this.amount = amount;
+        this.operation = operation;
+        this.uuid = uuid;
+        this.source = source;
     }
     
     public String getName() {
         return name;
     }
     
-    public AttributeModifier getModifier() {
-        return modifier;
+    public String getElementType() {
+        return elementType;
+    }
+    
+    public double getAmount() {
+        return amount;
+    }
+    
+    public String getOperation() {
+        return operation;
+    }
+    
+    public UUID getUuid() {
+        return uuid;
+    }
+    
+    public String getSource() {
+        return source;
     }
     
     @Override
@@ -32,13 +55,17 @@ public class InitialModifierEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         InitialModifierEntry that = (InitialModifierEntry) o;
-        return Objects.equals(name, that.name) &&
-               Objects.equals(modifier, that.modifier);
+        return Double.compare(that.amount, amount) == 0 &&
+               Objects.equals(name, that.name) &&
+               Objects.equals(elementType, that.elementType) &&
+               Objects.equals(operation, that.operation) &&
+               Objects.equals(uuid, that.uuid) &&
+               Objects.equals(source, that.source);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(name, modifier);
+        return Objects.hash(name, elementType, amount, operation, uuid, source);
     }
     
     /**
@@ -47,17 +74,11 @@ public class InitialModifierEntry {
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
         tag.putString("name", name);
-        
-        // 序列化AttributeModifier（如果存在）
-        if (modifier != null) {
-            CompoundTag modifierTag = new CompoundTag();
-            modifierTag.putUUID("uuid", modifier.getId());
-            modifierTag.putString("name", modifier.getName());
-            modifierTag.putDouble("amount", modifier.getAmount());
-            modifierTag.putInt("operation", modifier.getOperation().toValue());
-            tag.put("modifier", modifierTag);
-        }
-        
+        tag.putString("elementType", elementType);
+        tag.putDouble("amount", amount);
+        tag.putString("operation", operation);
+        tag.putUUID("uuid", uuid);
+        tag.putString("source", source);
         return tag;
     }
     
@@ -66,20 +87,12 @@ public class InitialModifierEntry {
      */
     public static InitialModifierEntry fromNBT(CompoundTag tag) {
         String name = tag.getString("name");
+        String elementType = tag.getString("elementType");
+        double amount = tag.getDouble("amount");
+        String operation = tag.getString("operation");
+        UUID uuid = tag.getUUID("uuid");
+        String source = tag.getString("source");
         
-        // 反序列化AttributeModifier（如果存在）
-        AttributeModifier modifier = null;
-        if (tag.contains("modifier")) {
-            CompoundTag modifierTag = tag.getCompound("modifier");
-            UUID uuid = modifierTag.getUUID("uuid");
-            String modifierName = modifierTag.getString("name");
-            double amount = modifierTag.getDouble("amount");
-            AttributeModifier.Operation operation = 
-                AttributeModifier.Operation.fromValue(modifierTag.getInt("operation"));
-            
-            modifier = new AttributeModifier(uuid, modifierName, amount, operation);
-        }
-        
-        return new InitialModifierEntry(name, modifier);
+        return new InitialModifierEntry(name, elementType, amount, operation, uuid, source);
     }
 }

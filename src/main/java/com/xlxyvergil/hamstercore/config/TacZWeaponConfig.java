@@ -8,12 +8,12 @@ import com.google.gson.JsonObject;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
-import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
+
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
+
 
 import java.io.File;
 import java.io.FileReader;
@@ -101,12 +101,7 @@ public class TacZWeaponConfig {
         // TACZ特殊信息
         data.gunId = gunId.toString(); // 具体的枪械ID
         
-
-
-
-
-        
-        // 添加初始修饰符
+        // 添加初始属性
         addInitialModifiers(data);
         
         return data;
@@ -136,13 +131,13 @@ public class TacZWeaponConfig {
         JsonArray usageArray = new JsonArray();
         elementDataJson.add("Usage", usageArray);
         
-        // 添加初始属性修饰符数据（只包含名称和数值，UUID在应用阶段生成）
+        // 添加初始属性属性数据（只包含名称和数值，UUID在应用阶段生成）
         JsonArray modifiersArray = new JsonArray();
         for (InitialModifierEntry modifierEntry : weaponData.getInitialModifiers()) {
             JsonObject modifierJson = new JsonObject();
             modifierJson.addProperty("name", modifierEntry.getName());
-            modifierJson.addProperty("amount", modifierEntry.getModifier().getAmount());
-            modifierJson.addProperty("operation", modifierEntry.getModifier().getOperation().toString());
+            modifierJson.addProperty("amount", modifierEntry.getAmount());
+            modifierJson.addProperty("operation", modifierEntry.getOperation());
             modifiersArray.add(modifierJson);
         }
         elementDataJson.add("InitialModifiers", modifiersArray);
@@ -228,50 +223,28 @@ public class TacZWeaponConfig {
                         
             // 不再读取Usage层
                         
-            // 读取初始属性修饰符数据
+            // 读取初始属性属性数据
             if (elementDataJson.has("InitialModifiers")) {
                 JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
                 for (JsonElement modifierElement : modifiersArray) {
                     JsonObject modifierJson = modifierElement.getAsJsonObject();
-                                
+                                 
                     String name = modifierJson.get("name").getAsString();
                     double amount = modifierJson.get("amount").getAsDouble();
                     String operationStr = modifierJson.get("operation").getAsString();
-                                
-                    // 解析操作类型
-                    AttributeModifier.Operation operation;
-                    switch (operationStr) {
-                        case "ADDITION":
-                            operation = AttributeModifier.Operation.ADDITION;
-                            break;
-                        case "MULTIPLY_BASE":
-                            operation = AttributeModifier.Operation.MULTIPLY_BASE;
-                            break;
-                        case "MULTIPLY_TOTAL":
-                            operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
-                            break;
-                        default:
-                            operation = AttributeModifier.Operation.ADDITION;
-                    }
-                                
+                                 
                     // UUID将在应用阶段生成
-                    UUID uuid = ElementUUIDManager.getElementUUID(name);
-                                
-                    // 创建修饰符
-                    AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
-                    weaponData.addInitialModifier(new InitialModifierEntry(name, modifier));
+                    UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
+                                 
+                    // 直接添加初始属性
+                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
                 }
             }
         }
         
         // 根据配置类型决定内存映射的键名
-        ResourceLocation itemKey = null;
         if (weaponData.gunId != null) {
             // TACZ武器使用gunId作为键
-            itemKey = ResourceLocation.tryParse(weaponData.gunId);
-        }
-        
-        if (itemKey != null) {
             gunIdToConfigMap.put(weaponData.gunId, weaponData);
         }
     }
@@ -327,7 +300,7 @@ public class TacZWeaponConfig {
     }
     
     /**
-     * 缓存TACZ枪械配置到全局映射中
+     * 缓存TACZ枪械配置到全局映射
      */
     public static void cacheTacZGunConfig(String gunId, WeaponData weaponData) {
         if (gunId != null && weaponData != null) {
@@ -336,38 +309,30 @@ public class TacZWeaponConfig {
     }
     
     /**
-     * 为武器添加初始修饰符
+     * 为武器添加初始属性
      */
     private static void addInitialModifiers(WeaponData data) {
-        // 直接添加默认的初始修饰符，不依赖Basic层数据
+        // 直接添加默认的初始属性，不依赖Basic层数据
         
-        // 添加默认物理元素修饰符
+        // 添加默认物理元素属性
         addDefaultModifier(data, ElementType.SLASH.getName(), DEFAULT_SLASH);
         addDefaultModifier(data, ElementType.IMPACT.getName(), DEFAULT_IMPACT);
         addDefaultModifier(data, ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
         
-        // 添加默认特殊属性修饰符
+        // 添加默认特殊属性属性
         addDefaultModifier(data, "critical_chance", DEFAULT_CRITICAL_CHANCE);
         addDefaultModifier(data, "critical_damage", DEFAULT_CRITICAL_DAMAGE);
         addDefaultModifier(data, "trigger_chance", DEFAULT_TRIGGER_CHANCE);
     }
     
     /**
-     * 添加默认修饰符
+     * 添加默认属性
      */
     private static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
-        // 创建属性修饰符
-        AttributeModifier modifier = new AttributeModifier(
-            modifierUuid, 
-            elementType, 
-            defaultValue, 
-            AttributeModifier.Operation.ADDITION
-        );
-        
-        // 添加到初始修饰符列表
-        data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
+        // 添加到初始属性列表
+        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "default"));
     }
 }

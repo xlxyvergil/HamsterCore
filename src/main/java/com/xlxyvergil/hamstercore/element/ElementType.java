@@ -36,9 +36,9 @@ public class ElementType {
     public static final ElementType VIRAL = registerBuiltIn("viral", "病毒", ChatFormatting.DARK_PURPLE, TypeCategory.COMPLEX);
     
     // 特殊属性
-    public static final ElementType CRITICAL_CHANCE = registerBuiltIn("critical_chance", "暴击率", ChatFormatting.BOLD, TypeCategory.SPECIAL);
-    public static final ElementType CRITICAL_DAMAGE = registerBuiltIn("critical_damage", "暴击伤害", ChatFormatting.BOLD, TypeCategory.SPECIAL);
-    public static final ElementType TRIGGER_CHANCE = registerBuiltIn("trigger_chance", "触发率", ChatFormatting.BOLD, TypeCategory.SPECIAL);
+    public static final ElementType CRITICAL_CHANCE = registerBuiltIn("critical_chance", "暴击率", ChatFormatting.BOLD, TypeCategory.CRITICAL_CHANCE);
+    public static final ElementType CRITICAL_DAMAGE = registerBuiltIn("critical_damage", "暴击伤害", ChatFormatting.BOLD, TypeCategory.CRITICAL_DAMAGE);
+    public static final ElementType TRIGGER_CHANCE = registerBuiltIn("trigger_chance", "触发率", ChatFormatting.BOLD, TypeCategory.TRIGGER_CHANCE);
     
     // 派系元素
     public static final ElementType GRINEER = registerBuiltIn("grineer", "Grineer派系", ChatFormatting.RED, TypeCategory.SPECIAL);
@@ -117,6 +117,27 @@ public class ElementType {
      */
     public boolean isSpecial() {
         return category == TypeCategory.SPECIAL;
+    }
+    
+    /**
+     * 检查是否为暴击率属性
+     */
+    public boolean isCriticalChance() {
+        return category == TypeCategory.CRITICAL_CHANCE;
+    }
+    
+    /**
+     * 检查是否为暴击伤害属性
+     */
+    public boolean isCriticalDamage() {
+        return category == TypeCategory.CRITICAL_DAMAGE;
+    }
+    
+    /**
+     * 检查是否为触发率属性
+     */
+    public boolean isTriggerChance() {
+        return category == TypeCategory.TRIGGER_CHANCE;
     }
     
     /**
@@ -212,6 +233,33 @@ public class ElementType {
     }
     
     /**
+     * 获取暴击率属性
+     */
+    public static Collection<ElementType> getCriticalChanceElements() {
+        return REGISTRY.values().stream()
+                .filter(ElementType::isCriticalChance)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 获取暴击伤害属性
+     */
+    public static Collection<ElementType> getCriticalDamageElements() {
+        return REGISTRY.values().stream()
+                .filter(ElementType::isCriticalDamage)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 获取触发率属性
+     */
+    public static Collection<ElementType> getTriggerChanceElements() {
+        return REGISTRY.values().stream()
+                .filter(ElementType::isTriggerChance)
+                .collect(Collectors.toList());
+    }
+    
+    /**
      * 根据名称获取元素类型
      */
     public static ElementType byName(String name) {
@@ -229,6 +277,17 @@ public class ElementType {
         PHYSICAL,
         BASIC,
         COMPLEX,
-        SPECIAL
+        SPECIAL,
+        CRITICAL_CHANCE,
+        CRITICAL_DAMAGE,
+        TRIGGER_CHANCE
+    }
+
+    public TypeCategory getTypeCategory() {
+        return this.category;
+    }
+
+    public String name() {
+        return this.name;
     }
 }

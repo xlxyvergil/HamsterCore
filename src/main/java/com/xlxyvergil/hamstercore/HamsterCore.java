@@ -7,7 +7,7 @@ import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
-import com.xlxyvergil.hamstercore.element.ElementRegistry;
+
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
@@ -18,7 +18,6 @@ import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
-import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -27,14 +26,12 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import com.xlxyvergil.hamstercore.element.ElementAttributes;
 
 
 
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
-    public static final DeferredHelper R = DeferredHelper.create(MODID);
 
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -47,8 +44,7 @@ public class HamsterCore {
         ModEnchantments.register(modEventBus);
         
         // 注册元素属性
-        ElementAttributes.bootstrap();
-        ElementRegistry.register(modEventBus);
+
         
         // 初始化配置
         FactionConfig.load();
@@ -89,7 +85,7 @@ public class HamsterCore {
             }
 
             // 3. 生成配置文件（包括普通物品、TACZ枪械和拔刀剑的数据）
-            WeaponConfig.load();
+            WeaponConfig.init();
             
             // 生成TACZ配置文件
             if (ModList.get().isLoaded("tacz")) {
