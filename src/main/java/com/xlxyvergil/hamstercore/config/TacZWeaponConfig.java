@@ -7,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.BasicEntry;
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.util.ElementUUIDManager;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
@@ -113,12 +112,6 @@ public class TacZWeaponConfig {
         return data;
     }
     
-    /**
-     * 为TACZ枪械设置默认元素占比
-     */
-    private static void setDefaultElementRatiosForTacZ(WeaponData data, ResourceLocation gunId) {
-        // 不再向Basic层和Usage层添加数据
-    }
     
     /**
      * 创建TACZ武器配置的JSON对象

@@ -112,12 +112,6 @@ public class SlashBladeWeaponConfig {
         return data;
     }
     
-    /**
-     * 为拔刀剑设置默认元素占比（统一配置）
-     */
-    private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
-        // 不再向Basic层和Usage层添加数据
-    }
     
     /**
      * 创建拔刀剑武器配置的JSON对象
