@@ -4,11 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
-import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
-import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
-import com.xlxyvergil.hamstercore.util.ElementHelper;
+import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
@@ -41,44 +37,29 @@ public class WeaponAttributeRenderer {
         // 获取现有的工具提示行
         List<Component> tooltipElements = event.getToolTip();
         
-        // 移除Minecraft自动生成的属性修饰符文本和Curios添加的槽位文本
-        // 这些文本通常包含"attribute.modifier."、"attribute.name.hamstercore."或"curios.modifiers."等关键字
-        tooltipElements.removeIf(component -> {
-            String text = component.getString();
-            return text.contains("attribute.modifier.") || 
-                   text.contains("attribute.name.hamstercore.") ||
-                   text.contains("curios.modifiers.") ||
-                   text.contains("在身上") || 
-                   text.contains("在任意") || 
-                   text.contains("在头上") || 
-                   text.contains("在腿上") || 
-                   text.contains("在脚上");
-        });
         
         // 添加"Weapon Attributes"标题
-        tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
+        tooltipElements.add(Component.translatable("hamstercore.ui.weapon_attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
         
-        // 从usage层显示计算后的基础元素和复合元素数据
-        addUsageAttributes(stack, tooltipElements);
+        // 获取缓存数据
+        AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
         
-        // 从属性修饰符中显示计算后的特殊元素、派系元素和物理元素
-        addAttributeModifierAttributes(stack, tooltipElements);
+        // 显示物理元素（基础元素和复合元素）
+        addPhysicalElements(stack, tooltipElements, cacheData);
+        
+        // 显示特殊元素属性（暴击率、暴击伤害、触发率等）
+        addSpecialAttributes(stack, tooltipElements, cacheData);
+        
+        // 显示派系元素
+        addFactionAttributes(stack, tooltipElements, cacheData);
     }
     
     /**
-     * 从usage层显示计算后的基础元素和复合元素数据
-     * 无需额外判断或属性修饰符查找，有数据就显示
+     * 显示物理元素（基础元素和复合元素）
      */
-    private void addUsageAttributes(ItemStack stack, List<Component> tooltipElements) {
-        // 获取武器数据
-        WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-        if (weaponData == null) {
-            return;
-        }
-        
-        // 获取usage层元素
-        Map<String, Double> usageElements = weaponData.getUsageElements();
-        if (usageElements.isEmpty()) {
+    private void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+        if (physicalElements.isEmpty()) {
             return;
         }
         
@@ -90,7 +71,7 @@ public class WeaponAttributeRenderer {
             }
             
             // 获取元素值
-            Double value = usageElements.get(elementType.getName());
+            Double value = physicalElements.get(elementType.getName());
             if (value == null || value <= 0) {
                 continue;
             }
@@ -106,35 +87,72 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 从属性修饰符中显示计算后的特殊元素、派系元素和物理元素
-     * 无需额外判断，有数据就显示
+     * 显示特殊元素属性（暴击率、暴击伤害、触发率等）
      */
-    private void addAttributeModifierAttributes(ItemStack stack, List<Component> tooltipElements) {
+    private void addSpecialAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+        Map<String, Double> criticalStats = cacheData.getCriticalStats();
+        if (criticalStats.isEmpty()) {
+            return;
+        }
+        
+        // 处理暴击率
+        Double critChance = criticalStats.get("critical_rate");
+        if (critChance != null && critChance > 0) {
+            String formattedValue = String.format("%.1f%%", critChance * 100);
+            MutableComponent component = Component.literal("  ")
+                    .append(Component.translatable("element.critical_rate.name").withStyle(ChatFormatting.RED))
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
+        }
+        
+        // 处理暴击伤害
+        Double critDamage = criticalStats.get("critical_damage");
+        if (critDamage != null && critDamage > 0) {
+            String formattedValue = String.format("%.1f%%", critDamage * 100);
+            MutableComponent component = Component.literal("  ")
+                    .append(Component.translatable("element.critical_damage.name").withStyle(ChatFormatting.RED))
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
+        }
+        
+        // 处理触发率
+        Double triggerRate = criticalStats.get("trigger_rate");
+        if (triggerRate != null && triggerRate > 0) {
+            String formattedValue = String.format("%.1f%%", triggerRate * 100);
+            MutableComponent component = Component.literal("  ")
+                    .append(Component.translatable("element.trigger_rate.name").withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
+        }
+    }
+    
+    /**
+     * 显示派系元素
+     */
+    private void addFactionAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+        Map<String, Double> factionElements = cacheData.getFactionElements();
+        if (factionElements.isEmpty()) {
+            return;
+        }
+        
         // 遍历所有元素类型
         for (ElementType elementType : ElementType.getAllTypes()) {
-            // 只处理特殊元素、派系元素和物理元素
-            if (!elementType.isSpecial() && !elementType.isPhysical()) {
+            // 只处理派系元素
+            if (!elementType.isSpecial()) {
                 continue;
             }
             
-            // 从属性修饰符中获取元素值
-            double value = ElementHelper.getElementValueFromItem(stack, elementType);
-            if (value <= 0) {
+            // 获取元素值
+            Double value = factionElements.get(elementType.getName());
+            if (value == null || value <= 0) {
                 continue;
             }
             
             // 格式化并添加到工具提示
-            String formattedValue;
-            if (elementType.isSpecial() && (elementType == ElementType.CRITICAL_CHANCE || 
-                                           elementType == ElementType.CRITICAL_DAMAGE || 
-                                           elementType == ElementType.TRIGGER_CHANCE)) {
-                // 特殊属性显示为百分比
-                formattedValue = String.format("%.1f%%", value * 100);
-            } else {
-                // 其他属性显示为普通数值
-                formattedValue = String.format("%.1f", value);
-            }
-            
+            String formattedValue = String.format("%.1f%%", value * 100);
             MutableComponent component = Component.literal("  ")
                     .append(elementType.getColoredName())
                     .append(Component.literal(": "))

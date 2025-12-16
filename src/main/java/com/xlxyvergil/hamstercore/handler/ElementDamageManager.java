@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraftforge.common.util.LazyOptional;
 
 
 /**
@@ -25,13 +28,13 @@ import java.util.HashMap;
 public class ElementDamageManager {
     
     
-    // 使用ElementCache缓存计算结果
-    private static final ElementCache<ElementDamageKey, ElementDamageData> DAMAGE_CACHE = new ElementCache<>(ElementDamageManager::calculateElementDamageImpl);
+    // 使用WeakHashMap缓存计算结果
+    private static final Map<ElementDamageKey, LazyOptional<ElementDamageData>> DAMAGE_CACHE = new WeakHashMap<>();
     
     // 元素列表缓存
-    private static final ElementCache<ItemStack, List<Map.Entry<ElementType, Double>>> ACTIVE_ELEMENTS_CACHE = new ElementCache<>(ElementDamageManager::getActiveElementsImpl);
-    
+    private static final Map<ItemStack, LazyOptional<List<Map.Entry<ElementType, Double>>>> ACTIVE_ELEMENTS_CACHE = new WeakHashMap<>();
 
+    
     
     /**
      * 计算元素伤害
@@ -49,8 +52,18 @@ public class ElementDamageManager {
         ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         
         // 尝试从缓存中获取结果
-        ElementCache.CacheValue<ElementDamageData> cached = DAMAGE_CACHE.get(key);
-        return cached.orElse(calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues));
+        LazyOptional<ElementDamageData> cached = DAMAGE_CACHE.get(key);
+        if (cached != null && cached.isPresent()) {
+            return cached.orElse(null);
+        }
+        
+        // 如果没有缓存或已失效，则重新计算
+        ElementDamageData computed = calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
+        LazyOptional<ElementDamageData> lazyComputed = LazyOptional.of(() -> computed);
+        
+        // 更新缓存
+        DAMAGE_CACHE.put(key, lazyComputed);
+        return computed;
     }
 
     
@@ -129,8 +142,19 @@ public class ElementDamageManager {
             return new ArrayList<>();
         }
         
-        ElementCache.CacheValue<List<Map.Entry<ElementType, Double>>> cached = ACTIVE_ELEMENTS_CACHE.get(weapon);
-        return cached.orElse(new ArrayList<>());
+        // 尝试从缓存中获取结果
+        LazyOptional<List<Map.Entry<ElementType, Double>>> cached = ACTIVE_ELEMENTS_CACHE.get(weapon);
+        if (cached != null && cached.isPresent()) {
+            return cached.orElse(new ArrayList<>());
+        }
+        
+        // 如果没有缓存或已失效，则重新计算
+        List<Map.Entry<ElementType, Double>> computed = getActiveElementsImpl(weapon);
+        LazyOptional<List<Map.Entry<ElementType, Double>>> lazyComputed = LazyOptional.of(() -> computed);
+        
+        // 更新缓存
+        ACTIVE_ELEMENTS_CACHE.put(weapon, lazyComputed);
+        return computed;
     }
     
     /**
@@ -223,16 +247,18 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      */
     public static void invalidateCache(ItemStack weapon) {
-        // 注意：由于我们使用的是自定义键，无法直接使特定武器的缓存失效
-        // 在实际应用中，可以考虑使用更复杂的缓存策略
-        DAMAGE_CACHE.invalidateAll();
+        // 遍历并移除与该武器相关的所有缓存项
+        DAMAGE_CACHE.entrySet().removeIf(entry -> 
+            entry.getKey().getWeapon() != null && ItemStack.matches(entry.getKey().getWeapon(), weapon));
+        ACTIVE_ELEMENTS_CACHE.remove(weapon);
     }
     
     /**
      * 使所有缓存失效
      */
     public static void invalidateAllCache() {
-        DAMAGE_CACHE.invalidateAll();
+        DAMAGE_CACHE.clear();
+        ACTIVE_ELEMENTS_CACHE.clear();
     }
     
     /**

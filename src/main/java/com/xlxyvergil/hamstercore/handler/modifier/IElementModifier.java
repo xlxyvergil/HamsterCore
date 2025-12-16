@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.handler.ElementCache;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -30,7 +29,7 @@ public interface IElementModifier<T, K> {
      * @param baseDamage 基础伤害值
      * @return 初始化读取的数据
      */
-    ElementCache.CacheValue<?> initCache(ItemStack weapon, LivingEntity attacker, LivingEntity target, float baseDamage);
+    K initCache(ItemStack weapon, LivingEntity attacker, LivingEntity target, float baseDamage);
 
     /**
      * 计算，用于将各个元素数据与武器数据求值，最终计算出来
@@ -38,5 +37,5 @@ public interface IElementModifier<T, K> {
      * @param modifiedValues 各个元素的数据值
      * @param cache          缓存的武器默认数值
      */
-    void eval(List<T> modifiedValues, ElementCache.CacheValue<?> cache);
+    void eval(List<T> modifiedValues, K cache);
 }

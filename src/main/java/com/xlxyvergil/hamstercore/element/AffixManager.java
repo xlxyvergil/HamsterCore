@@ -1,9 +1,6 @@
-package com.xlxyvergil.hamstercore.handler;
+package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
-import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -24,8 +21,10 @@ public class AffixManager {
             weaponData.addBasicElement(elementType, source, (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
         }
         
-        // 失效缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 计算并缓存元素值
+        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 失效AffixManager的临时缓存
+        AffixManagerCache.invalidateCache(stack);
     }
     
     /**
@@ -50,8 +49,10 @@ public class AffixManager {
             }
         }
         
-        // 失效缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 计算并缓存元素值
+        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 失效AffixManager的临时缓存
+        AffixManagerCache.invalidateCache(stack);
     }
     
     /**
@@ -61,8 +62,10 @@ public class AffixManager {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(affixUuid));
         
-        // 失效缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 计算并缓存元素值
+        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 失效AffixManager的临时缓存
+        AffixManagerCache.invalidateCache(stack);
     }
     
     /**
@@ -72,7 +75,9 @@ public class AffixManager {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         entries.forEach(weaponData::addInitialModifier);
         
-        // 失效缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 计算并缓存元素值
+        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 失效AffixManager的临时缓存
+        AffixManagerCache.invalidateCache(stack);
     }
 }

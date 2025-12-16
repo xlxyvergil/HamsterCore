@@ -65,36 +65,36 @@ public class ElementCombinationModifier {
      * ElementCombinationModifier完全依赖传入的数据，不主动获取任何数据
      * @param data 武器元素数据（用于获取Basic层的类型和来源信息）
      * @param elementValues 预计算并已分类的元素数值映射（仅包含基础元素和复合元素）
+     * @return 复合后的元素值映射
      */
-    public static void computeElementCombinationsWithValues(WeaponData data, Map<String, Double> elementValues) {
-        // 1. 清空使用层数据
-        data.getUsageElements().clear();
-        
-        // 2. 从Basic层收集基础元素类型和来源信息，使用预分类的elementValues
+    public static Map<String, Double> computeElementCombinationsWithValues(WeaponData data, Map<String, Double> elementValues) {
+        // 1. 从Basic层收集基础元素类型和来源信息，使用预分类的elementValues
         List<ElementEntry> orderedBasicElements = collectBasicElementsWithValues(data, elementValues);
         
-        // 3. 对基础元素进行二次排序（user优先，def次之）
+        // 2. 对基础元素进行二次排序（user优先，def次之）
         List<ElementEntry> reorderedBasicElements = reorderBasicElements(orderedBasicElements);
         
-        // 4. 对所有基础元素按重新排序后的顺序进行复合操作，完全使用传入的数值
+        // 3. 对所有基础元素按重新排序后的顺序进行复合操作，完全使用传入的数值
         Map<String, Double> compositeResults = processElementCombinations(reorderedBasicElements);
         
-        // 5. 分离Basic层中的复合元素（这些始终为def），完全使用传入的数值
+        // 4. 分离Basic层中的复合元素（这些始终为def），完全使用传入的数值
         Map<String, Double> defCompositeElementsFromBasic = separateDefCompositeElements(reorderedBasicElements);
         
-        // 6. 合并计算产生的复合元素和Basic层中的复合元素
+        // 5. 合并计算产生的复合元素和Basic层中的复合元素
         mergeCalculatedAndBasicCompositeElements(compositeResults, defCompositeElementsFromBasic);
         
-        // 7. 处理剩余的基础元素与复合结果的交互，完全使用传入的数值
+        // 6. 处理剩余的基础元素与复合结果的交互，完全使用传入的数值
         processRemainingElementsInteraction(compositeResults, reorderedBasicElements);
         
-        // 8. 将处理后的所有元素数据添加到Usage层
+        // 7. 过滤掉值为0或负数的元素
+        Map<String, Double> finalResults = new LinkedHashMap<>();
         for (Map.Entry<String, Double> entry : compositeResults.entrySet()) {
-            // 只有值大于0的元素才添加到Usage层
             if (entry.getValue() > 0) {
-                data.setUsageElement(entry.getKey(), entry.getValue());
+                finalResults.put(entry.getKey(), entry.getValue());
             }
         }
+        
+        return finalResults;
     }
     
     /**
@@ -178,6 +178,7 @@ public class ElementCombinationModifier {
     }
     
     
+
     
     /**
      * 对所有基础元素按重新排序后的顺序进行复合操作

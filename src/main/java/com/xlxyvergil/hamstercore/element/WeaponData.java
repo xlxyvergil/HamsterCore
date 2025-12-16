@@ -1,13 +1,17 @@
 package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
 /**
  * 武器数据类
- * 使用旧版类结构，但保持新的数据结构和使用方式
+ * 合并了WeaponElementData的功能，包含两层数据结构
+ * Basic: 基础数据 - 记录元素名称、来源和添加顺序
+ * InitialModifiers: 初始修饰符列表
  */
 public class WeaponData {
     // MOD相关信息字段
@@ -16,14 +20,18 @@ public class WeaponData {
     public String gunId;
     public String translationKey;
     
-    // 元素数据容器
-    public WeaponElementData elementData = new WeaponElementData();
+    // Basic层: 记录元素名称、来源和添加顺序
+    private final Map<String, List<BasicEntry>> basicElements = new LinkedHashMap<>();
+    
+    // InitialModifiers层: 初始修饰符列表
+    private final List<InitialModifierEntry> initialModifiers = new ArrayList<>();
     
     /**
      * 添加Basic层元素
      */
     public void addBasicElement(String type, String source, int order) {
-        elementData.addBasicElement(type, source, order);
+        BasicEntry entry = new BasicEntry(type, source, order);
+        basicElements.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
     }
     
     /**
@@ -31,102 +39,125 @@ public class WeaponData {
      * 优先级顺序: Def > Config > User
      */
     public List<BasicEntry> getSortedBasicElements() {
-        return elementData.getSortedBasicElements();
+        List<BasicEntry> sortedEntries = new ArrayList<>();
+        
+        // 收集所有BasicEntry
+        for (List<BasicEntry> entries : basicElements.values()) {
+            sortedEntries.addAll(entries);
+        }
+        
+        // 按照优先级排序: Def > Config > User
+        sortedEntries.sort((entry1, entry2) -> {
+            int priority1 = getPriority(entry1.getSource());
+            int priority2 = getPriority(entry2.getSource());
+            
+            // 首先按优先级排序
+            int priorityComparison = Integer.compare(priority1, priority2);
+            if (priorityComparison != 0) {
+                return priorityComparison;
+            }
+            
+            // 然后按添加顺序排序
+            return Integer.compare(entry1.getOrder(), entry2.getOrder());
+        });
+        
+        return sortedEntries;
     }
     
     /**
-     * 设置Usage层元素
+     * 获取来源优先级
+     * @param source 来源 ("DEF", "CONFIG", "USER")
+     * @return 优先级数值，越小优先级越高
      */
-    public void setUsageElement(String type, double value) {
-        elementData.setUsageElement(type, value);
+    private int getPriority(String source) {
+        switch (source.toUpperCase()) {
+            case "DEF": 
+                return 0; // 最高优先级
+            case "CONFIG":
+                return 1; // 中等优先级
+            case "USER":
+                return 2; // 最低优先级
+            default:
+                return 3; // 未知来源，最低优先级
+        }
     }
     
     /**
      * 获取Basic层元素
      */
     public Map<String, List<BasicEntry>> getBasicElements() {
-        return elementData.getBasicElements();
-    }
-    
-    /**
-     * 获取Usage层元素
-     */
-    public Map<String, Double> getUsageElements() {
-        return elementData.getUsageElements();
-    }
-    
-    /**
-     * 获取Usage层指定类型的元素值
-     */
-    public Double getUsageValue(String type) {
-        return elementData.getUsageValue(type);
-    }
-    
-    /**
-     * 清空Usage层元素
-     */
-    public void clearUsageElements() {
-        elementData.clearUsageElements();
+        return basicElements;
     }
     
     /**
      * 添加初始修饰符
      */
     public void addInitialModifier(InitialModifierEntry entry) {
-        elementData.addInitialModifier(entry);
+        initialModifiers.add(entry);
     }
     
     /**
      * 获取初始修饰符列表
      */
     public List<InitialModifierEntry> getInitialModifiers() {
-        return elementData.getInitialModifiers();
+        return initialModifiers;
     }
-    
-    /**
-     * 计算Usage层数据（基于initialModifiers层和Basic层数据）
-     * 这个方法现在只初始化基础数据，避免递归调用
-     * 复合计算将在需要时通过其他方法动态进行
-     */
-    public void computeUsageData(ItemStack stack) {
-        // 直接从InitialModifier层数据中获取基础元素和复合元素的数值，避免递归调用
-        Map<String, Double> basicAndComplexValues = new HashMap<>();
-        
-        for (var modifierEntry : getInitialModifiers()) {
-            String elementName = modifierEntry.getElementType();
-            ElementType elementType = ElementType.byName(elementName);
-            if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                basicAndComplexValues.put(elementName, modifierEntry.getAmount());
-                // 同时设置到Usage层
-                setUsageElement(elementName, modifierEntry.getAmount());
-            }
-        }
-        
-        // 注意：这里不再调用 ElementCombinationModifier.computeElementCombinationsWithValues()
-        // 复合计算将在需要显示或使用时动态进行，避免在事件处理中递归
-    }
-    
-    // 移除computeFullUsageData方法，避免在事件处理中递归
-    // 使用方需要直接调用ForgeAttributeValueReader和ElementCombinationModifier来计算usage层值
     
     /**
      * 将WeaponData转换为NBT标签
-     * 直接返回元素数据，不包含MOD相关信息
      */
     public CompoundTag toNBT() {
-        // 直接返回元素数据，不嵌套在elementData字段中
-        return elementData.toNBT();
+        CompoundTag tag = new CompoundTag();
+        
+        // 保存Basic层数据
+        CompoundTag basicTag = new CompoundTag();
+        for (Map.Entry<String, List<BasicEntry>> entry : basicElements.entrySet()) {
+            ListTag listTag = new ListTag();
+            for (BasicEntry basicEntry : entry.getValue()) {
+                listTag.add(basicEntry.toNBT());
+            }
+            basicTag.put(entry.getKey(), listTag);
+        }
+        tag.put("basic", basicTag);
+        
+        // 保存InitialModifiers层数据
+        ListTag initialModifiersTag = new ListTag();
+        for (InitialModifierEntry entry : initialModifiers) {
+            initialModifiersTag.add(entry.toNBT());
+        }
+        tag.put("initialModifiers", initialModifiersTag);
+        
+        return tag;
     }
     
     /**
      * 从NBT标签创建WeaponData
-     * 直接读取元素数据结构
      */
     public static WeaponData fromNBT(CompoundTag tag) {
         WeaponData data = new WeaponData();
         
-        // 直接从NBT标签中读取元素数据，不经过嵌套的elementData字段
-        data.elementData = WeaponElementData.fromNBT(tag);
+        // 读取Basic层数据
+        if (tag.contains("basic", Tag.TAG_COMPOUND)) {
+            CompoundTag basicTag = tag.getCompound("basic");
+            for (String key : basicTag.getAllKeys()) {
+                ListTag listTag = basicTag.getList(key, Tag.TAG_COMPOUND);
+                List<BasicEntry> entries = new ArrayList<>();
+                for (int i = 0; i < listTag.size(); i++) {
+                    CompoundTag entryTag = listTag.getCompound(i);
+                    entries.add(BasicEntry.fromNBT(entryTag));
+                }
+                data.basicElements.put(key, entries);
+            }
+        }
+        
+        // 读取InitialModifiers层数据
+        if (tag.contains("initialModifiers", Tag.TAG_LIST)) {
+            ListTag initialModifiersTag = tag.getList("initialModifiers", Tag.TAG_COMPOUND);
+            for (int i = 0; i < initialModifiersTag.size(); i++) {
+                CompoundTag entryTag = initialModifiersTag.getCompound(i);
+                data.initialModifiers.add(InitialModifierEntry.fromNBT(entryTag));
+            }
+        }
         
         return data;
     }
@@ -140,11 +171,37 @@ public class WeaponData {
                Objects.equals(itemId, that.itemId) &&
                Objects.equals(gunId, that.gunId) &&
                Objects.equals(translationKey, that.translationKey) &&
-               Objects.equals(elementData, that.elementData);
+               Objects.equals(basicElements, that.basicElements) &&
+               Objects.equals(initialModifiers, that.initialModifiers);
+    }
+    
+    /**
+     * 获取指定类型的使用值
+     * 从InitialModifiers层获取数据
+     */
+    public Double getUsageValue(String type) {
+        for (InitialModifierEntry entry : initialModifiers) {
+            if (entry.getElementType().equals(type)) {
+                return entry.getAmount();
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 获取所有使用元素
+     * 从InitialModifiers层获取数据
+     */
+    public Map<String, Double> getUsageElements() {
+        Map<String, Double> usageElements = new HashMap<>();
+        for (InitialModifierEntry entry : initialModifiers) {
+            usageElements.put(entry.getElementType(), entry.getAmount());
+        }
+        return usageElements;
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(modid, itemId, gunId, translationKey, elementData);
+        return Objects.hash(modid, itemId, gunId, translationKey, basicElements, initialModifiers);
     }
 }
