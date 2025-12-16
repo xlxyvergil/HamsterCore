@@ -44,7 +44,7 @@ public class WeaponAttributeRenderer {
         tooltipElements.add(Component.translatable("hamstercore.ui.weapon_attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
         
         // 显示物理元素（基础元素和复合元素）
-        addPhysicalElements(stack, tooltipElements, cacheData);
+        addallements(stack, tooltipElements, cacheData);
         
         // 显示特殊元素属性（暴击率、暴击伤害、触发率等）
         addSpecialAttributes(stack, tooltipElements, cacheData);
@@ -56,9 +56,9 @@ public class WeaponAttributeRenderer {
     /**
      * 显示物理元素（基础元素和复合元素）
      */
-    private void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
-        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-        if (physicalElements.isEmpty()) {
+    private void addallements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+        Map<String, Double> allments = cacheData.getCombinedElements();
+        if (allments.isEmpty()) {
             return;
         }
         
@@ -67,7 +67,7 @@ public class WeaponAttributeRenderer {
             // 处理物理元素、基础元素和复合元素
             if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
                 // 获取元素值
-                Double value = physicalElements.get(elementType.getName());
+                Double value = allments.get(elementType.getName());
                 if (value == null || value <= 0) {
                     continue;
                 }

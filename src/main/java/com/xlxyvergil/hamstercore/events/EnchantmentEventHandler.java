@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.events;
 
 import com.xlxyvergil.hamstercore.element.EnchantmentAffixManager;
+import dev.shadowsoffire.placebo.events.GetEnchantmentLevelEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.entity.player.AnvilRepairEvent;
@@ -55,6 +56,18 @@ public class EnchantmentEventHandler {
             if (!stack.isEmpty()) {
                 EnchantmentAffixManager.updateEnchantmentAffixes(stack);
             }
+        }
+    }
+    
+    /**
+     * 监听Placebo的GetEnchantmentLevelEvent事件
+     * 当请求物品的附魔等级时触发，用于确保物品上的附魔词缀始终是最新的
+     */
+    @SubscribeEvent
+    public static void onGetEnchantmentLevel(GetEnchantmentLevelEvent event) {
+        ItemStack stack = event.getStack();
+        if (!stack.isEmpty()) {
+            EnchantmentAffixManager.updateEnchantmentAffixes(stack);
         }
     }
 }

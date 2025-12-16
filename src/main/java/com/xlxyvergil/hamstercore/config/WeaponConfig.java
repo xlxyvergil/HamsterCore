@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -157,6 +156,32 @@ public class WeaponConfig {
     }
     
     /**
+     * 创建武器配置的JSON对象
+     */
+    private static JsonObject createWeaponConfigJson(WeaponData weaponData) {
+        JsonObject itemJson = new JsonObject();
+        
+        // 添加elementData部分
+        JsonObject elementDataJson = new JsonObject();
+        
+        // 添加初始属性
+        JsonArray initialModifiersArray = new JsonArray();
+        for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
+            JsonObject modifierJson = new JsonObject();
+            modifierJson.addProperty("name", entry.getName());
+            modifierJson.addProperty("amount", entry.getAmount());
+            modifierJson.addProperty("operation", entry.getOperation());
+            
+            initialModifiersArray.add(modifierJson);
+        }
+        elementDataJson.add("InitialModifiers", initialModifiersArray);
+        
+        itemJson.add("elementData", elementDataJson);
+        
+        return itemJson;
+    }
+    
+    /**
      * 创建默认配置文件
      */
     private static void createDefaultWeaponConfigs() {
@@ -186,10 +211,28 @@ public class WeaponConfig {
             return; // 文件已存在，不需要重新创建
         }
         
-        // 创建默认配置内容（只包含注释和示例）
+        // 获取所有可应用元素属性的物品
+        Set<ResourceLocation> applicableItems = WeaponApplicableItemsFinder.findApplicableItems();
+        
+        // 创建默认配置内容
         JsonObject defaultConfig = new JsonObject();
         defaultConfig.addProperty("_comment", "默认武器配置文件，请勿直接修改此文件");
         defaultConfig.addProperty("_note", "如需添加额外普通武器，请修改additional_normal_weapons.json文件");
+        
+        // 为每个适用物品生成默认配置
+        for (ResourceLocation itemKey : applicableItems) {
+            // 创建武器数据
+            WeaponData weaponData = new WeaponData();
+            
+            // 添加默认初始属性
+            addInitialModifiers(weaponData);
+            
+            // 创建配置JSON
+            JsonObject itemJson = createWeaponConfigJson(weaponData);
+            
+            // 添加到配置对象
+            defaultConfig.add(itemKey.toString(), itemJson);
+        }
         
         // 写入配置文件
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

@@ -9,16 +9,22 @@ import java.util.List;
 import java.util.UUID;
 
 public class EnchantmentAffixData {
-    private final UUID enchantmentUuid;
+    private final String enchantmentId;
+    private final int enchantmentLevel;
     private final List<UUID> affixUuids;
     
-    public EnchantmentAffixData(UUID enchantmentUuid, List<UUID> affixUuids) {
-        this.enchantmentUuid = enchantmentUuid;
+    public EnchantmentAffixData(String enchantmentId, int enchantmentLevel, List<UUID> affixUuids) {
+        this.enchantmentId = enchantmentId;
+        this.enchantmentLevel = enchantmentLevel;
         this.affixUuids = affixUuids;
     }
     
-    public UUID getEnchantmentUuid() {
-        return enchantmentUuid;
+    public String getEnchantmentId() {
+        return enchantmentId;
+    }
+    
+    public int getEnchantmentLevel() {
+        return enchantmentLevel;
     }
     
     public List<UUID> getAffixUuids() {
@@ -30,7 +36,8 @@ public class EnchantmentAffixData {
      */
     public CompoundTag toNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putUUID("enchantmentUuid", enchantmentUuid);
+        tag.putString("enchantmentId", enchantmentId);
+        tag.putInt("enchantmentLevel", enchantmentLevel);
         
         ListTag uuidList = new ListTag();
         for (UUID uuid : affixUuids) {
@@ -47,7 +54,8 @@ public class EnchantmentAffixData {
      * 从NBT标签创建EnchantmentAffixData
      */
     public static EnchantmentAffixData fromNBT(CompoundTag tag) {
-        UUID enchantmentUuid = tag.getUUID("enchantmentUuid");
+        String enchantmentId = tag.getString("enchantmentId");
+        int enchantmentLevel = tag.getInt("enchantmentLevel");
         List<UUID> affixUuids = new ArrayList<>();
         
         ListTag uuidList = tag.getList("affixUuids", Tag.TAG_COMPOUND);
@@ -56,6 +64,6 @@ public class EnchantmentAffixData {
             affixUuids.add(uuidTag.getUUID("uuid"));
         }
         
-        return new EnchantmentAffixData(enchantmentUuid, affixUuids);
+        return new EnchantmentAffixData(enchantmentId, enchantmentLevel, affixUuids);
     }
 }

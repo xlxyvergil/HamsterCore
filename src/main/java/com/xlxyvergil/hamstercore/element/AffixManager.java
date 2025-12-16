@@ -10,9 +10,8 @@ public class AffixManager {
     /**
      * 添加词缀
      */
-    public static void addAffix(ItemStack stack, String name, String elementType, double amount, String operation, String source) {
+    public static void addAffix(ItemStack stack, String name, String elementType, double amount, String operation, UUID uuid, String source) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-        UUID uuid = UUID.randomUUID();
         InitialModifierEntry entry = new InitialModifierEntry(name, elementType, amount, operation, uuid, source);
         weaponData.addInitialModifier(entry);
         
@@ -30,10 +29,10 @@ public class AffixManager {
     /**
      * 修改词缀
      */
-    public static void modifyAffix(ItemStack stack, UUID affixUuid, double newAmount) {
+    public static void modifyAffix(ItemStack stack, UUID uuid, double newAmount) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
-            if (entry.getUuid().equals(affixUuid)) {
+            if (entry.getUuid().equals(uuid)) {
                 // 创建新的条目替换旧条目
                 InitialModifierEntry newEntry = new InitialModifierEntry(
                     entry.getName(),
@@ -58,9 +57,9 @@ public class AffixManager {
     /**
      * 删除词缀
      */
-    public static void removeAffix(ItemStack stack, UUID affixUuid) {
+    public static void removeAffix(ItemStack stack, UUID uuid) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-        weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(affixUuid));
+        weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(uuid));
         
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
