@@ -9,7 +9,7 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
-
+import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder;
 
 import java.io.File;
 import java.io.FileReader;
@@ -233,8 +233,23 @@ public class WeaponConfig {
      * 加载默认武器配置
      */
     private static void loadDefaultWeaponConfigs() {
-        // 默认武器配置已移至其他地方管理
-        // 这里只加载额外普通武器配置
+        // 获取所有可应用元素属性的物品
+        Set<ResourceLocation> applicableItems = WeaponApplicableItemsFinder.findApplicableItems();
+        
+        // 为每个适用物品生成默认配置
+        for (ResourceLocation itemKey : applicableItems) {
+            // 只有当物品还没有配置时才生成默认配置
+            if (!weaponConfigs.containsKey(itemKey)) {
+                // 创建武器数据
+                WeaponData weaponData = new WeaponData();
+                
+                // 添加默认初始属性
+                addInitialModifiers(weaponData);
+                
+                // 添加到武器配置映射
+                weaponConfigs.put(itemKey, weaponData);
+            }
+        }
     }
     
     /**

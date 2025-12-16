@@ -27,37 +27,51 @@ public class ElementCalculationCoordinator {
      * @param weaponData 武器数据
      */
     public void calculateAndCacheElements(ItemStack stack, WeaponData weaponData) {
-        // 1. 调用ElementCalculator从InitialModifiers层计算元素值
+        // 1. 调用ElementCalculator从InitialModifiers层计算所有元素值
         Map<String, Double> elementValues = calculateElementValuesFromInitialModifiers(weaponData);
         
-        // 2. 调用ElementCombinationModifier处理元素复合
-        Map<String, Double> combinedElements = processElementCombinations(weaponData, elementValues);
-        
-        // 3. 计算特殊元素值（暴击率、暴击伤害、触发率等）
-        Map<String, Double> specialStats = calculateSpecialStats(weaponData);
-        
-        // 4. 分离物理元素和派系元素
+        // 2. 分离物理元素、基础元素、复合元素、派系元素和特殊元素
         Map<String, Double> physicalElements = new HashMap<>();
+        Map<String, Double> basicElements = new HashMap<>();
+        Map<String, Double> complexElements = new HashMap<>();
         Map<String, Double> factionElements = new HashMap<>();
+        Map<String, Double> specialStats = new HashMap<>();
         
-        for (Map.Entry<String, Double> entry : combinedElements.entrySet()) {
+        for (Map.Entry<String, Double> entry : elementValues.entrySet()) {
             String elementType = entry.getKey();
             double value = entry.getValue();
             
             ElementType type = ElementType.byName(elementType);
             if (type != null) {
-                if (type.isBasic() || type.isComplex()) {
+                if (type.isPhysical()) {
                     physicalElements.put(elementType, value);
+                } else if (type.isBasic()) {
+                    basicElements.put(elementType, value);
+                } else if (type.isComplex()) {
+                    complexElements.put(elementType, value);
                 } else if (type.isSpecial()) {
                     factionElements.put(elementType, value);
+                } else if (type.isCriticalChance() || type.isCriticalDamage() || type.isTriggerChance()) {
+                    specialStats.put(elementType, value);
                 }
             }
         }
         
-        // 5. 将计算结果缓存到AffixCacheManager中
+        // 3. 合并基础元素和复合元素，用于处理元素复合
+        Map<String, Double> elementsForCombination = new HashMap<>();
+        elementsForCombination.putAll(basicElements);
+        elementsForCombination.putAll(complexElements);
+        
+        // 4. 调用ElementCombinationModifier处理元素复合
+        Map<String, Double> combinedElements = processElementCombinations(weaponData, elementsForCombination);
+        
+        // 5. 将物理元素添加到最终复合结果中
+        combinedElements.putAll(physicalElements);
+        
+        // 6. 将计算结果缓存到AffixCacheManager中
         AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
         cacheData.setCriticalStats(specialStats);
-        cacheData.setPhysicalElements(physicalElements);
+        cacheData.setPhysicalElements(combinedElements);
         cacheData.setFactionElements(factionElements);
         cacheData.setCombinedElements(combinedElements);
     }
@@ -97,30 +111,5 @@ public class ElementCalculationCoordinator {
         return ElementCombinationModifier.computeElementCombinationsWithValues(weaponData, tempValues);
     }
     
-    /**
-     * 计算特殊元素值（暴击率、暴击伤害、触发率等）
-     * @param weaponData 武器数据
-     * @return 特殊元素值映射
-     */
-    private Map<String, Double> calculateSpecialStats(WeaponData weaponData) {
-        Map<String, Double> specialStats = new HashMap<>();
-        
-        List<InitialModifierEntry> initialModifiers = weaponData.getInitialModifiers();
-        
-        for (InitialModifierEntry entry : initialModifiers) {
-            String elementType = entry.getElementType();
-            double amount = entry.getAmount();
-            
-            // 检查是否为特殊元素类型
-            switch (elementType) {
-                case "critical_rate":
-                case "critical_damage":
-                case "trigger_rate":
-                    specialStats.put(elementType, specialStats.getOrDefault(elementType, 0.0) + amount);
-                    break;
-            }
-        }
-        
-        return specialStats;
-    }
+
 }
