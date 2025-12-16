@@ -31,7 +31,6 @@ import com.xlxyvergil.hamstercore.element.ElementAttributes;
 
 
 
-
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
@@ -95,11 +94,15 @@ public class HamsterCore {
             // 生成TACZ配置文件
             if (ModList.get().isLoaded("tacz")) {
                 TacZWeaponConfig.generateTacZWeaponsConfig();
+                // 加载TACZ配置文件
+                TacZWeaponConfig.loadTacZConfigFile();
             }
             
             // 生成拔刀剑配置文件
             if (ModList.get().isLoaded("slashblade")) {
-                SlashBladeWeaponConfig.generateSlashBladeWeaponsConfig();
+                SlashBladeWeaponConfig.generateSlashBladeWeaponsConfig(event.getServer());
+                // 加载拔刀剑配置文件
+                SlashBladeWeaponConfig.loadSlashBladeConfigFile();
             }
             
             // 4. 应用普通物品元素属性

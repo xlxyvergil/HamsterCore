@@ -56,7 +56,7 @@ public class SlashBladeWeaponConfig {
     /**
      * 生成拔刀剑武器配置文件
      */
-    public static void generateSlashBladeWeaponsConfig() {
+    public static void generateSlashBladeWeaponsConfig(net.minecraft.server.MinecraftServer server) {
         // 只有当SlashBlade模组加载时才生成配置
         if (!ModList.get().isLoaded(SLASHBLADE_MOD_ID)) {
             return;
@@ -65,7 +65,7 @@ public class SlashBladeWeaponConfig {
         Map<String, Object> slashBladeConfigs = new HashMap<>();
         
         // 获取所有拔刀剑translationKey
-        Set<String> translationKeys = SlashBladeItemsFetcher.getSlashBladeTranslationKeys();
+        Set<String> translationKeys = SlashBladeItemsFetcher.getSlashBladeTranslationKeys(server);
         List<JsonObject> weaponsList = new ArrayList<>();
         
         for (String translationKey : translationKeys) {
@@ -75,6 +75,9 @@ public class SlashBladeWeaponConfig {
                 // 添加translationKey字段到配置中
                 itemJson.addProperty("translationKey", translationKey);
                 weaponsList.add(itemJson);
+                
+                // 存储到内存映射表，使用translationKey作为键以便后续查找
+                translationKeyToConfigMap.put(translationKey, weaponData);
             }
         }
         
@@ -98,13 +101,10 @@ public class SlashBladeWeaponConfig {
         // 拔刀剑特殊信息
         data.translationKey = translationKey; // 具体的translationKey
         
-        // 添加默认特殊属性
-        data.addBasicElement("critical_chance", "CONFIG", 0);
-        data.addBasicElement("critical_damage", "CONFIG", 1);
-        data.addBasicElement("trigger_chance", "CONFIG", 2);
-        
-        // 设置拔刀剑默认元素占比
-        setDefaultElementRatiosForSlashBlade(data, translationKey);
+
+
+
+
         
         // 添加初始修饰符
         addInitialModifiers(data);
@@ -116,10 +116,7 @@ public class SlashBladeWeaponConfig {
      * 为拔刀剑设置默认元素占比（统一配置）
      */
     private static void setDefaultElementRatiosForSlashBlade(WeaponData data, String translationKey) {
-        // 拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%
-        data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 0);
-        data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-        data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 2);
+        // 不再向Basic层和Usage层添加数据
     }
     
     /**
@@ -137,20 +134,11 @@ public class SlashBladeWeaponConfig {
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
         
-        // 添加Basic层 - 记录元素名称、来源和添加顺序
+        // 添加空的Basic层
         JsonArray basicArray = new JsonArray();
-        for (Map.Entry<String, List<BasicEntry>> entry : weaponData.getBasicElements().entrySet()) {
-            for (BasicEntry basicEntry : entry.getValue()) {
-                JsonArray elementArray = new JsonArray();
-                elementArray.add(basicEntry.getType());
-                elementArray.add(basicEntry.getSource());
-                elementArray.add(basicEntry.getOrder());
-                basicArray.add(elementArray);
-            }
-        }
         elementDataJson.add("Basic", basicArray);
         
-        // 添加Usage层 - 使用空数组，将在运行时由ElementCombinationModifier计算
+        // 添加空的Usage层
         JsonArray usageArray = new JsonArray();
         elementDataJson.add("Usage", usageArray);
         
@@ -241,35 +229,21 @@ public class SlashBladeWeaponConfig {
         // 读取elementData
         if (itemJson.has("elementData")) {
             JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
-            
-            // 读取Basic层
-            if (elementDataJson.has("Basic")) {
-                JsonArray basicArray = elementDataJson.getAsJsonArray("Basic");
-                for (JsonElement element : basicArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    String source = elementArray.get(1).getAsString();
-                    int order = elementArray.size() > 2 ? elementArray.get(2).getAsInt() : 0; // 顺序，默认为0
-                    
-                    // 直接添加，保持原有顺序
-                    weaponData.getBasicElements().computeIfAbsent(type, k -> new ArrayList<>())
-                        .add(new BasicEntry(type, source, order));
-                }
-            }
-            
-            // Usage层和Def层数据将由ElementCombinationModifier在运行时计算
-            // 不需要从配置文件中读取这些数据
-            
+                        
+            // 不再读取Basic层
+                        
+            // 不再读取Usage层
+                        
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
                 JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
                 for (JsonElement modifierElement : modifiersArray) {
                     JsonObject modifierJson = modifierElement.getAsJsonObject();
-                    
+                                
                     String name = modifierJson.get("name").getAsString();
                     double amount = modifierJson.get("amount").getAsDouble();
                     String operationStr = modifierJson.get("operation").getAsString();
-                    
+                                
                     // 解析操作类型
                     AttributeModifier.Operation operation;
                     switch (operationStr) {
@@ -285,10 +259,10 @@ public class SlashBladeWeaponConfig {
                         default:
                             operation = AttributeModifier.Operation.ADDITION;
                     }
-                    
+                                
                     // UUID将在应用阶段生成
                     UUID uuid = ElementUUIDManager.getElementUUID(name);
-                    
+                                
                     // 创建修饰符
                     AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
                     weaponData.addInitialModifier(new InitialModifierEntry(name, modifier));
@@ -298,7 +272,7 @@ public class SlashBladeWeaponConfig {
         
         // 根据配置类型决定内存映射的键名
         if (weaponData.translationKey != null) {
-            // 拔刀剑使用统一的slashblade:slashblade作为键
+            // 拔刀剑使用translationKey作为键
             translationKeyToConfigMap.put(weaponData.translationKey, weaponData);
         }
     }
@@ -368,34 +342,35 @@ public class SlashBladeWeaponConfig {
      * 为武器添加初始修饰符
      */
     private static void addInitialModifiers(WeaponData data) {
-        // 为每个基础元素添加初始修饰符
-        for (Map.Entry<String, List<BasicEntry>> entry : data.getBasicElements().entrySet()) {
-            String elementType = entry.getKey();
-            double defaultValue = 1.0; // 默认值
-            
-            // 根据元素类型设置默认值
-            if ("critical_chance".equals(elementType)) {
-                defaultValue = DEFAULT_CRITICAL_CHANCE;
-            } else if ("critical_damage".equals(elementType)) {
-                defaultValue = DEFAULT_CRITICAL_DAMAGE;
-            } else if ("trigger_chance".equals(elementType)) {
-                defaultValue = DEFAULT_TRIGGER_CHANCE;
-            }
-            // 注意：派系增伤和特殊属性不应该从Usage层获取默认值，因为Usage层不存储这些数据
-            
-            // 为每种元素类型使用固定的UUID
-            UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
-            
-            // 创建属性修饰符
-            AttributeModifier modifier = new AttributeModifier(
-                modifierUuid, 
-                elementType, 
-                defaultValue, 
-                AttributeModifier.Operation.ADDITION
-            );
-            
-            // 添加到初始修饰符列表
-            data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
-        }
+        // 直接添加默认的初始修饰符，不依赖Basic层数据
+        
+        // 添加默认物理元素修饰符
+        addDefaultModifier(data, ElementType.SLASH.getName(), DEFAULT_SLASH);
+        addDefaultModifier(data, ElementType.IMPACT.getName(), DEFAULT_IMPACT);
+        addDefaultModifier(data, ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
+        
+        // 添加默认特殊属性修饰符
+        addDefaultModifier(data, "critical_chance", DEFAULT_CRITICAL_CHANCE);
+        addDefaultModifier(data, "critical_damage", DEFAULT_CRITICAL_DAMAGE);
+        addDefaultModifier(data, "trigger_chance", DEFAULT_TRIGGER_CHANCE);
+    }
+    
+    /**
+     * 添加默认修饰符
+     */
+    private static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
+        // 为每种元素类型使用固定的UUID
+        UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
+        
+        // 创建属性修饰符
+        AttributeModifier modifier = new AttributeModifier(
+            modifierUuid, 
+            elementType, 
+            defaultValue, 
+            AttributeModifier.Operation.ADDITION
+        );
+        
+        // 添加到初始修饰符列表
+        data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
     }
 }

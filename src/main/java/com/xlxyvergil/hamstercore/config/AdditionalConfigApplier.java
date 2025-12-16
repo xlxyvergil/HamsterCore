@@ -56,11 +56,12 @@ public class AdditionalConfigApplier {
             // 将配置保存到全局配置映射中，以便在游戏中使用
             WeaponConfig.cacheAdditionalWeaponConfig(itemKey, weaponData);
             
-            // 创建物品堆并保存元素数据到NBT
+            // 创建物品堆并仅保存InitialModifier数据到NBT
             Item item = BuiltInRegistries.ITEM.get(itemKey);
             if (item != null) {
                 ItemStack stack = new ItemStack(item);
-                WeaponDataManager.saveElementData(stack, weaponData);
+                // 只保存InitialModifier层数据
+                WeaponDataManager.saveInitialModifierData(stack, weaponData);
             }
             
             return true;

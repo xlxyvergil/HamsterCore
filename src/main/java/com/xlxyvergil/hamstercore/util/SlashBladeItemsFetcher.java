@@ -9,6 +9,8 @@ import net.minecraftforge.fml.ModList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 拔刀剑物品获取器，专门负责获取拔刀剑的ID和translationKey
@@ -20,6 +22,9 @@ public class SlashBladeItemsFetcher {
     private static boolean slashBladeChecked = false;
     private static Set<ResourceLocation> slashBladeIDs = null;
     private static Set<String> slashBladeTranslationKeys = null;
+    
+    // 缓存已配置的拔刀剑物品堆
+    private static final Map<String, ItemStack> slashBladeStacks = new ConcurrentHashMap<>();
     
     /**
      * 检查拔刀剑模组是否已加载
@@ -60,6 +65,7 @@ public class SlashBladeItemsFetcher {
      */
     public static Set<ResourceLocation> getSlashBladeIDs(MinecraftServer server) {
         loadSlashBladeData(server);
+        slashBladeChecked = true; // 标记为已检查，避免后续空加载
         return slashBladeIDs != null ? new HashSet<>(slashBladeIDs) : Collections.emptySet();
     }
     
@@ -69,6 +75,7 @@ public class SlashBladeItemsFetcher {
      */
     public static Set<String> getSlashBladeTranslationKeys(MinecraftServer server) {
         loadSlashBladeData(server);
+        slashBladeChecked = true; // 标记为已检查，避免后续空加载
         return slashBladeTranslationKeys != null ? new HashSet<>(slashBladeTranslationKeys) : Collections.emptySet();
     }
     
@@ -262,5 +269,25 @@ public class SlashBladeItemsFetcher {
         }
         
         return null;
+    }
+    
+    /**
+     * 缓存已配置的拔刀剑物品堆到全局映射中
+     * @param translationKey 拔刀剑的translationKey
+     * @param stack 配置好的物品堆
+     */
+    public static void cacheSlashBladeStack(String translationKey, ItemStack stack) {
+        if (translationKey != null && stack != null && !stack.isEmpty()) {
+            slashBladeStacks.put(translationKey, stack);
+        }
+    }
+    
+    /**
+     * 获取已配置的拔刀剑物品堆
+     * @param translationKey 拔刀剑的translationKey
+     * @return 对应的配置好的物品堆
+     */
+    public static ItemStack getSlashBladeStack(String translationKey) {
+        return slashBladeStacks.get(translationKey);
     }
 }

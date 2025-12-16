@@ -34,8 +34,6 @@ public class TacZConfigApplier {
         int appliedCount = 0;
 
         try {
-            // 确保配置已加载
-            TacZWeaponConfig.loadTacZConfigFile();
 
             // 获取所有TACZ枪械配置
             Map<String, List<WeaponData>> tacZConfigs = TacZWeaponConfig.getTacZGunConfigs();
@@ -87,13 +85,17 @@ public class TacZConfigApplier {
             // 将配置保存到全局配置映射中，以便在游戏中使用
             TacZWeaponConfig.cacheTacZGunConfig(gunId.toString(), weaponData);
             
-            // 获取TACZ枪械物品并保存元素数据到NBT
+            // 根据gunId获取具体的TACZ枪械物品并应用配置
             Item tacZGunItem = getTacZGunItem();
             if (tacZGunItem != null) {
+                // 创建具有特定gunId的TACZ枪械物品堆
                 ItemStack stack = new ItemStack(tacZGunItem);
-                // 在物品NBT中存储一个标识符，用于识别这是TACZ枪械
+                // 在物品NBT中存储gunId，用于识别具体是哪把枪
                 stack.getOrCreateTag().putString("GunId", gunId.toString());
-                WeaponDataManager.saveElementData(stack, weaponData);
+                // 只保存InitialModifier层数据
+                WeaponDataManager.saveInitialModifierData(stack, weaponData);
+                // 将配置好的物品保存到全局映射中，供游戏运行时使用
+                ModSpecialItemsFetcher.cacheTaczGunStack(gunId, stack);
             }
 
             return true;

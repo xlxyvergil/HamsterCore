@@ -13,6 +13,7 @@ import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -54,246 +55,91 @@ public class WeaponAttributeRenderer {
                    text.contains("在脚上");
         });
         
-        // 添加Usage层属性到工具提示（仅包含基础元素和复合元素）
-        addUsageAttributes(tooltipElements, stack);
+        // 添加"Weapon Attributes"标题
+        tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
+        
+        // 从usage层显示计算后的基础元素和复合元素数据
+        addUsageAttributes(stack, tooltipElements);
+        
+        // 从属性修饰符中显示计算后的特殊元素、派系元素和物理元素
+        addAttributeModifierAttributes(stack, tooltipElements);
     }
     
     /**
-     * 添加Usage层属性到工具提示
-     * 仅包含：基础元素和复合元素
+     * 从usage层显示计算后的基础元素和复合元素数据
+     * 无需额外判断或属性修饰符查找，有数据就显示
      */
-    private static void addUsageAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 确保Usage层数据是最新的
-        WeaponData weaponData = WeaponDataManager.loadElementData(stack);
-        
-        // 直接从ElementHelper获取最新的基础元素和复合元素值
-        // 这里使用ElementCombinationModifier直接计算usage层值，避免递归
-        if (weaponData != null) {
-            ElementHelper.ElementCategoryData elementData = ElementHelper.getAllElementValuesByCategory(stack);
-            Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
-            
-            // ElementCombinationModifier只处理基础元素和复合元素
-            // 物理元素、特殊元素和派系元素直接通过修饰符获取值
-            
-            // 在安全的上下文中进行复合计算
-            ElementCombinationModifier.computeElementCombinationsWithValues(weaponData, basicAndComplexValues);
+    private void addUsageAttributes(ItemStack stack, List<Component> tooltipElements) {
+        // 获取武器数据
+        WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
+        if (weaponData == null) {
+            return;
         }
         
-        // 先调用一遍计算，确保缓存是最新的
-        ElementDamageManager.getActiveElements(stack);
-        
-        // 从缓存中获取元素列表
-        // 调用方法更新内部缓存 - 不需要直接使用返回值
-ElementDamageManager.getActiveElements(stack);
-        
-        // 添加空行分隔
-        tooltipElements.add(Component.literal(""));
-        
-        // 添加Usage层标题
-        tooltipElements.add(Component.literal("Weapon Attributes").withStyle(ChatFormatting.YELLOW));
-        
-        // 从ElementHelper获取特殊元素和派系元素的计算值
-        Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(stack);
-        
-        // 添加特殊属性（从ElementHelper获取计算后的值）
-        String[] specialElements = {"critical_chance", "critical_damage", "trigger_chance"};
-        for (String specialElement : specialElements) {
-            Double value = specialAndFactionValues.get(specialElement);
-            if (value != null && value > 0) {
-                String translationKey = "hamstercore.ui." + specialElement;
-                String formattedText;
-                
-                switch (specialElement) {
-                    case "critical_chance":
-                        formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable(translationKey).getString(), 
-                            value * 100);
-                        break;
-                    case "critical_damage":
-                        formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable(translationKey).getString(), 
-                            value * 100);
-                        break;
-                    case "trigger_chance":
-                        formattedText = String.format("%s: %.1f%%", 
-                            Component.translatable(translationKey).getString(), 
-                            value * 100);
-                        break;
-                    default:
-                        continue;
-                }
-                tooltipElements.add(Component.literal(formattedText));
-            }
+        // 获取usage层元素
+        Map<String, Double> usageElements = weaponData.getUsageElements();
+        if (usageElements.isEmpty()) {
+            return;
         }
         
-        // 添加元素属性（从WeaponData获取，包括基础元素、复合元素和物理元素）
-        boolean hasElements = false;
-        
-        // 遍历所有基础元素和复合元素类型
-        String[] allElementTypes = {"heat", "cold", "electricity", "toxin", 
-                                   "blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
-        
-        for (String elementTypeName : allElementTypes) {
-            ElementType elementType = ElementType.byName(elementTypeName);
-            if (elementType == null) {
+        // 遍历所有元素类型
+        for (ElementType elementType : ElementType.getAllTypes()) {
+            // 只处理基础元素和复合元素
+            if (!elementType.isBasic() && !elementType.isComplex()) {
                 continue;
             }
             
-            double value = 0.0;
-            if (weaponData != null) {
-                // 从WeaponData获取元素值
-                Double weaponValue = weaponData.getUsageValue(elementTypeName);
-                if (weaponValue != null) {
-                    value = weaponValue;
-                }
-            }
-            
-            // 如果WeaponData中没有值，尝试从ElementHelper获取
-            if (value <= 0) {
-                value = ElementHelper.getElementValueFromItem(stack, elementType);
-            }
-            
-            // 跳过无效值
-            if (value <= 0) {
+            // 获取元素值
+            Double value = usageElements.get(elementType.getName());
+            if (value == null || value <= 0) {
                 continue;
             }
             
-            // 如果有有效的元素，添加标题（只添加一次）
-            if (!hasElements) {
-                tooltipElements.add(
-                    Component.translatable("hamstercore.ui.element_ratios").append(":")
-                );
-                hasElements = true;
-            }
-            
-            // 创建元素名称和数值的文本组件，使用元素颜色
-            String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-            String elementText = String.format("  %s: %.2f", elementName, value);
-            
-            // 检查颜色是否有效，避免NullPointerException
-            Integer colorValue = elementType.getColor().getColor();
-            if (colorValue != null) {
-                Component elementComponent = Component.literal(elementText)
-                    .withStyle(style -> style.withColor(colorValue));
-                tooltipElements.add(elementComponent);
-            } else {
-                // 如果没有有效颜色，使用默认样式
-                tooltipElements.add(Component.literal(elementText));
-            }
+            // 格式化并添加到工具提示
+            String formattedValue = String.format("%.1f", value);
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
         }
-        
-        // 处理物理元素（slash, impact, puncture）- 直接从修饰符获取值
-        String[] physicalElements = {"slash", "impact", "puncture"};
-        for (String physicalType : physicalElements) {
-            ElementType elementType = ElementType.byName(physicalType);
-            if (elementType == null) {
+    }
+    
+    /**
+     * 从属性修饰符中显示计算后的特殊元素、派系元素和物理元素
+     * 无需额外判断，有数据就显示
+     */
+    private void addAttributeModifierAttributes(ItemStack stack, List<Component> tooltipElements) {
+        // 遍历所有元素类型
+        for (ElementType elementType : ElementType.getAllTypes()) {
+            // 只处理特殊元素、派系元素和物理元素
+            if (!elementType.isSpecial() && !elementType.isPhysical()) {
                 continue;
             }
             
-            // 直接从修饰符获取物理元素值
+            // 从属性修饰符中获取元素值
             double value = ElementHelper.getElementValueFromItem(stack, elementType);
-            
-            // 跳过无效值
             if (value <= 0) {
                 continue;
             }
             
-            // 如果有有效的元素，添加标题（只添加一次）
-            if (!hasElements) {
-                tooltipElements.add(
-                    Component.translatable("hamstercore.ui.element_ratios").append(":")
-                );
-                hasElements = true;
-            }
-            
-            // 创建元素名称和数值的文本组件，使用元素颜色
-            String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-            String elementText = String.format("  %s: %.2f", elementName, value);
-            
-            // 检查颜色是否有效，避免NullPointerException
-            Integer colorValue = elementType.getColor().getColor();
-            if (colorValue != null) {
-                Component elementComponent = Component.literal(elementText)
-                    .withStyle(style -> style.withColor(colorValue));
-                tooltipElements.add(elementComponent);
+            // 格式化并添加到工具提示
+            String formattedValue;
+            if (elementType.isSpecial() && (elementType == ElementType.CRITICAL_CHANCE || 
+                                           elementType == ElementType.CRITICAL_DAMAGE || 
+                                           elementType == ElementType.TRIGGER_CHANCE)) {
+                // 特殊属性显示为百分比
+                formattedValue = String.format("%.1f%%", value * 100);
             } else {
-                // 如果没有有效颜色，使用默认样式
-                tooltipElements.add(Component.literal(elementText));
+                // 其他属性显示为普通数值
+                formattedValue = String.format("%.1f", value);
             }
-        }
-        
-        // 添加派系增伤属性到工具提示（从属性修饰符系统获取Forge计算后的值）
-        addFactionAttributes(tooltipElements, stack);
-    }
-    
-    /**
-     * 添加派系增伤属性到工具提示（从ElementHelper获取Forge计算后的值）
-     */
-    private static void addFactionAttributes(List<Component> tooltipElements, ItemStack stack) {
-        // 从ElementHelper获取特殊元素和派系元素的计算值
-        Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(stack);
-        
-        // 定义所有可能的派系类型
-        String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
-        
-        boolean hasFactionBonuses = false;
-        
-        // 先检查是否有任何派系增伤
-        for (String faction : factionTypes) {
-            Double factionModifier = specialAndFactionValues.get(faction);
-            if (factionModifier != null && factionModifier > 0) {
-                hasFactionBonuses = true;
-                break;
-            }
-        }
-        
-        // 只有在有派系增伤时才添加标题和空行
-        if (hasFactionBonuses) {
-            // 添加空行分隔
-            tooltipElements.add(Component.literal(""));
             
-            // 添加派系增伤标题
-            tooltipElements.add(
-                Component.translatable("hamstercore.ui.faction_damage_bonus").append(":")
-            );
-            
-            // 添加每个派系的增伤数值（从ElementHelper获取计算后的值）
-            for (String faction : factionTypes) {
-                Double factionModifier = specialAndFactionValues.get(faction);
-                
-                // 只显示非零的派系增伤
-                if (factionModifier != null && factionModifier > 0) {
-                    String factionText = String.format("  %s: %.1f%%", 
-                        Component.translatable("element." + faction + ".name").getString(), 
-                        factionModifier * 100);
-                    
-                    // 根据派系设置颜色
-                    ChatFormatting color = ChatFormatting.WHITE; // 默认颜色
-                    switch (faction.toUpperCase()) {
-                        case "GRINEER":
-                            color = ChatFormatting.RED;
-                            break;
-                        case "INFESTED":
-                            color = ChatFormatting.GREEN;
-                            break;
-                        case "CORPUS":
-                            color = ChatFormatting.BLUE;
-                            break;
-                        case "OROKIN":
-                            color = ChatFormatting.LIGHT_PURPLE;
-                            break;
-                        case "SENTIENT":
-                            color = ChatFormatting.DARK_RED;
-                            break;
-                        case "MURMUR":
-                            color = ChatFormatting.AQUA;
-                            break;
-                    }
-                    
-                    Component factionComponent = Component.literal(factionText).withStyle(color);
-                    tooltipElements.add(factionComponent);
-                }
-            }
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
         }
     }
 }

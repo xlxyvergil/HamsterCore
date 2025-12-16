@@ -102,13 +102,10 @@ public class TacZWeaponConfig {
         // TACZ特殊信息
         data.gunId = gunId.toString(); // 具体的枪械ID
         
-        // 添加默认特殊属性
-        data.addBasicElement("critical_chance", "CONFIG", 0);
-        data.addBasicElement("critical_damage", "CONFIG", 1);
-        data.addBasicElement("trigger_chance", "CONFIG", 2);
-        
-        // 设置TACZ枪械默认元素占比
-        setDefaultElementRatiosForTacZ(data, gunId);
+
+
+
+
         
         // 添加初始修饰符
         addInitialModifiers(data);
@@ -120,35 +117,7 @@ public class TacZWeaponConfig {
      * 为TACZ枪械设置默认元素占比
      */
     private static void setDefaultElementRatiosForTacZ(WeaponData data, ResourceLocation gunId) {
-        // 根据具体枪械类型设置不同的元素占比
-        String gunType = gunId.getPath().toLowerCase();
-        
-        if (gunType.contains("pistol") || gunType.contains("handgun")) {
-            // 手枪类：平衡型
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-        } else if (gunType.contains("rifle") || gunType.contains("assault")) {
-            // 步枪类：穿刺为主
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-        } else if (gunType.contains("sniper")) {
-            // 狙击枪：高穿刺
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-        } else if (gunType.contains("shotgun")) {
-            // 霰弹枪：冲击为主
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-        } else {
-            // 默认枪械：穿刺和冲击为主
-            data.addBasicElement(ElementType.PUNCTURE.getName(), "CONFIG", 0);
-            data.addBasicElement(ElementType.IMPACT.getName(), "CONFIG", 1);
-            data.addBasicElement(ElementType.SLASH.getName(), "CONFIG", 2);
-        }
+        // 不再向Basic层和Usage层添加数据
     }
     
     /**
@@ -166,20 +135,11 @@ public class TacZWeaponConfig {
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
         
-        // 添加Basic层 - 记录元素名称、来源和添加顺序
+        // 添加空的Basic层
         JsonArray basicArray = new JsonArray();
-        for (Map.Entry<String, List<BasicEntry>> entry : weaponData.getBasicElements().entrySet()) {
-            for (BasicEntry basicEntry : entry.getValue()) {
-                JsonArray elementArray = new JsonArray();
-                elementArray.add(basicEntry.getType());
-                elementArray.add(basicEntry.getSource());
-                elementArray.add(basicEntry.getOrder());
-                basicArray.add(elementArray);
-            }
-        }
         elementDataJson.add("Basic", basicArray);
         
-        // 添加Usage层 - 使用空数组，将在运行时由ElementCombinationModifier计算
+        // 添加空的Usage层
         JsonArray usageArray = new JsonArray();
         elementDataJson.add("Usage", usageArray);
         
@@ -270,35 +230,21 @@ public class TacZWeaponConfig {
         // 读取elementData
         if (itemJson.has("elementData")) {
             JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
-            
-            // 读取Basic层
-            if (elementDataJson.has("Basic")) {
-                JsonArray basicArray = elementDataJson.getAsJsonArray("Basic");
-                for (JsonElement element : basicArray) {
-                    JsonArray elementArray = element.getAsJsonArray();
-                    String type = elementArray.get(0).getAsString();
-                    String source = elementArray.get(1).getAsString();
-                    int order = elementArray.size() > 2 ? elementArray.get(2).getAsInt() : 0; // 顺序，默认为0
-                    
-                    // 直接添加，保持原有顺序
-                    weaponData.getBasicElements().computeIfAbsent(type, k -> new ArrayList<>())
-                        .add(new BasicEntry(type, source, order));
-                }
-            }
-            
-            // Usage层和Def层数据将由ElementCombinationModifier在运行时计算
-            // 不需要从配置文件中读取这些数据
-            
+                        
+            // 不再读取Basic层
+                        
+            // 不再读取Usage层
+                        
             // 读取初始属性修饰符数据
             if (elementDataJson.has("InitialModifiers")) {
                 JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
                 for (JsonElement modifierElement : modifiersArray) {
                     JsonObject modifierJson = modifierElement.getAsJsonObject();
-                    
+                                
                     String name = modifierJson.get("name").getAsString();
                     double amount = modifierJson.get("amount").getAsDouble();
                     String operationStr = modifierJson.get("operation").getAsString();
-                    
+                                
                     // 解析操作类型
                     AttributeModifier.Operation operation;
                     switch (operationStr) {
@@ -314,10 +260,10 @@ public class TacZWeaponConfig {
                         default:
                             operation = AttributeModifier.Operation.ADDITION;
                     }
-                    
+                                
                     // UUID将在应用阶段生成
                     UUID uuid = ElementUUIDManager.getElementUUID(name);
-                    
+                                
                     // 创建修饰符
                     AttributeModifier modifier = new AttributeModifier(uuid, name, amount, operation);
                     weaponData.addInitialModifier(new InitialModifierEntry(name, modifier));
@@ -400,34 +346,35 @@ public class TacZWeaponConfig {
      * 为武器添加初始修饰符
      */
     private static void addInitialModifiers(WeaponData data) {
-        // 为每个基础元素添加初始修饰符
-        for (Map.Entry<String, List<BasicEntry>> entry : data.getBasicElements().entrySet()) {
-            String elementType = entry.getKey();
-            double defaultValue = 1.0; // 默认值
-            
-            // 根据元素类型设置默认值
-            if ("critical_chance".equals(elementType)) {
-                defaultValue = DEFAULT_CRITICAL_CHANCE;
-            } else if ("critical_damage".equals(elementType)) {
-                defaultValue = DEFAULT_CRITICAL_DAMAGE;
-            } else if ("trigger_chance".equals(elementType)) {
-                defaultValue = DEFAULT_TRIGGER_CHANCE;
-            }
-            // 注意：派系增伤和特殊属性不应该从Usage层获取默认值，因为Usage层不存储这些数据
-            
-            // 为每种元素类型使用固定的UUID
-            UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
-            
-            // 创建属性修饰符
-            AttributeModifier modifier = new AttributeModifier(
-                modifierUuid, 
-                elementType, 
-                defaultValue, 
-                AttributeModifier.Operation.ADDITION
-            );
-            
-            // 添加到初始修饰符列表
-            data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
-        }
+        // 直接添加默认的初始修饰符，不依赖Basic层数据
+        
+        // 添加默认物理元素修饰符
+        addDefaultModifier(data, ElementType.SLASH.getName(), DEFAULT_SLASH);
+        addDefaultModifier(data, ElementType.IMPACT.getName(), DEFAULT_IMPACT);
+        addDefaultModifier(data, ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
+        
+        // 添加默认特殊属性修饰符
+        addDefaultModifier(data, "critical_chance", DEFAULT_CRITICAL_CHANCE);
+        addDefaultModifier(data, "critical_damage", DEFAULT_CRITICAL_DAMAGE);
+        addDefaultModifier(data, "trigger_chance", DEFAULT_TRIGGER_CHANCE);
+    }
+    
+    /**
+     * 添加默认修饰符
+     */
+    private static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
+        // 为每种元素类型使用固定的UUID
+        UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
+        
+        // 创建属性修饰符
+        AttributeModifier modifier = new AttributeModifier(
+            modifierUuid, 
+            elementType, 
+            defaultValue, 
+            AttributeModifier.Operation.ADDITION
+        );
+        
+        // 添加到初始修饰符列表
+        data.addInitialModifier(new InitialModifierEntry(elementType, modifier));
     }
 }

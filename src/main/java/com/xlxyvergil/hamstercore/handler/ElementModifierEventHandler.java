@@ -12,6 +12,8 @@ import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.UUID;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class ElementModifierEventHandler {
         
         for (InitialModifierEntry entry : initialModifiers) {
             try {
-                if (entry == null || entry.getModifier() == null) {
+                if (entry == null) {
                     continue;
                 }
                 
@@ -50,6 +52,20 @@ public class ElementModifierEventHandler {
                 if (elementType == null) {
                     System.err.println("Unknown element type: " + elementName);
                     continue;
+                }
+                
+                // 如果修饰符为null，创建默认的修饰符
+                if (originalModifier == null) {
+                    // 创建默认的UUID
+                    UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementName).getBytes());
+                    
+                    // 创建默认的修饰符
+                    originalModifier = new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        modifierUuid, 
+                        elementName, 
+                        1.0, // 默认值
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION
+                    );
                 }
                 
                 // 创建ElementAttributeModifierEntry

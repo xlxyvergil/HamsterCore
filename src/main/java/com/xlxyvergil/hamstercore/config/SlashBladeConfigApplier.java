@@ -24,8 +24,6 @@ public class SlashBladeConfigApplier {
         int appliedCount = 0;
 
         try {
-            // 确保配置已加载
-            SlashBladeWeaponConfig.loadSlashBladeConfigFile();
 
             // 检查拔刀剑模组是否已加载
             if (!SlashBladeItemsFetcher.isSlashBladeLoaded()) {
@@ -82,13 +80,17 @@ public class SlashBladeConfigApplier {
             // 将配置保存到全局配置映射中，以便在游戏中使用
             SlashBladeWeaponConfig.cacheSlashBladeConfig(translationKey, weaponData);
             
-            // 获取拔刀剑物品并保存元素数据到NBT
+            // 根据translationKey获取具体的拔刀剑物品并应用配置
             Item slashBladeItem = getSlashBladeItem();
             if (slashBladeItem != null) {
+                // 创建具有特定translationKey的拔刀剑物品堆
                 ItemStack stack = new ItemStack(slashBladeItem);
-                // 在物品NBT中存储一个标识符，用于识别这是拔刀剑
+                // 在物品NBT中存储translationKey，用于识别具体是哪把刀
                 stack.getOrCreateTag().putString("TranslationKey", translationKey);
-                WeaponDataManager.saveElementData(stack, weaponData);
+                // 只保存InitialModifier层数据
+                WeaponDataManager.saveInitialModifierData(stack, weaponData);
+                // 将配置好的物品保存到全局映射中，供游戏运行时使用
+                SlashBladeItemsFetcher.cacheSlashBladeStack(translationKey, stack);
             }
 
             return true;

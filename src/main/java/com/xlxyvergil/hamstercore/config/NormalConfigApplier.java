@@ -78,11 +78,14 @@ public class NormalConfigApplier {
             // 将配置保存到全局配置映射中，以便在游戏中使用
             WeaponConfig.cacheWeaponConfig(itemKey, weaponData);
             
-            // 创建物品堆并保存元素数据到NBT
+            // 创建物品堆并仅保存InitialModifier数据到NBT
             Item item = BuiltInRegistries.ITEM.get(itemKey);
             if (item != null) {
                 ItemStack stack = new ItemStack(item);
-                WeaponDataManager.saveElementData(stack, weaponData);
+                // 只保存InitialModifier层数据
+                WeaponDataManager.saveInitialModifierData(stack, weaponData);
+                // 将配置好的物品保存到全局映射中，供游戏运行时使用
+                WeaponConfig.cacheConfiguredItemStack(itemKey, stack);
             }
             
             return true;
@@ -114,8 +117,8 @@ public class NormalConfigApplier {
             return false;
         }
         
-        // 应用配置到物品NBT
-        WeaponDataManager.saveElementData(stack, weaponData);
+        // 应用配置到物品NBT，只保存InitialModifier层数据
+        WeaponDataManager.saveInitialModifierData(stack, weaponData);
         
         return true;
     }
@@ -137,4 +140,4 @@ public class NormalConfigApplier {
     public static boolean hasWeaponData(ItemStack stack) {
         return WeaponDataManager.loadElementData(stack) != null;
     }
-}
+} 

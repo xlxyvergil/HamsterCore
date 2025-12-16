@@ -1,8 +1,14 @@
 package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
+import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
+import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
+import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
+import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+
+import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +44,7 @@ public class WeaponDataManager {
         }
         
         // 如果NBT中不存在，则从配置文件获取
-        weaponData = WeaponConfig.getWeaponConfig(stack);
+        weaponData = getWeaponConfig(stack);
         if (weaponData != null) {
             // 将配置文件中的数据写入NBT
             saveElementData(stack, weaponData);
@@ -60,22 +66,40 @@ public class WeaponDataManager {
         // 从NBT中读取武器数据
         WeaponData weaponData = readElementData(stack);
         if (weaponData != null) {
-            // 注意：这里不再调用computeFullUsageData，避免递归调用
-            // 需要usage层数据的地方应该自己计算
             return weaponData;
         }
         
         // 如果NBT中没有数据，尝试从配置文件加载
-        weaponData = WeaponConfig.getWeaponConfig(stack);
+        weaponData = getWeaponConfig(stack);
         if (weaponData != null) {
-            // 注意：这里不再调用computeFullUsageData，避免递归调用
-            // 需要usage层数据的地方应该自己计算
-            // 将配置文件中的数据写入NBT，确保下次可以直接读取
             saveElementData(stack, weaponData);
             return weaponData;
         }
         
         return null;
+    }
+    
+    /**
+     * 获取物品的武器配置（根据物品类型选择不同的配置获取方法）
+     * @param stack 物品堆
+     * @return 武器数据
+     */
+    public static WeaponData getWeaponConfig(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return null;
+        }
+        
+        // 判断物品类型并调用相应的配置获取方法
+        if (ModSpecialItemsFetcher.isTacZGun(stack)) {
+            // TACZ枪械使用专门的配置获取方法
+            return TacZWeaponConfig.getWeaponConfig(stack);
+        } else if (SlashBladeItemsFetcher.isSlashBlade(stack)) {
+            // 拔刀剑使用专门的配置获取方法
+            return SlashBladeWeaponConfig.getWeaponConfig(stack);
+        } else {
+            // 普通物品使用通用方法
+            return WeaponConfig.getWeaponConfig(stack);
+        }
     }
     
     /**
@@ -146,5 +170,32 @@ public class WeaponDataManager {
      */
     public static void clearCache() {
         weaponDataCache.clear();
+    }
+    
+    /**
+     * 将武器初始修饰符数据保存到物品NBT中
+     * @param stack 物品堆
+     * @param data 武器数据
+     */
+    public static void saveInitialModifierData(ItemStack stack, WeaponData data) {
+        if (stack.isEmpty() || data == null) {
+            return;
+        }
+        
+        // 创建一个新的WeaponData对象，只包含InitialModifier数据
+        WeaponData initialModifierData = new WeaponData();
+        initialModifierData.modid = data.modid;
+        initialModifierData.itemId = data.itemId;
+        initialModifierData.gunId = data.gunId;
+        initialModifierData.translationKey = data.translationKey;
+        
+        // 复制InitialModifier数据
+        for (InitialModifierEntry entry : data.getInitialModifiers()) {
+            initialModifierData.addInitialModifier(entry);
+        }
+        
+        // 将数据写入NBT
+        CompoundTag nbt = initialModifierData.toNBT();
+        stack.getOrCreateTag().put(ELEMENT_DATA, nbt);
     }
 }

@@ -17,15 +17,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.google.common.collect.Maps;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
-import com.xlxyvergil.hamstercore.element.ElementAttributes;
-import net.minecraftforge.registries.RegistryObject;
 
 /**
  * 元素属性修饰符条目，参考GunsmithLibAttributeModifierEntry实现
@@ -191,171 +184,6 @@ public class ElementAttributeModifierEntry {
         
         return Pair.of(attribute, new AttributeModifier(getId(), getName(), getAmount(), getOperation()));
     }
-
-    /**
-     * 应用修饰符到物品
-     * @param stack 目标物品堆
-     * @param slot 装备槽位
-     */
-    public void applyToItem(ItemStack stack, EquipmentSlot slot) {
-        getModifier().ifPresent(modifierPair -> {
-            ElementAttribute attribute = modifierPair.getLeft();
-            AttributeModifier modifier = modifierPair.getRight();
-            stack.addAttributeModifier((Attribute) attribute, modifier, slot);
-        });
-    }
-
-    /**
-     * 从物品移除修饰符
-     * @param stack 目标物品堆
-     * @param slot 装备槽位
-     */
-    public void removeFromItem(ItemStack stack, EquipmentSlot slot) {
-        // Note: 由于ItemStack没有直接的removeAttributeModifier方法，我们使用NBT标签操作来实现
-        if (!stack.hasTag()) {
-            return;
-        }
-        
-        var tag = stack.getTag();
-        if (tag == null || !tag.contains("AttributeModifiers")) {
-            return;
-        }
-        
-        var modifierTagList = tag.getList("AttributeModifiers", 10);
-        var attribute = getAttribute().orElse(null);
-        if (attribute == null) {
-            return;
-        }
-        
-        var attributeId = ForgeRegistries.ATTRIBUTES.getKey((Attribute) attribute);
-        if (attributeId == null) {
-            return;
-        }
-        
-        for (int i = 0; i < modifierTagList.size(); ) {
-            var modifierTag = modifierTagList.getCompound(i);
-            if (modifierTag.getString("AttributeName").equals(attributeId.toString()) && 
-                modifierTag.getUUID("UUID").equals(id)) {
-                modifierTagList.remove(i);
-            } else {
-                i++;
-            }
-        }
-        
-        // 如果列表为空，直接移除该标签
-        if (modifierTagList.isEmpty()) {
-            tag.remove("AttributeModifiers");
-        }
-    }
-
-    /**
-     * 应用多个修饰符到物品
-     * @param stack 目标物品堆
-     * @param modifiers 修饰符列表
-     * @param slot 装备槽位
-     */
-    public static void applyModifiers(ItemStack stack, List<ElementAttributeModifierEntry> modifiers, EquipmentSlot slot) {
-        if (modifiers == null || stack == null) {
-            return;
-        }
-        
-        for (ElementAttributeModifierEntry modifier : modifiers) {
-            modifier.applyToItem(stack, slot);
-        }
-    }
-
-    /**
-     * 从物品移除指定元素类型的所有修饰符
-     * @param stack 目标物品堆
-     * @param elementType 要移除的元素类型
-     */
-    public static void removeElementModifiers(ItemStack stack, ElementType elementType) {
-        if (stack == null || elementType == null) {
-            return;
-        }
-        
-        // 与removeFromItem方法使用相同的NBT操作方式
-        if (!stack.hasTag()) {
-            return;
-        }
-        
-        var tag = stack.getTag();
-        if (tag == null || !tag.contains("AttributeModifiers")) {
-            return;
-        }
-        
-        var attribute = ElementRegistry.getAttributeValue(elementType);
-        if (attribute == null) {
-            return;
-        }
-        
-        var attributeId = ForgeRegistries.ATTRIBUTES.getKey(attribute);
-        if (attributeId == null) {
-            return;
-        }
-        
-        var modifierTagList = tag.getList("AttributeModifiers", 10);
-        for (int i = 0; i < modifierTagList.size(); ) {
-            var modifierTag = modifierTagList.getCompound(i);
-            if (modifierTag.getString("AttributeName").equals(attributeId.toString())) {
-                modifierTagList.remove(i);
-            } else {
-                i++;
-            }
-        }
-        
-        // 如果列表为空，直接移除该标签
-        if (modifierTagList.isEmpty()) {
-            tag.remove("AttributeModifiers");
-        }
-    }
-
-    /**
-     * 移除物品上所有的元素修饰符
-     * @param stack 目标物品堆
-     */
-    public static void removeAllElementModifiers(ItemStack stack) {
-        if (stack == null) {
-            return;
-        }
-        
-        if (stack.hasTag()) {
-            var tag = stack.getTag();
-            if (tag != null && tag.contains("AttributeModifiers")) {
-                var modifierTagList = tag.getList("AttributeModifiers", 10);
-                
-                // 获取所有元素属性的ResourceLocation
-                Set<ResourceLocation> elementAttributeIds = new HashSet<>();
-                for (Map.Entry<ElementType, RegistryObject<ElementAttribute>> entry : ElementAttributes.getAllAttributes().entrySet()) {
-                    RegistryObject<ElementAttribute> attributeObject = entry.getValue();
-                    if (attributeObject.isPresent()) {
-                        ElementAttribute attribute = attributeObject.get();
-                        ResourceLocation attributeId = ForgeRegistries.ATTRIBUTES.getKey(attribute);
-                        if (attributeId != null) {
-                            elementAttributeIds.add(attributeId);
-                        }
-                    }
-                }
-                
-                // 从后往前遍历，避免索引问题
-                for (int i = modifierTagList.size() - 1; i >= 0; i--) {
-                    var modifierTag = modifierTagList.getCompound(i);
-                    if (modifierTag.contains("AttributeName")) {
-                        String attributeName = modifierTag.getString("AttributeName");
-                        ResourceLocation attributeId = ResourceLocation.tryParse(attributeName);
-                        if (attributeId != null && elementAttributeIds.contains(attributeId)) {
-                            modifierTagList.remove(i);
-                        }
-                    }
-                }
-                
-                // 如果列表为空，移除整个标签
-                if (modifierTagList.isEmpty()) {
-                    tag.remove("AttributeModifiers");
-                }
-            }
-        }
-    }
     
     /**
      * 应用元素修饰符到事件处理器
@@ -393,18 +221,6 @@ public class ElementAttributeModifierEntry {
     }
     
     /**
-     * 应用元素修饰符到物品（使用BiConsumer回调）
-     * @param stack 目标物品堆
-     * @param modifiers 修饰符条目列表
-     * @param slot 装备槽位
-     */
-    public static void applyElementModifiers(ItemStack stack, 
-                                           List<ElementAttributeModifierEntry> modifiers, 
-                                           EquipmentSlot slot) {
-        applyElementModifiers(stack, modifiers, slot, (attr, mod) -> stack.addAttributeModifier(attr, mod, slot));
-    }
-    
-    /**
      * 从ElementType创建修饰符条目
      * @param elementType 元素类型
      * @param amount 修饰符数值
@@ -427,56 +243,6 @@ public class ElementAttributeModifierEntry {
         String name = elementType.getDisplayName();
         
         return new ElementAttributeModifierEntry(elementType, uuid, amount, name, operation);
-    }
-    
-    /**
-     * 重新应用物品的元素修饰符（先移除再添加）
-     * @param stack 目标物品堆
-     * @param modifiers 修饰符条目列表
-     * @param slot 装备槽位
-     */
-    public static void refreshElementModifiers(ItemStack stack, 
-                                           List<ElementAttributeModifierEntry> modifiers, 
-                                           EquipmentSlot slot) {
-        removeAllElementModifiers(stack);
-        applyElementModifiers(stack, modifiers, slot);
-    }
-    
-    /**
-     * 应用单个元素修饰符到物品
-     * @param stack 目标物品堆
-     * @param elementType 元素类型
-     * @param amount 修饰符数值
-     * @param operation 修饰符操作类型
-     * @param slot 装备槽位
-     */
-    public static void applySingleElementModifier(ItemStack stack, 
-                                               ElementType elementType,
-                                               double amount,
-                                               AttributeModifier.Operation operation,
-                                               EquipmentSlot slot) {
-        if (stack == null || elementType == null) {
-            return;
-        }
-        
-        try {
-            // 创建修饰符条目
-            ElementAttributeModifierEntry modifierEntry = createModifierEntry(elementType, amount, operation, stack, 0);
-            
-            // 获取修饰符
-            var modifier = modifierEntry.getModifier();
-            if (modifier.isEmpty()) {
-                return;
-            }
-            
-            // 应用修饰符到物品的元素属性上
-            var pair = modifier.get();
-            stack.addAttributeModifier((Attribute) pair.getLeft(), pair.getRight(), slot);
-            
-        } catch (Exception e) {
-            System.err.println("Error applying single element modifier for " + elementType.getName() + ": " + e.getMessage());
-            e.printStackTrace();
-        }
     }
     
     /**
@@ -559,7 +325,7 @@ public class ElementAttributeModifierEntry {
      */
     public static void mergeModifiers(Map<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> buffer,
                                      Attribute attribute,
-                                     Collection<AttributeModifier> modifiers) {
+                                     Iterable<AttributeModifier> modifiers) {
         if (modifiers == null) {
             return;
         }
@@ -583,66 +349,5 @@ public class ElementAttributeModifierEntry {
         for (Map.Entry<Pair<Attribute, AttributeModifier.Operation>, AttributeModifier> entry : buffer.entrySet()) {
             consumer.accept(entry.getKey().getLeft(), entry.getValue());
         }
-    }
-    
-    /**
-     * 使用合并策略应用修饰符
-     * @param stack 物品堆
-     * @param modifiers 修饰符列表
-     * @param slot 装备槽位
-     * @param mergeConsumer 合并逻辑处理器
-     */
-    public static void applyModifiersWithMergeStrategy(
-        ItemStack stack,
-        List<ElementAttributeModifierEntry> modifiers,
-        EquipmentSlot slot,
-        BiConsumer<Attribute, AttributeModifier> mergeConsumer
-    ) {
-        if (modifiers == null || modifiers.isEmpty() || stack == null) {
-            return;
-        }
-        
-        for (ElementAttributeModifierEntry entry : modifiers) {
-            Optional<Pair<ElementAttribute, AttributeModifier>> bakedModifier = entry.getModifier();
-            
-            bakedModifier.ifPresent(pair -> {
-                ElementAttribute attribute = pair.getLeft();
-                AttributeModifier modifier = pair.getRight();
-                
-                // 应用到物品的AttributeModifiers NBT中
-                stack.addAttributeModifier((Attribute) attribute, modifier, slot);
-                
-                // 同时使用合并策略应用到指定的consumer
-                mergeConsumer.accept((Attribute) attribute, modifier);
-            });
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ElementAttributeModifierEntry that = (ElementAttributeModifierEntry) o;
-        return Double.compare(that.amount, amount) == 0 && 
-               elementType == that.elementType && 
-               operation == that.operation && 
-               Objects.equals(id, that.id) && 
-               Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(elementType, id, name, amount, operation);
-    }
-
-    @Override
-    public String toString() {
-        return "ElementAttributeModifierEntry{" +
-               "elementType=" + elementType +
-               ", id=" + id +
-               ", name='" + name + '\'' +
-               ", amount=" + amount +
-               ", operation=" + operation +
-               "}";
     }
 }

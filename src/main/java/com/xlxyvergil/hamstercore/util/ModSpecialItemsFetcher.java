@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MOD特殊物品ID获取器
@@ -21,6 +22,9 @@ public class ModSpecialItemsFetcher {
     
     private static boolean tacZChecked = false;
     private static Set<ResourceLocation> tacZGunIDs = null;
+    
+    // 缓存已配置的TACZ枪械物品堆
+    private static final Map<ResourceLocation, ItemStack> taczGunStacks = new ConcurrentHashMap<>();
     
     /**
      * 检查TACZ模组是否已加载
@@ -170,5 +174,25 @@ public class ModSpecialItemsFetcher {
             // API调用失败，返回null
         }
         return null;
+    }
+    
+    /**
+     * 缓存已配置的TACZ枪械物品堆到全局映射中
+     * @param gunId 枪械ID
+     * @param stack 配置好的物品堆
+     */
+    public static void cacheTaczGunStack(ResourceLocation gunId, ItemStack stack) {
+        if (gunId != null && stack != null && !stack.isEmpty()) {
+            taczGunStacks.put(gunId, stack);
+        }
+    }
+    
+    /**
+     * 获取已配置的TACZ枪械物品堆
+     * @param gunId 枪械ID
+     * @return 对应的配置好的物品堆
+     */
+    public static ItemStack getTaczGunStack(ResourceLocation gunId) {
+        return taczGunStacks.get(gunId);
     }
 }

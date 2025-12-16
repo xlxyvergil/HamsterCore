@@ -48,13 +48,15 @@ public class InitialModifierEntry {
         CompoundTag tag = new CompoundTag();
         tag.putString("name", name);
         
-        // 序列化AttributeModifier
-        CompoundTag modifierTag = new CompoundTag();
-        modifierTag.putUUID("uuid", modifier.getId());
-        modifierTag.putString("name", modifier.getName());
-        modifierTag.putDouble("amount", modifier.getAmount());
-        modifierTag.putInt("operation", modifier.getOperation().toValue());
-        tag.put("modifier", modifierTag);
+        // 序列化AttributeModifier（如果存在）
+        if (modifier != null) {
+            CompoundTag modifierTag = new CompoundTag();
+            modifierTag.putUUID("uuid", modifier.getId());
+            modifierTag.putString("name", modifier.getName());
+            modifierTag.putDouble("amount", modifier.getAmount());
+            modifierTag.putInt("operation", modifier.getOperation().toValue());
+            tag.put("modifier", modifierTag);
+        }
         
         return tag;
     }
@@ -65,16 +67,18 @@ public class InitialModifierEntry {
     public static InitialModifierEntry fromNBT(CompoundTag tag) {
         String name = tag.getString("name");
         
-        // 反序列化AttributeModifier
-        CompoundTag modifierTag = tag.getCompound("modifier");
-        UUID uuid = modifierTag.getUUID("uuid");
-        String modifierName = modifierTag.getString("name");
-        double amount = modifierTag.getDouble("amount");
-        AttributeModifier.Operation operation = 
-            AttributeModifier.Operation.fromValue(modifierTag.getInt("operation"));
-        
-        AttributeModifier modifier = 
-            new AttributeModifier(uuid, modifierName, amount, operation);
+        // 反序列化AttributeModifier（如果存在）
+        AttributeModifier modifier = null;
+        if (tag.contains("modifier")) {
+            CompoundTag modifierTag = tag.getCompound("modifier");
+            UUID uuid = modifierTag.getUUID("uuid");
+            String modifierName = modifierTag.getString("name");
+            double amount = modifierTag.getDouble("amount");
+            AttributeModifier.Operation operation = 
+                AttributeModifier.Operation.fromValue(modifierTag.getInt("operation"));
+            
+            modifier = new AttributeModifier(uuid, modifierName, amount, operation);
+        }
         
         return new InitialModifierEntry(name, modifier);
     }
