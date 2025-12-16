@@ -12,14 +12,11 @@ import java.util.Map;
 
 /**
  * 元素属性值读取工具类
- * 负责读取经过Forge属性系统计算后的实际元素修饰符数值
- * 基于ForgeAttributeValueReader优化而来
  */
 public class ElementHelper {
     
     /**
      * 从物品的属性修饰符中获取指定元素类型的实际数值
-     * 采用 GunsmithLib 的方式：手动重建Forge的计算逻辑
      * 这个方法用于分析物品本身提供的属性，不需要玩家实际装备
      * @param stack 物品堆
      * @param elementType 元素类型
@@ -48,7 +45,6 @@ public class ElementHelper {
     
     /**
      * 从物品的属性修饰符中获取指定元素属性的实际数值
-     * 采用 GunsmithLib 的方式：手动重建Forge的计算逻辑
      * 这个方法用于分析物品本身提供的属性，不需要玩家实际装备
      * @param stack 物品堆
      * @param elementAttribute 元素属性
@@ -60,7 +56,6 @@ public class ElementHelper {
         }
         
         try {
-            // GunsmithLib 方式：固定使用主手槽位获取修饰符
             // 武器通常在主手，这是最合理的默认选择
             var modifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND);
             if (modifiers == null || modifiers.isEmpty()) {
@@ -73,7 +68,6 @@ public class ElementHelper {
                 return 0.0;
             }
             
-            // GunsmithLib 的完整 Forge 计算逻辑
             double baseValue = elementAttribute.getDefaultValue();
             double additionSum = 0.0;
             double multiplyBaseSum = 0.0;
