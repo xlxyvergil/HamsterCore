@@ -59,11 +59,12 @@ public class FactionModifierCalculator {
     
     
     /**
-     * 计算派系伤害修饰符（使用缓存数据）
+     * 计算针对特定派系的HM值（派系克制系数）
+     * HM = 派系元素数据值 + 克制系数
      * @param weaponData 武器数据（从缓存获取）
      * @param targetFaction 目标派系
      * @param cacheData 缓存的元素数据
-     * @return 派系伤害修饰符
+     * @return HM值（派系克制系数）
      */
     public static double calculateFactionModifier(WeaponData weaponData, String targetFaction, AffixCacheManager.AffixCacheData cacheData) {
         if (weaponData == null || targetFaction == null || cacheData == null) {
@@ -77,54 +78,50 @@ public class FactionModifierCalculator {
             return 0.0; // 未知派系，无克制关系
         }
         
-        // 计算所有元素对目标派系的伤害加成
-        double totalModifier = 0.0;
+        // 计算HM值：基于元素类型和派系克制关系
+        double hm = 0.0;
         
-        // 获取派系元素值（从缓存中获取）
+        // 检查武器是否对目标派系有特殊元素数据
+        String factionElementName = factionName; // 派系元素名称与派系名称相同
+        
+        // 获取派系元素值（例如：orokin元素数据）
         Map<String, Double> factionElements = cacheData.getFactionElements();
-        for (Map.Entry<String, Double> entry : factionElements.entrySet()) {
-            String elementType = entry.getKey();
-            double elementValue = entry.getValue();
+        Double factionElementValue = factionElements.get(factionElementName);
+        
+        if (factionElementValue != null) {
+            // 获取武器所有有克制关系的元素，并累加克制系数
+            double totalResistance = 0.0;
             
-            // 检查该元素是否对目标派系有克制关系
-            Double resistance = resistances.get(elementType);
-            if (resistance != null) {
-                // 伤害加成 = 元素值 × 克制系数
-                double damageBonus = elementValue * resistance;
-                totalModifier += damageBonus;
+            // 检查派系元素
+            for (String elementType : factionElements.keySet()) {
+                Double resistance = resistances.get(elementType);
+                if (resistance != null) {
+                    totalResistance += resistance;
+                }
             }
+            
+            // 检查复合元素
+            Map<String, Double> combinedElements = cacheData.getCombinedElements();
+            for (String elementType : combinedElements.keySet()) {
+                Double resistance = resistances.get(elementType);
+                if (resistance != null) {
+                    totalResistance += resistance;
+                }
+            }
+            
+            // 检查物理元素
+            Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+            for (String elementType : physicalElements.keySet()) {
+                Double resistance = resistances.get(elementType);
+                if (resistance != null) {
+                    totalResistance += resistance;
+                }
+            }
+            
+            // HM = 派系元素数据值 + 总克制系数
+            hm = factionElementValue + totalResistance;
         }
         
-        // 获取复合元素值（从缓存中获取）
-        Map<String, Double> combinedElements = cacheData.getCombinedElements();
-        for (Map.Entry<String, Double> entry : combinedElements.entrySet()) {
-            String elementType = entry.getKey();
-            double elementValue = entry.getValue();
-            
-            // 检查该元素是否对目标派系有克制关系
-            Double resistance = resistances.get(elementType);
-            if (resistance != null) {
-                // 伤害加成 = 元素值 × 克制系数
-                double damageBonus = elementValue * resistance;
-                totalModifier += damageBonus;
-            }
-        }
-        
-        // 获取物理元素值（从缓存中获取）
-        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-        for (Map.Entry<String, Double> entry : physicalElements.entrySet()) {
-            String elementType = entry.getKey();
-            double elementValue = entry.getValue();
-            
-            // 检查该元素是否对目标派系有克制关系
-            Double resistance = resistances.get(elementType);
-            if (resistance != null) {
-                // 伤害加成 = 元素值 × 克制系数
-                double damageBonus = elementValue * resistance;
-                totalModifier += damageBonus;
-            }
-        }
-        
-        return totalModifier;
+        return hm;
     }
 }
