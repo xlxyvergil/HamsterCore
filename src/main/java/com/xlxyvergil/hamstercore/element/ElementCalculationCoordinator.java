@@ -71,7 +71,7 @@ public class ElementCalculationCoordinator {
         // 6. 将计算结果缓存到AffixCacheManager中
         AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
         cacheData.setCriticalStats(specialStats);
-        cacheData.setPhysicalElements(combinedElements);
+        cacheData.setPhysicalElements(physicalElements);
         cacheData.setFactionElements(factionElements);
         cacheData.setCombinedElements(combinedElements);
     }

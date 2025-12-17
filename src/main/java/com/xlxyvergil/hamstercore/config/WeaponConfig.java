@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -43,9 +44,10 @@ public class WeaponConfig {
     private static final double DEFAULT_PUNCTURE = 0.2;  // 20%穿刺伤害
     
     // 配置文件路径
-    private static final Path WEAPON_DIR = FMLPaths.CONFIGDIR.get().resolve("hamstercore/weapons/");
-    private static final Path DEFAULT_WEAPONS_FILE = WEAPON_DIR.resolve("default_weapons.json");
-    private static final Path ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR.resolve("additional_normal_weapons.json");
+    private static final String CONFIG_DIR = "config/hamstercore/";
+    private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
+    private static final String DEFAULT_WEAPONS_FILE = WEAPON_DIR + "default_weapons.json";
+    private static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
     
     // 武器配置映射
     private static final Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
@@ -57,14 +59,17 @@ public class WeaponConfig {
      * 初始化武器配置系统
      */
     public static void init() {
-        // 创建默认配置文件
-        createDefaultWeaponConfigs();
+        // 检查配置文件是否存在，如果不存在则生成默认配置
+        File defaultFile = new File(DEFAULT_WEAPONS_FILE);
+        File additionalFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
         
-        // 加载默认武器配置
-        loadDefaultWeaponConfigs();
-        
-        // 加载额外普通武器配置
-        loadAdditionalNormalWeaponConfigs();
+        if (!defaultFile.exists() || !additionalFile.exists()) {
+            // 配置文件不存在，生成默认配置
+            generateDefaultConfigs();
+        } else {
+            // 配置文件存在，加载配置
+            loadWeaponConfigs();
+        }
     }
     
     /**
@@ -147,7 +152,7 @@ public class WeaponConfig {
     /**
      * 添加默认属性
      */
-    private static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
+    public static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
@@ -182,20 +187,22 @@ public class WeaponConfig {
     }
     
     /**
-     * 创建默认配置文件
+     * 生成默认武器配置
      */
-    private static void createDefaultWeaponConfigs() {
+    private static void generateDefaultConfigs() {
+        weaponConfigs.clear();
+        
         try {
             // 确保目录存在
-            Path weaponDir = WEAPON_DIR;
+            Path weaponDir = Paths.get(WEAPON_DIR);
             if (!Files.exists(weaponDir)) {
                 Files.createDirectories(weaponDir);
             }
             
-            // 创建默认武器配置文件
-            createDefaultWeaponConfigFile();
+            // 生成默认武器配置文件
+            generateDefaultWeaponConfigFile();
             
-            // 创建额外普通武器配置文件
+            // 生成额外普通武器配置文件
             createDefaultAdditionalNormalWeaponsConfig();
         } catch (IOException e) {
             e.printStackTrace();
@@ -203,21 +210,18 @@ public class WeaponConfig {
     }
     
     /**
-     * 创建默认武器配置文件
+     * 生成默认武器配置文件
      */
-    private static void createDefaultWeaponConfigFile() throws IOException {
-        File configFile = DEFAULT_WEAPONS_FILE.toFile();
-        if (configFile.exists()) {
-            return; // 文件已存在，不需要重新创建
-        }
+    private static void generateDefaultWeaponConfigFile() throws IOException {
+        File configFile = new File(DEFAULT_WEAPONS_FILE);
         
         // 获取所有可应用元素属性的物品
         Set<ResourceLocation> applicableItems = WeaponApplicableItemsFinder.findApplicableItems();
         
         // 创建默认配置内容
         JsonObject defaultConfig = new JsonObject();
-        defaultConfig.addProperty("_comment", "默认武器配置文件，请勿直接修改此文件");
-        defaultConfig.addProperty("_note", "如需添加额外普通武器，请修改additional_normal_weapons.json文件");
+        defaultConfig.addProperty("_comment", "默认武器配置文件，您可以自由修改此文件");
+        defaultConfig.addProperty("_note", "如需添加额外普通武器，也可以直接在此文件中添加");
         
         // 为每个适用物品生成默认配置
         for (ResourceLocation itemKey : applicableItems) {
@@ -232,6 +236,9 @@ public class WeaponConfig {
             
             // 添加到配置对象
             defaultConfig.add(itemKey.toString(), itemJson);
+            
+            // 同时存储到内存映射表
+            weaponConfigs.put(itemKey, weaponData);
         }
         
         // 写入配置文件
@@ -247,12 +254,12 @@ public class WeaponConfig {
     private static void createDefaultAdditionalNormalWeaponsConfig() {
         try {
             // 确保目录存在
-            Path weaponDir = WEAPON_DIR;
+            Path weaponDir = Paths.get(WEAPON_DIR);
             if (!Files.exists(weaponDir)) {
                 Files.createDirectories(weaponDir);
             }
             
-            File configFile = ADDITIONAL_NORMAL_WEAPONS_FILE.toFile();
+            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
             if (configFile.exists()) {
                 return; // 文件已存在，不需要重新创建
             }
@@ -260,8 +267,7 @@ public class WeaponConfig {
             // 创建默认配置内容（只包含注释和示例）
             JsonObject defaultConfig = new JsonObject();
             defaultConfig.addProperty("_comment", "在此添加您想要应用元素属性的额外普通物品，格式如下:");
-            defaultConfig.addProperty("_example_full", "{\n" + "  \"minecraft:diamond_sword\": {\n" + "    \"elementData\": {\n" + "      \"InitialModifiers\": [\n" + "        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n" + "        {\"name\": \"CRITICAL_CHANCE\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n" + "      ]\n" + "    }\n" + "  }\n" + "}");
-            defaultConfig.addProperty("_example_simple", "{\n" + "  \"minecraft:iron_sword\": {}, // 使用默认值\n" + "  \"minecraft:diamond_axe\": {}   // 使用默认值\n" + "}");
+            defaultConfig.addProperty("_example", "\n  \"minecraft:diamond_sword\": {\n    \"elementData\": {\n      \"InitialModifiers\": [\n        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n        {\"name\": \"CRITICAL_CHANCE\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n      ]\n    }\n  },\n  \"minecraft:iron_sword\": {}, // 使用默认值\n  \"minecraft:diamond_axe\": {}   // 使用默认值");
             
             // 写入配置文件
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -274,25 +280,95 @@ public class WeaponConfig {
     }
     
     /**
-     * 加载默认武器配置
+     * 加载武器配置
      */
-    private static void loadDefaultWeaponConfigs() {
-        // 获取所有可应用元素属性的物品
-        Set<ResourceLocation> applicableItems = WeaponApplicableItemsFinder.findApplicableItems();
+    private static void loadWeaponConfigs() {
+        weaponConfigs.clear();
         
-        // 为每个适用物品生成默认配置
-        for (ResourceLocation itemKey : applicableItems) {
-            // 只有当物品还没有配置时才生成默认配置
-            if (!weaponConfigs.containsKey(itemKey)) {
-                // 创建武器数据
-                WeaponData weaponData = new WeaponData();
-                
-                // 添加默认初始属性
-                addInitialModifiers(weaponData);
-                
-                // 添加到武器配置映射
-                weaponConfigs.put(itemKey, weaponData);
+        try {
+            // 加载默认武器配置
+            loadDefaultWeaponConfigsFromFile();
+            
+            // 加载额外普通武器配置
+            loadAdditionalNormalWeaponConfigs();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * 从文件加载默认武器配置
+     */
+    private static void loadDefaultWeaponConfigsFromFile() {
+        try {
+            File configFile = new File(DEFAULT_WEAPONS_FILE);
+            if (!configFile.exists()) {
+                return;
             }
+            
+            Gson gson = new Gson();
+            try (FileReader reader = new FileReader(configFile)) {
+                JsonObject config = gson.fromJson(reader, JsonObject.class);
+                
+                // 遍历所有物品配置
+                for (Map.Entry<String, JsonElement> entry : config.entrySet()) {
+                    String itemName = entry.getKey();
+                    
+                    // 跳过注释和示例
+                    if (itemName.startsWith("_")) {
+                        continue;
+                    }
+                    
+                    ResourceLocation itemKey = ResourceLocation.tryParse(itemName);
+                    if (itemKey == null) {
+                        continue;
+                    }
+                    
+                    JsonElement itemConfig = entry.getValue();
+                    
+                    // 创建武器数据
+                    WeaponData weaponData = new WeaponData();
+                    
+                    // 添加默认初始属性
+                    addInitialModifiers(weaponData);
+                    
+                    // 如果有自定义配置，应用自定义配置
+                    if (itemConfig.isJsonObject()) {
+                        JsonObject itemJson = itemConfig.getAsJsonObject();
+                        
+                        // 加载元素数据
+                        if (itemJson.has("elementData")) {
+                            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 加载初始属性
+                            if (elementDataJson.has("InitialModifiers")) {
+                                JsonArray initialModifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                                for (JsonElement modifierJson : initialModifiersArray) {
+                                    if (modifierJson.isJsonObject()) {
+                                        JsonObject modifierObject = modifierJson.getAsJsonObject();
+                                        
+                                        String name = modifierObject.get("name").getAsString();
+                                        double amount = modifierObject.get("amount").getAsDouble();
+                                        String operation = modifierObject.get("operation").getAsString();
+                                        
+                                        // 生成UUID
+                                        UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
+                                        
+                                        // 创建并添加初始属性
+                                        InitialModifierEntry initialModifier = new InitialModifierEntry(name, name, amount, operation, uuid, "custom");
+                                        weaponData.addInitialModifier(initialModifier);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 添加到武器配置映射
+                    weaponConfigs.put(itemKey, weaponData);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
     
@@ -301,7 +377,7 @@ public class WeaponConfig {
      */
     private static void loadAdditionalNormalWeaponConfigs() {
         try {
-            File configFile = ADDITIONAL_NORMAL_WEAPONS_FILE.toFile();
+            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
             if (!configFile.exists()) {
                 return;
             }

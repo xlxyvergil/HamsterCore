@@ -116,15 +116,15 @@ public class EntityInfoDisplayHandler {
                 }
 
                 // 添加武器元素属性信息
-                Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-                if (!physicalElements.isEmpty()) {
+                Map<String, Double> combinedElements = cacheData.getCombinedElements();
+                if (!combinedElements.isEmpty()) {
                     // 添加元素属性标题
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
                     
                     // 遍历所有基础元素和复合元素
                     for (ElementType elementType : ElementType.getAllTypes()) {
-                        if (elementType != null && (elementType.isBasic() || elementType.isComplex())) {
-                            Double elementValue = physicalElements.get(elementType.getName());
+                        if (elementType != null && (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex())) {
+                            Double elementValue = combinedElements.get(elementType.getName());
                             if (elementValue != null && elementValue > 0) {
                                 String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
                                 message.append(Component.literal(String.format("  %s: %.2f", elementName, elementValue))
