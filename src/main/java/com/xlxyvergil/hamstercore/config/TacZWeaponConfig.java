@@ -38,9 +38,9 @@ public class TacZWeaponConfig {
     private static final double DEFAULT_TRIGGER_CHANCE = 0.1;   // 10%触发率
     
     // 默认物理元素占比
-    private static final double DEFAULT_SLASH = 0.33;
-    private static final double DEFAULT_IMPACT = 0.33;
-    private static final double DEFAULT_PUNCTURE = 0.34;
+    private static final double DEFAULT_SLASH = 0.3;
+    private static final double DEFAULT_IMPACT = 0.3;
+    private static final double DEFAULT_PUNCTURE = 0.4;
     
     // 配置文件路径
     private static final String CONFIG_DIR = "config/hamstercore/";

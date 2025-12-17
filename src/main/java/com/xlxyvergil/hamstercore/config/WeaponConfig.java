@@ -1,16 +1,13 @@
 package com.xlxyvergil.hamstercore.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-
 import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.util.WeaponApplicableItemsFinder;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -20,16 +17,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
+import java.util.stream.Collectors;
 
 /**
  * 武器配置管理器
- * 负责加载、保存和管理所有武器的元素配置
- * 已适配新的两层NBT数据结构
- * 注意：TACZ和拔刀剑的配置已移至独立的配置类中
+ * 负责加载、保存和管理普通武器的元素配置
+ * 生成的配置文件允许用户自由修改
  */
 public class WeaponConfig {
     
@@ -39,11 +32,11 @@ public class WeaponConfig {
     private static final double DEFAULT_TRIGGER_CHANCE = 0.1;   // 10%触发率
     
     // 默认物理元素占比
-    private static final double DEFAULT_SLASH = 0.6;     // 60%劈砍伤害
-    private static final double DEFAULT_IMPACT = 0.2;    // 20%冲击伤害
-    private static final double DEFAULT_PUNCTURE = 0.2;  // 20%穿刺伤害
+    private static final double DEFAULT_SLASH = 0.3;
+    private static final double DEFAULT_IMPACT = 0.3;
+    private static final double DEFAULT_PUNCTURE = 0.4;
     
-    // 配置文件路径
+    // 配置文件路径 - 与TacZWeaponConfig保持一致
     private static final String CONFIG_DIR = "config/hamstercore/";
     private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
     private static final String DEFAULT_WEAPONS_FILE = WEAPON_DIR + "default_weapons.json";
@@ -99,10 +92,45 @@ public class WeaponConfig {
     }
     
     /**
-     * 获取额外武器配置（与getAllWeaponConfigs相同）
+     * 获取额外武器配置（与getAllWeaponConfigs不同，这个只返回额外配置）
      */
     public static Map<ResourceLocation, WeaponData> getAdditionalWeaponConfigs() {
-        return new HashMap<>(weaponConfigs);
+        // 查找在additional_normal_weapons.json中定义的额外配置
+        Map<ResourceLocation, WeaponData> additionalConfigs = new HashMap<>();
+        
+        try {
+            File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
+            if (configFile.exists()) {
+                Gson gson = new Gson();
+                try (FileReader reader = new FileReader(configFile)) {
+                    JsonObject config = gson.fromJson(reader, JsonObject.class);
+                    
+                    // 遍历所有物品配置
+                    for (Map.Entry<String, JsonElement> entry : config.entrySet()) {
+                        String itemName = entry.getKey();
+                        
+                        // 跳过注释和示例
+                        if (itemName.startsWith("_")) {
+                            continue;
+                        }
+                        
+                        ResourceLocation itemKey = ResourceLocation.tryParse(itemName);
+                        if (itemKey == null) {
+                            continue;
+                        }
+                        
+                        // 只添加在额外配置文件中定义的配置
+                        if (weaponConfigs.containsKey(itemKey)) {
+                            additionalConfigs.put(itemKey, weaponConfigs.get(itemKey));
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        return additionalConfigs;
     }
     
     /**
@@ -168,6 +196,14 @@ public class WeaponConfig {
         
         // 添加elementData部分
         JsonObject elementDataJson = new JsonObject();
+        
+        // 添加空的Basic层
+        JsonArray basicArray = new JsonArray();
+        elementDataJson.add("Basic", basicArray);
+        
+        // 添加空的Usage层
+        JsonArray usageArray = new JsonArray();
+        elementDataJson.add("Usage", usageArray);
         
         // 添加初始属性
         JsonArray initialModifiersArray = new JsonArray();
@@ -267,7 +303,7 @@ public class WeaponConfig {
             // 创建默认配置内容（只包含注释和示例）
             JsonObject defaultConfig = new JsonObject();
             defaultConfig.addProperty("_comment", "在此添加您想要应用元素属性的额外普通物品，格式如下:");
-            defaultConfig.addProperty("_example", "\n  \"minecraft:diamond_sword\": {\n    \"elementData\": {\n      \"InitialModifiers\": [\n        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n        {\"name\": \"CRITICAL_CHANCE\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n      ]\n    }\n  },\n  \"minecraft:iron_sword\": {}, // 使用默认值\n  \"minecraft:diamond_axe\": {}   // 使用默认值");
+            defaultConfig.addProperty("_example", "{\n  \"minecraft:diamond_sword\": {\n    \"elementData\": {\n      \"InitialModifiers\": [\n        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n        {\"name\": \"CRITICAL_CHANCE\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n      ]\n    }\n  }\n}");
             
             // 写入配置文件
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -339,6 +375,10 @@ public class WeaponConfig {
                         // 加载元素数据
                         if (itemJson.has("elementData")) {
                             JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 不再读取Basic层
+                            
+                            // 不再读取Usage层
                             
                             // 加载初始属性
                             if (elementDataJson.has("InitialModifiers")) {
@@ -415,6 +455,10 @@ public class WeaponConfig {
                         // 加载元素数据
                         if (itemJson.has("elementData")) {
                             JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 不再读取Basic层
+                            
+                            // 不再读取Usage层
                             
                             // 加载初始属性
                             if (elementDataJson.has("InitialModifiers")) {

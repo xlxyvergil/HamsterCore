@@ -7,7 +7,6 @@ import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
-
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
@@ -27,8 +26,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-
-
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
@@ -42,9 +39,6 @@ public class HamsterCore {
         
         // 注册附魔
         ModEnchantments.register(modEventBus);
-        
-        // 注册元素属性
-
         
         // 初始化配置
         FactionConfig.load();
