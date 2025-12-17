@@ -43,10 +43,10 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
-     * @param specialAndFactionValues 特殊元素和派系元素值（可选，从Forge属性系统预计算）
+     * @param cacheData 缓存的元素数据
      * @return 元素伤害数据
      */
-    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, Map<String, Double> specialAndFactionValues) {
+    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, AffixCacheManager.AffixCacheData cacheData) {
         // 构建缓存键
         ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
         
@@ -57,7 +57,7 @@ public class ElementDamageManager {
         }
         
         // 如果没有缓存或已失效，则重新计算
-        ElementDamageData computed = calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
+        ElementDamageData computed = calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
         LazyOptional<ElementDamageData> lazyComputed = LazyOptional.of(() -> computed);
         
         // 更新缓存
@@ -74,10 +74,10 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
-     * @param specialAndFactionValues 特殊元素和派系元素值（可选，从Forge属性系统预计算）
+     * @param cacheData 缓存的元素数据
      * @return 元素伤害数据
      */
-    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, Map<String, Double> specialAndFactionValues) {
+    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, AffixCacheManager.AffixCacheData cacheData) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
         // 对于空的武器栈，直接返回基础数据
@@ -86,24 +86,14 @@ public class ElementDamageManager {
             return damageData;
         }
         
-        // 获取武器数据并重新计算Usage层数据以确保准确性
+        // 获取武器数据
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
-        // 更新元素组合：使用Forge计算后的元素值重新计算复合元素
-        if (data != null) {
-            // 使用ElementHelper获取最新的基础元素和复合元素值
-            ElementHelper.ElementCategoryData elementData = ElementHelper.getAllElementValuesByCategory(weapon);
-            Map<String, Double> basicAndComplexValues = elementData.getBasicAndComplexValues();
-            
-            // 使用ElementCombinationModifier直接计算usage层值，避免递归
-            ElementCombinationModifier.computeElementCombinationsWithValues(data, basicAndComplexValues);
-        }
-        
-        // 计算各部分的伤害修正系数
-        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(weapon, targetFaction, specialAndFactionValues); // HM
-        damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker, data); // 元素总倍率
-        damageData.physicalElementMultiplier = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, data); // 物理元素总倍率
-        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, specialAndFactionValues); // 暴击伤害
+        // 计算各部分的伤害修正系数，使用传递的缓存数据
+        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(data, targetFaction, cacheData); // HM，使用缓存数据
+        damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker, cacheData); // 元素总倍率
+        damageData.physicalElementMultiplier = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, cacheData); // 物理元素总倍率
+        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, null, cacheData); // 暴击伤害，不需要specialAndFactionValues
         damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
         
         // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
@@ -238,7 +228,13 @@ public class ElementDamageManager {
         String targetFaction = key.getTargetFaction();
         Double targetArmor = key.getTargetArmor();
         
-        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, null);
+        // 获取缓存的元素数据
+        AffixCacheManager.AffixCacheData cacheData = null;
+        if (!weapon.isEmpty()) {
+            cacheData = AffixCacheManager.getOrCreateCache(weapon);
+        }
+        
+        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
     }
     
     /**

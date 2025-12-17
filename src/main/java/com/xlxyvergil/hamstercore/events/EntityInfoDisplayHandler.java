@@ -74,7 +74,7 @@ public class EntityInfoDisplayHandler {
             
             // 使用ElementDamageManager计算真实的伤害数据
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor, specialAndFactionValues);
+                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor, cacheData);
             
             // 获取经过完整计算后的实际伤害
             float inflictedDamage = damageData.getFinalDamage();

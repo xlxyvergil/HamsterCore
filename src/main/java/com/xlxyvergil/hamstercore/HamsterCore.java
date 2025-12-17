@@ -33,8 +33,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class HamsterCore {
     public static final String MODID = "hamstercore";
 
-    public HamsterCore() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+    public HamsterCore(IEventBus modEventBus) {
 
         // 注册事件
         modEventBus.addListener(this::setup);

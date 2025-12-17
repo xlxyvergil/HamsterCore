@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,21 +16,31 @@ public class CriticalMultiplierCalculator {
     
 
     
+    
+    
+    
+    
     /**
-     * 计算暴击倍率（使用预计算的特殊元素）
+     * 计算暴击倍率（使用缓存数据）
      * @param attacker 攻击者
      * @param weapon 武器物品堆
      * @param specialAndFactionValues 特殊元素
+     * @param cacheData 缓存数据
      * @return 暴击倍率
      */
-    public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues) {
+    public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
         double criticalMultiplier = 1.0; // 默认暴击倍率
         
-        // 直接使用预计算的暴击率和暴击伤害值，不再检查元素属性
+        // 首先尝试从缓存中获取暴击数据，如果没有则使用传统方法
         double criticalChance = 0.0;
         double criticalDamage = 0.0;
         
-        if (specialAndFactionValues != null) {
+        if (cacheData != null && cacheData.getCriticalStats() != null) {
+            Map<String, Double> criticalStats = cacheData.getCriticalStats();
+            criticalChance = criticalStats.getOrDefault("critical_chance", 0.0);
+            criticalDamage = criticalStats.getOrDefault("critical_damage", 0.0);
+        } else if (specialAndFactionValues != null) {
+            // 回退到传统方法
             criticalChance = specialAndFactionValues.getOrDefault("critical_chance", 0.0);
             criticalDamage = specialAndFactionValues.getOrDefault("critical_damage", 0.0);
         }
@@ -63,21 +72,17 @@ public class CriticalMultiplierCalculator {
             criticalLevel = maxCriticalLevel;
         }
         
-        // 暴击倍率（暴击伤害） =1 + 暴击等级 × (武器总暴击倍率 − 1)
-        // 武器总暴击倍率 = 武器基础暴击倍率 × (1 +暴击倍率增益)
+        // 暴击倍率计算公式：
+        // 暴击倍率 = 1 + 暴击等级 × (暴击伤害 - 1)
+        // 其中：
+        // - 暴击伤害：从缓存中获取的已经过基础暴击伤害计算的完整值
+        // - 暴击等级：根据暴击率计算得出
         
-        // 获取武器基础暴击倍率
-        double baseCriticalMultiplier = getBaseCriticalMultiplier(weapon);
+        // 从缓存中获取的暴击伤害值（已经是经过基础暴击伤害计算的完整值）
+        double totalCriticalDamage = criticalDamage;
         
-        // 计算暴击倍率增益（假设critical_damage值即为增益值）
-        double criticalDamageBonus = criticalDamage;
-        
-        // 计算武器总暴击倍率
-        double totalCriticalDamage = baseCriticalMultiplier * (1 + criticalDamageBonus);
-        
-        // 计算最终暴击倍率
+        // 计算最终暴击倍率（基于暴击等级的增幅）
         criticalMultiplier = 1 + criticalLevel * (totalCriticalDamage - 1);
-        
         
         // 如果攻击者是玩家，向玩家发送暴击信息
         if (attacker instanceof Player player) {
@@ -85,29 +90,5 @@ public class CriticalMultiplierCalculator {
         }
         
         return criticalMultiplier;
-    }
-    
-    /**
-     * 获取武器基础暴击倍率
-     * @param weapon 武器物品堆
-     * @return 武器基础暴击倍率，默认为0.5（0.5倍伤害）
-     */
-    private static double getBaseCriticalMultiplier(ItemStack weapon) {
-        if (weapon.isEmpty()) {
-            return 0.5; // 默认基础暴击倍率为0.5
-        }
-        
-        // 尝试从WeaponData获取基础暴击倍率
-        WeaponData weaponData = WeaponDataManager.getWeaponData(weapon);
-        if (weaponData != null) {
-            // 检查是否有基础暴击倍率配置
-            Double baseCritMultiplier = weaponData.getUsageValue("base_critical_multiplier");
-            if (baseCritMultiplier != null) {
-                return baseCritMultiplier;
-            }
-        }
-        
-        // 默认基础暴击倍率为0.5
-        return 0.5;
     }
 }

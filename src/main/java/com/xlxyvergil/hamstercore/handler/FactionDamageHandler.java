@@ -5,7 +5,10 @@ import java.util.Map;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
+import com.xlxyvergil.hamstercore.element.ElementCalculationCoordinator;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import com.xlxyvergil.hamstercore.util.ElementHelper;
 
@@ -62,12 +65,22 @@ public class FactionDamageHandler {
             // BD = 基础伤害
             float baseDamage = event.getAmount();
             
-            // 从Forge属性系统获取特殊元素和派系元素值
-            Map<String, Double> specialAndFactionValues = ElementHelper.getAllSpecialAndFactionValues(weapon);
+            // 获取武器数据并计算缓存
+            AffixCacheManager.AffixCacheData cacheData = null;
+            if (!weapon.isEmpty()) {
+                // 获取武器数据
+                WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
+                if (weaponData != null) {
+                    // 使用ElementCalculationCoordinator计算并缓存元素数据
+                    ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(weapon, weaponData);
+                    // 获取缓存的数据
+                    cacheData = AffixCacheManager.getOrCreateCache(weapon);
+                }
+            }
             
-            // 使用元素伤害管理器计算最终伤害
+            // 使用元素伤害管理器计算最终伤害，传递缓存数据
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor, specialAndFactionValues);
+                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
             
             // 设置最终伤害
             event.setAmount(damageData.getFinalDamage());
