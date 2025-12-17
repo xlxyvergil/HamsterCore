@@ -69,16 +69,26 @@ public class TacZWeaponConfig {
         List<JsonObject> weaponsList = new ArrayList<>();
         
         for (ResourceLocation gunId : tacZGunIDs) {
-            WeaponData weaponData = createTacZWeaponData(gunId);
-            if (weaponData != null) {
-                JsonObject itemJson = createTacZWeaponConfigJson(weaponData);
-                // 添加gunId字段到配置中
-                itemJson.addProperty("gunId", gunId.toString());
-                weaponsList.add(itemJson);
-                
-                // 存储到内存映射表，使用gunId作为键以便后续查找
-                gunIdToConfigMap.put(gunId.toString(), weaponData);
-            }
+            // 注意：这里不应该创建WeaponData对象
+            // 这些对象应该由TacZConfigApplier类在需要时创建
+            
+            // 创建一个临时的WeaponData用于生成配置文件
+            WeaponData tempData = new WeaponData();
+            
+            // 基本信息
+            tempData.modid = "tacz";
+            tempData.itemId = "modern_kinetic_gun";
+            
+            // TACZ特殊信息
+            tempData.gunId = gunId.toString(); // 具体的枪械ID
+            
+            // 添加初始属性
+            addInitialModifiers(tempData);
+            
+            JsonObject itemJson = createTacZWeaponConfigJson(tempData);
+            // 添加gunId字段到配置中
+            itemJson.addProperty("gunId", gunId.toString());
+            weaponsList.add(itemJson);
         }
         
         // 使用统一的物品ID作为键名，值为武器配置数组
@@ -87,26 +97,6 @@ public class TacZWeaponConfig {
         // 保存TACZ武器配置文件
         saveWeaponConfigToFile(tacZConfigs, TACZ_WEAPONS_FILE);
     }
-    
-    /**
-     * 为TACZ枪械创建武器配置数据
-     */
-    private static WeaponData createTacZWeaponData(ResourceLocation gunId) {
-        WeaponData data = new WeaponData();
-        
-        // 基本信息
-        data.modid = "tacz";
-        data.itemId = "modern_kinetic_gun";
-        
-        // TACZ特殊信息
-        data.gunId = gunId.toString(); // 具体的枪械ID
-        
-        // 添加初始属性
-        addInitialModifiers(data);
-        
-        return data;
-    }
-    
     
     /**
      * 创建TACZ武器配置的JSON对象
@@ -184,6 +174,9 @@ public class TacZWeaponConfig {
             try (FileReader reader = new FileReader(configFile)) {
                 JsonObject loadedConfigs = gson.fromJson(reader, JsonObject.class);
                 
+                // 注意：这里不应该创建WeaponData对象
+                // 这些对象应该由TacZConfigApplier类在需要时创建
+                
                 if (loadedConfigs != null) {
                     for (Map.Entry<String, JsonElement> entry : loadedConfigs.entrySet()) {
                         String configKey = entry.getKey();
@@ -192,60 +185,14 @@ public class TacZWeaponConfig {
                         // 遍历数组中的每个配置
                         for (JsonElement arrayElement : configValue.getAsJsonArray()) {
                             JsonObject itemJson = arrayElement.getAsJsonObject();
-                            processWeaponConfig(itemJson, configKey);
+                            // 注意：这里不应该处理配置
+                            // 这些配置应该由TacZConfigApplier类在需要时处理
                         }
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-    
-    /**
-     * 处理单个武器配置（数组格式，用于TACZ）
-     * 适配新的两层数据结构
-     */
-    private static void processWeaponConfig(JsonObject itemJson, String configKey) {
-        // 创建WeaponData对象
-        WeaponData weaponData = new WeaponData();
-        
-        // 读取gunId（如果存在）
-        if (itemJson.has("gunId")) {
-            weaponData.gunId = itemJson.get("gunId").getAsString();
-        }
-        
-        // 读取elementData
-        if (itemJson.has("elementData")) {
-            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
-                        
-            // 不再读取Basic层
-                        
-            // 不再读取Usage层
-                        
-            // 读取初始属性属性数据
-            if (elementDataJson.has("InitialModifiers")) {
-                JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
-                for (JsonElement modifierElement : modifiersArray) {
-                    JsonObject modifierJson = modifierElement.getAsJsonObject();
-                                 
-                    String name = modifierJson.get("name").getAsString();
-                    double amount = modifierJson.get("amount").getAsDouble();
-                    String operationStr = modifierJson.get("operation").getAsString();
-                                 
-                    // UUID将在应用阶段生成
-                    UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
-                                 
-                    // 直接添加初始属性
-                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
-                }
-            }
-        }
-        
-        // 根据配置类型决定内存映射的键名
-        if (weaponData.gunId != null) {
-            // TACZ武器使用gunId作为键
-            gunIdToConfigMap.put(weaponData.gunId, weaponData);
         }
     }
     

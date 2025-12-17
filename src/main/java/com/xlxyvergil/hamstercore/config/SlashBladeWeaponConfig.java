@@ -66,16 +66,26 @@ public class SlashBladeWeaponConfig {
         List<JsonObject> weaponsList = new ArrayList<>();
         
         for (String translationKey : translationKeys) {
-            WeaponData weaponData = createSlashBladeWeaponData(translationKey);
-            if (weaponData != null) {
-                JsonObject itemJson = createSlashBladeWeaponConfigJson(weaponData);
-                // 添加translationKey字段到配置中
-                itemJson.addProperty("translationKey", translationKey);
-                weaponsList.add(itemJson);
-                
-                // 存储到内存映射表，使用translationKey作为键以便后续查找
-                translationKeyToConfigMap.put(translationKey, weaponData);
-            }
+            // 注意：这里不应该创建WeaponData对象
+            // 这些对象应该由SlashBladeConfigApplier类在需要时创建
+            
+            // 创建一个临时的WeaponData用于生成配置文件
+            WeaponData tempData = new WeaponData();
+            
+            // 基本信息
+            tempData.modid = "slashblade";
+            tempData.itemId = "slashblade";
+            
+            // 拔刀剑特殊信息
+            tempData.translationKey = translationKey; // 具体的translationKey
+            
+            // 添加初始属性
+            addInitialModifiers(tempData);
+            
+            JsonObject itemJson = createSlashBladeWeaponConfigJson(tempData);
+            // 添加translationKey字段到配置中
+            itemJson.addProperty("translationKey", translationKey);
+            weaponsList.add(itemJson);
         }
         
         // 使用统一的物品ID作为键名，值为武器配置数组
@@ -84,26 +94,6 @@ public class SlashBladeWeaponConfig {
         // 保存拔刀剑武器配置文件
         saveWeaponConfigToFile(slashBladeConfigs, SLASHBLADE_WEAPONS_FILE);
     }
-    
-    /**
-     * 为拔刀剑创建武器配置数据
-     */
-    private static WeaponData createSlashBladeWeaponData(String translationKey) {
-        WeaponData data = new WeaponData();
-        
-        // 基本信息
-        data.modid = "slashblade";
-        data.itemId = "slashblade";
-        
-        // 拔刀剑特殊信息
-        data.translationKey = translationKey; // 具体的translationKey
-        
-        // 添加初始属性
-        addInitialModifiers(data);
-        
-        return data;
-    }
-    
     
     /**
      * 创建拔刀剑武器配置的JSON对象
@@ -181,6 +171,9 @@ public class SlashBladeWeaponConfig {
             try (FileReader reader = new FileReader(configFile)) {
                 JsonObject loadedConfigs = gson.fromJson(reader, JsonObject.class);
                 
+                // 注意：这里不应该创建WeaponData对象
+                // 这些对象应该由SlashBladeConfigApplier类在需要时创建
+                
                 if (loadedConfigs != null) {
                     for (Map.Entry<String, JsonElement> entry : loadedConfigs.entrySet()) {
                         String configKey = entry.getKey();
@@ -189,60 +182,14 @@ public class SlashBladeWeaponConfig {
                         // 遍历数组中的每个配置
                         for (JsonElement arrayElement : configValue.getAsJsonArray()) {
                             JsonObject itemJson = arrayElement.getAsJsonObject();
-                            processWeaponConfig(itemJson, configKey);
+                            // 注意：这里不应该处理配置
+                            // 这些配置应该由SlashBladeConfigApplier类在需要时处理
                         }
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-    
-    /**
-     * 处理单个武器配置（数组格式，用于拔刀剑）
-     * 适配新的两层数据结构
-     */
-    private static void processWeaponConfig(JsonObject itemJson, String configKey) {
-        // 创建WeaponData对象
-        WeaponData weaponData = new WeaponData();
-        
-        // 读取translationKey（如果存在）
-        if (itemJson.has("translationKey")) {
-            weaponData.translationKey = itemJson.get("translationKey").getAsString();
-        }
-        
-        // 读取elementData
-        if (itemJson.has("elementData")) {
-            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
-                        
-            // 不再读取Basic层
-                        
-            // 不再读取Usage层
-                        
-            // 读取初始属性数据
-            if (elementDataJson.has("InitialModifiers")) {
-                JsonArray modifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
-                for (JsonElement modifierElement : modifiersArray) {
-                    JsonObject modifierJson = modifierElement.getAsJsonObject();
-                                
-                    String name = modifierJson.get("name").getAsString();
-                    double amount = modifierJson.get("amount").getAsDouble();
-                    String operationStr = modifierJson.get("operation").getAsString();
-                                
-                    // UUID将在应用阶段生成
-                    UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
-                                
-                    // 添加到初始属性列表
-                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
-                }
-            }
-        }
-        
-        // 根据配置类型决定内存映射的键名
-        if (weaponData.translationKey != null) {
-            // 拔刀剑使用translationKey作为键
-            translationKeyToConfigMap.put(weaponData.translationKey, weaponData);
         }
     }
     

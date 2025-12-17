@@ -1,5 +1,10 @@
 package com.xlxyvergil.hamstercore.config;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import net.minecraft.world.item.Item;
@@ -7,7 +12,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 普通物品配置应用类
@@ -25,8 +34,8 @@ public class NormalConfigApplier {
         // 确保配置已加载
         WeaponConfig.init();
         
-        // 获取所有武器配置
-        Map<ResourceLocation, WeaponData> allWeaponConfigs = WeaponConfig.getAllWeaponConfigs();
+        // 获取所有武器配置（仅默认配置，不含额外配置）
+        Map<ResourceLocation, WeaponData> allWeaponConfigs = loadDefaultWeaponConfigs();
         
         // 遍历所有配置，过滤掉MOD特殊物品
         for (Map.Entry<ResourceLocation, WeaponData> entry : allWeaponConfigs.entrySet()) {
@@ -38,13 +47,113 @@ public class NormalConfigApplier {
                 continue; // 跳过MOD特殊物品，由其他应用器处理
             }
             
-            // 为普通物品应用元素属性
-            if (applyElementAttributesToNormalItem(itemKey, weaponData)) {
+            // 直接应用配置到物品
+            if (applyConfigToSingleItem(itemKey, weaponData)) {
                 appliedCount++;
             }
         }
         
         return appliedCount;
+    }
+    
+    /**
+     * 从文件加载默认武器配置
+     */
+    private static Map<ResourceLocation, WeaponData> loadDefaultWeaponConfigs() {
+        // 创建一个临时映射来存储配置
+        Map<ResourceLocation, WeaponData> weaponConfigs = new java.util.HashMap<>();
+        
+        try {
+            // 加载默认武器配置
+            loadDefaultWeaponConfigsFromFile(weaponConfigs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return weaponConfigs;
+    }
+    
+    /**
+     * 从文件加载默认武器配置
+     */
+    private static void loadDefaultWeaponConfigsFromFile(Map<ResourceLocation, WeaponData> weaponConfigs) {
+        try {
+            File configFile = new File(WeaponConfig.DEFAULT_WEAPONS_FILE);
+            if (!configFile.exists()) {
+                return;
+            }
+            
+            Gson gson = new Gson();
+            try (FileReader reader = new FileReader(configFile)) {
+                JsonObject config = gson.fromJson(reader, JsonObject.class);
+                
+                // 遍历所有物品配置
+                for (Map.Entry<String, JsonElement> entry : config.entrySet()) {
+                    String itemName = entry.getKey();
+                    
+                    // 跳过注释和示例
+                    if (itemName.startsWith("_")) {
+                        continue;
+                    }
+                    
+                    ResourceLocation itemKey = ResourceLocation.tryParse(itemName);
+                    if (itemKey == null) {
+                        continue;
+                    }
+                    
+                    JsonElement itemConfig = entry.getValue();
+                    
+                    // 创建武器数据
+                    WeaponData weaponData = new WeaponData();
+                    
+                    // 添加默认初始属性
+                    WeaponConfig.addInitialModifiers(weaponData);
+                    
+                    // 如果有自定义配置，应用自定义配置
+                    if (itemConfig.isJsonObject()) {
+                        JsonObject itemJson = itemConfig.getAsJsonObject();
+                        
+                        // 加载元素数据
+                        if (itemJson.has("elementData")) {
+                            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 不再读取Basic层
+                            
+                            // 不再读取Usage层
+                            
+                            // 加载初始属性
+                            if (elementDataJson.has("InitialModifiers")) {
+                                // 清除默认属性
+                                weaponData.getInitialModifiers().clear();
+                                
+                                JsonArray initialModifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                                for (JsonElement modifierJson : initialModifiersArray) {
+                                    if (modifierJson.isJsonObject()) {
+                                        JsonObject modifierObject = modifierJson.getAsJsonObject();
+                                        
+                                        String name = modifierObject.get("name").getAsString();
+                                        double amount = modifierObject.get("amount").getAsDouble();
+                                        String operation = modifierObject.get("operation").getAsString();
+                                        
+                                        // 生成UUID
+                                        UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
+                                        
+                                        // 创建并添加初始属性
+                                        InitialModifierEntry initialModifier = new InitialModifierEntry(name, name, amount, operation, uuid, "custom");
+                                        weaponData.addInitialModifier(initialModifier);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 添加到武器配置映射
+                    weaponConfigs.put(itemKey, weaponData);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -67,9 +176,9 @@ public class NormalConfigApplier {
     }
     
     /**
-     * 为普通物品应用元素属性
+     * 应用配置到单个物品
      */
-    private static boolean applyElementAttributesToNormalItem(ResourceLocation itemKey, WeaponData weaponData) {
+    private static boolean applyConfigToSingleItem(ResourceLocation itemKey, WeaponData weaponData) {
         if (weaponData == null) {
             return false;
         }
@@ -111,6 +220,11 @@ public class NormalConfigApplier {
             return false;
         }
         
+        // 检查是否为MOD特殊物品
+        if (isModSpecialItem(itemKey)) {
+            return false; // MOD特殊物品不由这个类处理
+        }
+        
         // 获取物品配置
         WeaponData weaponData = WeaponConfig.getWeaponConfig(stack);
         if (weaponData == null) {
@@ -122,22 +236,4 @@ public class NormalConfigApplier {
         
         return true;
     }
-    
-    /**
-     * 从物品堆中读取武器数据
-     * @param stack 物品堆
-     * @return 武器数据，如果不存在则返回null
-     */
-    public static WeaponData readWeaponDataFromItem(ItemStack stack) {
-        return WeaponDataManager.loadElementData(stack);
-    }
-    
-    /**
-     * 检查物品堆是否包含武器数据
-     * @param stack 物品堆
-     * @return 是否包含武器数据
-     */
-    public static boolean hasWeaponData(ItemStack stack) {
-        return WeaponDataManager.loadElementData(stack) != null;
-    }
-} 
+}
