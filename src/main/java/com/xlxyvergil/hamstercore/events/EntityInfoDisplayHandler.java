@@ -35,7 +35,8 @@ public class EntityInfoDisplayHandler {
         }
         
         // 只有玩家攻击怪物时才显示信息
-        if (event.getSource().getEntity() instanceof Player player) {
+        if (event.getSource().getEntity() instanceof Player) {
+            Player player = (Player) event.getSource().getEntity();
             LivingEntity target = event.getEntity();
             ItemStack weapon = player.getMainHandItem();
             
@@ -84,12 +85,16 @@ public class EntityInfoDisplayHandler {
             // 构造实体信息消息
             MutableComponent message = Component.literal("")
                 .append(target.getName())
+                .append(Component.literal(" "))
                 .append(Component.translatable("hamstercore.ui.level_prefix"))
                 .append(Component.literal("" + level).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(", "))
                 .append(Component.translatable("hamstercore.ui.armor_prefix"))
                 .append(Component.literal(String.format("%.2f", armor)).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(", "))
                 .append(Component.translatable("hamstercore.ui.faction_prefix"))
                 .append(Component.literal(factionName + "]").withStyle(factionColor))
+                .append(Component.literal(", "))
                 .append(Component.translatable("hamstercore.ui.damage_prefix"))
                 .append(Component.literal(String.format("%.2f", baseDamage)).withStyle(ChatFormatting.RED))
                 .append(Component.literal(" -> ").withStyle(ChatFormatting.GOLD))
@@ -97,56 +102,113 @@ public class EntityInfoDisplayHandler {
             
             // 添加武器属性信息
             if (!weapon.isEmpty()) {
-                message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
+                message.append(Component.literal("\n"))
+                    .append(Component.translatable("hamstercore.ui.weapon_attributes"))
+                    .append(": " + weapon.getDisplayName().getString())
+                    .withStyle(ChatFormatting.AQUA);
                 
                 // 从ElementDamageData中获取暴击信息
                 int currentCriticalLevel = damageData.getCriticalLevel();
                 double currentCriticalDamage = damageData.getCriticalDamage();
                 double currentCriticalMultiplier = damageData.getCriticalMultiplier();
                 
+                // 构建武器详细属性行
+                boolean hasWeaponDetails = false;
+                
                 // 显示暴击率
                 double critChance = cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0);
                 if (critChance > 0) {
-                    message.append(Component.translatable("hamstercore.ui.critical_chance").append(":" + String.format("%.1f%%", critChance * 100)).withStyle(ChatFormatting.YELLOW));
+                    message.append(Component.literal("\n  "))
+                        .append(Component.translatable("hamstercore.ui.critical_chance"))
+                        .append(": " + String.format("%.1f%%", critChance * 100))
+                        .withStyle(ChatFormatting.YELLOW);
+                    hasWeaponDetails = true;
                 }
                 
                 // 显示暴击伤害
                 if (currentCriticalDamage > 0) {
-                    message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", currentCriticalDamage * 100)).withStyle(ChatFormatting.YELLOW));
+                    if (hasWeaponDetails) {
+                        message.append(Component.literal(", "));
+                    } else {
+                        message.append(Component.literal("\n  "));
+                    }
+                    message.append(Component.translatable("hamstercore.ui.critical_damage"))
+                        .append(": " + String.format("%.1f%%", currentCriticalDamage * 100))
+                        .withStyle(ChatFormatting.YELLOW);
+                    hasWeaponDetails = true;
                 }
                 
                 // 显示当前暴击等级和暴击倍率
                 if (critChance > 0 && currentCriticalLevel > 0) {
-                    message.append(Component.literal("暴击等级:" + currentCriticalLevel + " 暴击倍率:" + String.format("%.2f", currentCriticalMultiplier)).withStyle(ChatFormatting.RED));
+                    if (hasWeaponDetails) {
+                        message.append(Component.literal(", "));
+                    } else {
+                        message.append(Component.literal("\n  "));
+                    }
+                    message.append(Component.literal("暴击等级: " + currentCriticalLevel + ", 暴击倍率: " + String.format("%.2f", currentCriticalMultiplier)).withStyle(ChatFormatting.RED));
+                    hasWeaponDetails = true;
                 }
                 
                 // 显示触发率
                 double triggerChance = cacheData.getCriticalStats().getOrDefault("trigger_chance", 0.0);
                 if (triggerChance > 0) {
-                    message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
+                    if (hasWeaponDetails) {
+                        message.append(Component.literal(", "));
+                    } else {
+                        message.append(Component.literal("\n  "));
+                    }
+                    message.append(Component.translatable("hamstercore.ui.trigger_chance"))
+                        .append(": " + String.format("%.1f%%", triggerChance * 100))
+                        .withStyle(ChatFormatting.YELLOW);
+                    hasWeaponDetails = true;
                 }
                 
                 // 显示详细的modifier计算结果
                 ModifierResults modifierResults = damageData.getModifierResults();
                 if (modifierResults != null) {
+                    boolean hasModifierInfo = false;
+                    
                     // 显示派系克制
                     if (modifierResults.getFactionModifier() > 0) {
-                        message.append(Component.literal("派系克制(HM):" + String.format("%.2f", modifierResults.getFactionModifier())).withStyle(ChatFormatting.GOLD));
+                        message.append(Component.literal("\n  ")
+                            .append("派系克制(HM): " + String.format("%.2f", modifierResults.getFactionModifier()))
+                            .withStyle(ChatFormatting.GOLD));
+                        hasModifierInfo = true;
                     }
                     
                     // 显示元素总倍率
                     if (modifierResults.getElementMultiplier() > 0) {
-                        message.append(Component.literal("元素总倍率:" + String.format("%.2f", modifierResults.getElementMultiplier())).withStyle(ChatFormatting.GREEN));
+                        if (hasModifierInfo) {
+                            message.append(Component.literal(", "));
+                        } else {
+                            message.append(Component.literal("\n  "));
+                        }
+                        message.append(Component.literal("元素总倍率: " + String.format("%.2f", modifierResults.getElementMultiplier()))
+                            .withStyle(ChatFormatting.GREEN));
+                        hasModifierInfo = true;
                     }
                     
                     // 显示物理元素总倍率
                     if (modifierResults.getPhysicalElementMultiplier() > 0) {
-                        message.append(Component.literal("物理元素总倍率:" + String.format("%.2f", modifierResults.getPhysicalElementMultiplier())).withStyle(ChatFormatting.BLUE));
+                        if (hasModifierInfo) {
+                            message.append(Component.literal(", "));
+                        } else {
+                            message.append(Component.literal("\n  "));
+                        }
+                        message.append(Component.literal("物理元素总倍率: " + String.format("%.2f", modifierResults.getPhysicalElementMultiplier()))
+                            .withStyle(ChatFormatting.BLUE));
+                        hasModifierInfo = true;
                     }
                     
                     // 显示护甲减免
                     if (modifierResults.getArmorReduction() < 1.0) {
-                        message.append(Component.literal("护甲减免(1-AM):" + String.format("%.2f%%", (1.0 - modifierResults.getArmorReduction()) * 100)).withStyle(ChatFormatting.GRAY));
+                        if (hasModifierInfo) {
+                            message.append(Component.literal(", "));
+                        } else {
+                            message.append(Component.literal("\n  "));
+                        }
+                        message.append(Component.literal("护甲减免(1-AM): " + String.format("%.2f%%", (1.0 - modifierResults.getArmorReduction()) * 100))
+                            .withStyle(ChatFormatting.GRAY));
                     }
                 }
 
@@ -159,15 +221,21 @@ public class EntityInfoDisplayHandler {
                 
                 if (hasElements) {
                     // 添加元素属性标题
-                    message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
+                    message.append(Component.literal("\n"))
+                        .append(Component.translatable("hamstercore.ui.element_ratios"))
+                        .withStyle(ChatFormatting.DARK_GREEN);
+                    
+                    boolean hasAnyElement = false;
                     
                     // 先显示物理元素
                     for (ElementType elementType : ElementType.getPhysicalElements()) {
                         Double elementValue = physicalElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                            message.append(Component.literal("\n  ")
+                                .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                            hasAnyElement = true;
                         }
                     }
                     
@@ -176,8 +244,10 @@ public class EntityInfoDisplayHandler {
                         Double elementValue = combinedElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                            message.append(Component.literal("\n  ")
+                                .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                            hasAnyElement = true;
                         }
                     }
                     
@@ -186,9 +256,18 @@ public class EntityInfoDisplayHandler {
                         Double elementValue = combinedElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                            message.append(Component.literal("\n  ")
+                                .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                            hasAnyElement = true;
                         }
+                    }
+                    
+                    // 如果没有元素，至少显示一个空行来保持格式
+                    if (!hasAnyElement) {
+                        message.append(Component.literal("\n  ")
+                            .append(Component.translatable("hamstercore.ui.no_elements"))
+                            .withStyle(ChatFormatting.GRAY));
                     }
                 }
 
@@ -241,6 +320,8 @@ public class EntityInfoDisplayHandler {
         // 从缓存中获取派系元素
         Map<String, Double> factionElements = cacheData.getFactionElements();
         
+        boolean hasFactionBonus = false;
+        
         // 遍历所有元素，只处理派系类型的元素
         for (Map.Entry<String, Double> entry : factionElements.entrySet()) {
             String elementType = entry.getKey();
@@ -248,12 +329,16 @@ public class EntityInfoDisplayHandler {
             
             // 检查是否为派系类型并且值大于0
             if (isFactionType(elementType) && factionModifier != null && factionModifier > 0) {
-                message.append(
-                    net.minecraft.network.chat.Component.translatable(
+                if (hasFactionBonus) {
+                    message.append(Component.literal(", "));
+                } else {
+                    message.append(Component.literal("\n  "));
+                }
+                message.append(net.minecraft.network.chat.Component.translatable(
                         "hamstercore.ui.faction_damage_bonus." + elementType.toLowerCase())
-                        .append(":" + String.format("%.1f%%", factionModifier * 100))
-                        .withStyle(net.minecraft.ChatFormatting.GOLD)
-                );
+                        .append(": " + String.format("%.1f%%", factionModifier * 100))
+                        .withStyle(net.minecraft.ChatFormatting.GOLD));
+                hasFactionBonus = true;
             }
         }
     }
@@ -281,7 +366,9 @@ public class EntityInfoDisplayHandler {
         java.util.List<ElementType> triggeredElements = ElementTriggerHandler.getTriggeredElements();
         
         if (!triggeredElements.isEmpty()) {
-            message.append(Component.translatable("hamstercore.ui.triggered_elements").withStyle(ChatFormatting.LIGHT_PURPLE));
+            message.append(Component.literal("\n"))
+                .append(Component.translatable("hamstercore.ui.triggered_elements"))
+                .withStyle(ChatFormatting.LIGHT_PURPLE);
             
             // 统计每种元素的触发次数
             java.util.Map<ElementType, Integer> elementCount = new java.util.HashMap<>();
@@ -290,16 +377,19 @@ public class EntityInfoDisplayHandler {
             }
             
             // 显示触发的元素和次数
+            boolean isFirst = true;
             for (java.util.Map.Entry<ElementType, Integer> entry : elementCount.entrySet()) {
                 ElementType elementType = entry.getKey();
                 int count = entry.getValue();
                 MutableComponent elementName = elementType.getColoredName();
                 
                 if (count > 1) {
-                    message.append(Component.literal(String.format("  %s x%d", elementName.getString(), count))
+                    message.append(Component.literal("\n  ")
+                        .append(String.format("%s x%d", elementName.getString(), count))
                         .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                 } else {
-                    message.append(Component.literal(String.format("  %s", elementName.getString()))
+                    message.append(Component.literal("\n  ")
+                        .append(String.format("%s", elementName.getString()))
                         .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                 }
             }

@@ -62,6 +62,8 @@
   "hamstercore.ui.critical_chance": "Critical Chance",
   "hamstercore.ui.critical_damage": "Critical Damage",
   "hamstercore.ui.trigger_chance": "Trigger Chance",
+  "hamstercore.ui.triggered_elements": "Triggered Elements",
+  "hamstercore.ui.no_elements": "No Elements",
   "hamstercore.ui.element_ratios": "Elements",
   "hamstercore.ui.weapon_attributes": "Weapon Attributes",
   "hamstercore.ui.level_prefix": " [Level:",

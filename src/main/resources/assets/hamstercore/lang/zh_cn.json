@@ -62,6 +62,8 @@
   "hamstercore.ui.critical_chance": "暴击率",
   "hamstercore.ui.critical_damage": "暴击伤害倍率",
   "hamstercore.ui.trigger_chance": "触发率",
+  "hamstercore.ui.triggered_elements": "触发的元素",
+  "hamstercore.ui.no_elements": "无元素属性",
   "hamstercore.ui.element_ratios": "元素",
   "hamstercore.ui.weapon_attributes": "武器属性",
   "hamstercore.ui.level_prefix": " [等级:",
