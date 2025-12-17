@@ -30,7 +30,7 @@ public class AffixCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         // 主命令 /hamsteraffix
         dispatcher.register(Commands.literal("hamsteraffix")
-            .requires(source -> source.hasPermission(0)) // 需要权限等级0，所有玩家都可以使用
+            .requires(source -> source.hasPermission(2)) // 需要权限等级2，管理员级别
             .then(Commands.literal("add")
                 .then(Commands.argument("player", EntityArgument.player())
                     .then(Commands.argument("elementType", StringArgumentType.string())

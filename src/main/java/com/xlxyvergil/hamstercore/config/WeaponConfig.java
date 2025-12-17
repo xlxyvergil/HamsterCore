@@ -395,7 +395,7 @@ public class WeaponConfig {
                                         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                         
                                         // 创建并添加初始属性
-                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "default"));
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "def"));
                                         
                                         // 只有基础元素和复合元素才添加到Basic层
                                         ElementType type = ElementType.byName(name);
@@ -484,12 +484,12 @@ public class WeaponConfig {
                                         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                         
                                         // 创建并添加初始属性
-                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "custom"));
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "def"));
                                         
                                         // 只有基础元素和复合元素才添加到Basic层
                                         ElementType type = ElementType.byName(name);
                                         if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
-                                            weaponData.addBasicElement(name, "custom", 0);
+                                            weaponData.addBasicElement(name, "def", 0);
                                         }
                                     }
                                 }

@@ -35,7 +35,7 @@ public class WeaponData {
     
     /**
      * 获取按优先级排序的Basic层元素列表
-     * 优先级顺序: Def ＜ Config ＜ User
+     * 优先级顺序: def ＜ user
      */
     public List<BasicEntry> getSortedBasicElements() {
         List<BasicEntry> sortedEntries = new ArrayList<>();
@@ -45,7 +45,7 @@ public class WeaponData {
             sortedEntries.addAll(entries);
         }
         
-        // 按照优先级排序: Def ＜ Config ＜ User
+        // 按照优先级排序: def ＜ user
         sortedEntries.sort((entry1, entry2) -> {
             int priority1 = getPriority(entry1.getSource());
             int priority2 = getPriority(entry2.getSource());
@@ -65,19 +65,17 @@ public class WeaponData {
     
     /**
      * 获取来源优先级
-     * @param source 来源 ("DEF", "CONFIG", "USER")
+     * @param source 来源 ("def", "user")
      * @return 优先级数值，越小优先级越高
      */
     private int getPriority(String source) {
         switch (source.toUpperCase()) {
             case "DEF": 
-                return 3; // 最高优先级
-            case "CONFIG":
-                return 2; // 中等优先级
-            case "USER":
                 return 1; // 最低优先级
+            case "USER":
+                return 0; // 最高优先级
             default:
-                return 3; // 未知来源，最低优先级
+                return 1; // 未知来源，最低优先级
         }
     }
     

@@ -69,6 +69,12 @@
   "hamstercore.ui.faction_prefix": " 派系:",
   "hamstercore.ui.damage_prefix": " 伤害:",
   "hamstercore.ui.faction_damage_bonus": "派系增伤",
+  "hamstercore.ui.faction_damage_bonus.grineer": "克隆尼增伤",
+  "hamstercore.ui.faction_damage_bonus.infested": "感染体增伤",
+  "hamstercore.ui.faction_damage_bonus.corpus": "科普斯增伤",
+  "hamstercore.ui.faction_damage_bonus.orokin": "奥罗金增伤",
+  "hamstercore.ui.faction_damage_bonus.sentient": "灵煞增伤",
+  "hamstercore.ui.faction_damage_bonus.murmur": "低语者增伤",
   
   "config.jade.plugin_hamstercore.faction": "仓鼠信息",
   

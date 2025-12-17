@@ -165,7 +165,7 @@ public class SlashBladeConfigApplier {
                     UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                 
                     // 添加到初始属性列表
-                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
+                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "def"));
                     
                     // 只有基础元素和复合元素才添加到Basic层
                     ElementType type = ElementType.byName(name);

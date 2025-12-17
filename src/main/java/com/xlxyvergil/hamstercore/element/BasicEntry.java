@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public class BasicEntry {
     private final String type;     // 元素类型
-    private final String source;   // 来源 ( "USER" | "DEF")
+    private final String source;   // 来源 ("user" | "def")
     private final int order;       // 添加顺序
     
     public BasicEntry(String type, String source, int order) {

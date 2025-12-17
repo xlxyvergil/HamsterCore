@@ -168,7 +168,7 @@ public class TacZConfigApplier {
                     UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                  
                     // 直接添加初始属性
-                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
+                    weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "def"));
                     
                     // 只有基础元素和复合元素才添加到Basic层
                     ElementType type = ElementType.byName(name);
