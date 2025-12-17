@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.element;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
 
@@ -36,7 +35,7 @@ public class WeaponData {
     
     /**
      * 获取按优先级排序的Basic层元素列表
-     * 优先级顺序: Def > Config > User
+     * 优先级顺序: Def ＜ Config ＜ User
      */
     public List<BasicEntry> getSortedBasicElements() {
         List<BasicEntry> sortedEntries = new ArrayList<>();
@@ -46,7 +45,7 @@ public class WeaponData {
             sortedEntries.addAll(entries);
         }
         
-        // 按照优先级排序: Def > Config > User
+        // 按照优先级排序: Def ＜ Config ＜ User
         sortedEntries.sort((entry1, entry2) -> {
             int priority1 = getPriority(entry1.getSource());
             int priority2 = getPriority(entry2.getSource());
@@ -72,11 +71,11 @@ public class WeaponData {
     private int getPriority(String source) {
         switch (source.toUpperCase()) {
             case "DEF": 
-                return 0; // 最高优先级
+                return 3; // 最高优先级
             case "CONFIG":
-                return 1; // 中等优先级
+                return 2; // 中等优先级
             case "USER":
-                return 2; // 最低优先级
+                return 1; // 最低优先级
             default:
                 return 3; // 未知来源，最低优先级
         }

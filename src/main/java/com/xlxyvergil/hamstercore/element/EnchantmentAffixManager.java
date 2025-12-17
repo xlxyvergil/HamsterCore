@@ -104,16 +104,8 @@ public class EnchantmentAffixManager {
                 
                 // 添加元素伤害词缀
                 UUID damageAffixUuid = UUID.randomUUID();
-                AffixManager.addAffix(stack, "element_damage", elementType.toString().toLowerCase(), elementValue, "ADDITION", damageAffixUuid, "enchantment");
+                AffixManager.addAffix(stack, elementType.getName(), elementType.getName(), elementValue, "ADDITION", damageAffixUuid, "def");
                 affixUuids.add(damageAffixUuid);
-                
-                // 为特殊元素类型添加额外的词缀
-                if (elementType.isSpecial()) {
-                    String specialName = elementType.toString().toLowerCase().replace("_", "_");
-                    UUID specialAffixUuid = UUID.randomUUID();
-                    AffixManager.addAffix(stack, specialName + "_bonus", elementType.toString().toLowerCase(), elementValue * 0.5, "MULTIPLY_BASE", specialAffixUuid, "enchantment");
-                    affixUuids.add(specialAffixUuid);
-                }
                 
                 // 关联附魔和词缀
                 if (!affixUuids.isEmpty()) {

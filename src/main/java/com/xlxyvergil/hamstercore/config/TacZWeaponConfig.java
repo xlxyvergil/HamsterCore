@@ -45,7 +45,7 @@ public class TacZWeaponConfig {
     // 配置文件路径
     private static final String CONFIG_DIR = "config/hamstercore/";
     private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
-    private static final String TACZ_WEAPONS_FILE = WEAPON_DIR + "tacz_weapons.json";
+    public static final String TACZ_WEAPONS_FILE = WEAPON_DIR + "tacz_weapons.json";
     
     // TACZ配置缓存
     private static Map<String, WeaponData> taczConfigCache = new HashMap<>();
@@ -54,12 +54,18 @@ public class TacZWeaponConfig {
     private static Map<String, WeaponData> gunIdToConfigMap = new HashMap<>();
     
     /**
-     * 生成TACZ武器配置文件
+     * 生成TACZ武器配置文件（仅当文件不存在时）
      */
     public static void generateTacZWeaponsConfig() {
         // 只有当TACZ模组加载时才生成配置
         if (!ModList.get().isLoaded(TACZ_MOD_ID)) {
             return;
+        }
+        
+        // 检查配置文件是否已经存在
+        File configFile = new File(TACZ_WEAPONS_FILE);
+        if (configFile.exists()) {
+            return; // 配置文件已存在，不再生成
         }
         
         Map<String, Object> tacZConfigs = new HashMap<>();
@@ -279,7 +285,13 @@ public class TacZWeaponConfig {
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
+        // 只有基础元素和复合元素才添加到Basic层
+        ElementType type = ElementType.byName(elementType);
+        if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+            data.addBasicElement(elementType, "def", 0);
+        }
+        
         // 添加到初始属性列表
-        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "default"));
+        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "def"));
     }
 }

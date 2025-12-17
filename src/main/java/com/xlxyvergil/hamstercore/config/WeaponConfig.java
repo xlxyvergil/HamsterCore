@@ -39,8 +39,8 @@ public class WeaponConfig {
     // 配置文件路径 - 与TacZWeaponConfig保持一致
     private static final String CONFIG_DIR = "config/hamstercore/";
     private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
-    private static final String DEFAULT_WEAPONS_FILE = WEAPON_DIR + "default_weapons.json";
-    private static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
+    public static final String DEFAULT_WEAPONS_FILE = WEAPON_DIR + "default_weapons.json";
+    public static final String ADDITIONAL_NORMAL_WEAPONS_FILE = WEAPON_DIR + "additional_normal_weapons.json";
     
     // 武器配置映射
     private static final Map<ResourceLocation, WeaponData> weaponConfigs = new HashMap<>();
@@ -163,7 +163,7 @@ public class WeaponConfig {
     /**
      * 为武器添加初始属性
      */
-    private static void addInitialModifiers(WeaponData data) {
+    public static void addInitialModifiers(WeaponData data) {
         // 直接添加默认的初始属性，不依赖Basic层数据
         
         // 添加默认物理元素初始属性
@@ -184,8 +184,14 @@ public class WeaponConfig {
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
+        // 只有基础元素和复合元素才添加到Basic层
+        ElementType type = ElementType.byName(elementType);
+        if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+            data.addBasicElement(elementType, "def", 0);
+        }
+        
         // 添加到初始属性列表
-        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "default"));
+        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "def"));
     }
     
     /**
@@ -256,8 +262,6 @@ public class WeaponConfig {
         
         // 创建默认配置内容
         JsonObject defaultConfig = new JsonObject();
-        defaultConfig.addProperty("_comment", "默认武器配置文件，您可以自由修改此文件");
-        defaultConfig.addProperty("_note", "如需添加额外普通武器，也可以直接在此文件中添加");
         
         // 为每个适用物品生成默认配置
         for (ResourceLocation itemKey : applicableItems) {
@@ -333,7 +337,7 @@ public class WeaponConfig {
     /**
      * 从文件加载默认武器配置
      */
-    private static void loadDefaultWeaponConfigsFromFile() {
+    public static void loadDefaultWeaponConfigsFromFile() {
         try {
             File configFile = new File(DEFAULT_WEAPONS_FILE);
             if (!configFile.exists()) {
@@ -360,8 +364,57 @@ public class WeaponConfig {
                     
                     JsonElement itemConfig = entry.getValue();
                     
-                    // 注意：WeaponConfig不应该在这里创建WeaponData对象
-                    // 这些对象应该由ConfigApplier类在需要时创建
+                    // 创建武器数据
+                    WeaponData weaponData = new WeaponData();
+                    
+                    // 从配置文件加载数据
+                    if (itemConfig.isJsonObject()) {
+                        JsonObject itemJson = itemConfig.getAsJsonObject();
+                        
+                        // 加载元素数据
+                        if (itemJson.has("elementData")) {
+                            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 加载初始属性
+                            if (elementDataJson.has("InitialModifiers")) {
+                                JsonArray initialModifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                                for (JsonElement modifierJson : initialModifiersArray) {
+                                    if (modifierJson.isJsonObject()) {
+                                        JsonObject modifierObject = modifierJson.getAsJsonObject();
+                                        
+                                        // 检查必要字段是否存在
+                                        if (!modifierObject.has("name") || !modifierObject.has("amount") || !modifierObject.has("operation")) {
+                                            continue;
+                                        }
+                                        
+                                        String name = modifierObject.get("name").getAsString();
+                                        double amount = modifierObject.get("amount").getAsDouble();
+                                        String operation = modifierObject.get("operation").getAsString();
+                                        
+                                        // 生成UUID
+                                        UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
+                                        
+                                        // 创建并添加初始属性
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "default"));
+                                        
+                                        // 只有基础元素和复合元素才添加到Basic层
+                                        ElementType type = ElementType.byName(name);
+                                        if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+                                            weaponData.addBasicElement(name, "def", 0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 如果没有从配置文件加载到数据，使用默认值
+                    if (weaponData.getInitialModifiers().isEmpty()) {
+                        addInitialModifiers(weaponData);
+                    }
+                    
+                    // 添加到武器配置映射
+                    weaponConfigs.put(itemKey, weaponData);
                 }
             }
         } catch (IOException e) {
@@ -372,7 +425,7 @@ public class WeaponConfig {
     /**
      * 加载额外普通武器配置
      */
-    private static void loadAdditionalNormalWeaponConfigs() {
+    public static void loadAdditionalNormalWeaponConfigs() {
         try {
             File configFile = new File(ADDITIONAL_NORMAL_WEAPONS_FILE);
             if (!configFile.exists()) {
@@ -383,8 +436,70 @@ public class WeaponConfig {
             try (FileReader reader = new FileReader(configFile)) {
                 JsonObject config = gson.fromJson(reader, JsonObject.class);
                 
-                // 注意：WeaponConfig不应该在这里创建WeaponData对象
-                // 这些对象应该由ConfigApplier类在需要时创建
+                // 遍历所有物品配置
+                for (Map.Entry<String, JsonElement> entry : config.entrySet()) {
+                    String itemName = entry.getKey();
+                    
+                    // 跳过注释和示例
+                    if (itemName.startsWith("_")) {
+                        continue;
+                    }
+                    
+                    ResourceLocation itemKey = ResourceLocation.tryParse(itemName);
+                    if (itemKey == null) {
+                        continue;
+                    }
+                    
+                    JsonElement itemConfig = entry.getValue();
+                    
+                    // 创建武器数据
+                    WeaponData weaponData = new WeaponData();
+                    
+                    // 添加默认初始属性
+                    addInitialModifiers(weaponData);
+                    
+                    // 如果有自定义配置，应用自定义配置
+                    if (itemConfig.isJsonObject()) {
+                        JsonObject itemJson = itemConfig.getAsJsonObject();
+                        
+                        // 加载元素数据
+                        if (itemJson.has("elementData")) {
+                            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
+                            
+                            // 加载初始属性
+                            if (elementDataJson.has("InitialModifiers")) {
+                                // 清除默认属性
+                                weaponData.getInitialModifiers().clear();
+                                
+                                JsonArray initialModifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
+                                for (JsonElement modifierJson : initialModifiersArray) {
+                                    if (modifierJson.isJsonObject()) {
+                                        JsonObject modifierObject = modifierJson.getAsJsonObject();
+                                        
+                                        String name = modifierObject.get("name").getAsString();
+                                        double amount = modifierObject.get("amount").getAsDouble();
+                                        String operation = modifierObject.get("operation").getAsString();
+                                        
+                                        // 生成UUID
+                                        UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
+                                        
+                                        // 创建并添加初始属性
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "custom"));
+                                        
+                                        // 只有基础元素和复合元素才添加到Basic层
+                                        ElementType type = ElementType.byName(name);
+                                        if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+                                            weaponData.addBasicElement(name, "custom", 0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 添加到武器配置映射
+                    weaponConfigs.put(itemKey, weaponData);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

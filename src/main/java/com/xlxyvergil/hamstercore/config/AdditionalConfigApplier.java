@@ -26,6 +26,14 @@ import java.util.UUID;
 public class AdditionalConfigApplier {
     
     /**
+     * 加载额外物品配置并应用到物品
+     * 在onServerStarted事件中调用此方法
+     */
+    public static void load() {
+        applyConfigToItem();
+    }
+    
+    /**
      * 应用额外的元素属性配置到物品堆
      * @return 成功应用配置的物品数量
      */
@@ -36,7 +44,11 @@ public class AdditionalConfigApplier {
         WeaponConfig.init();
         
         // 获取所有额外配置
-        Map<ResourceLocation, WeaponData> additionalConfigs = loadAdditionalWeaponConfigs();
+        // 加载额外普通武器配置
+        WeaponConfig.loadAdditionalNormalWeaponConfigs();
+        
+        // 获取所有额外配置
+        Map<ResourceLocation, WeaponData> additionalConfigs = WeaponConfig.getAdditionalWeaponConfigs();
         if (additionalConfigs == null || additionalConfigs.isEmpty()) {
             return 0;
         }
@@ -52,93 +64,6 @@ public class AdditionalConfigApplier {
         }
         
         return appliedCount;
-    }
-    
-    /**
-     * 从文件加载额外武器配置
-     */
-    private static Map<ResourceLocation, WeaponData> loadAdditionalWeaponConfigs() {
-        Map<ResourceLocation, WeaponData> additionalConfigs = new HashMap<>();
-        
-        try {
-            File configFile = new File(WeaponConfig.ADDITIONAL_NORMAL_WEAPONS_FILE);
-            if (!configFile.exists()) {
-                return additionalConfigs;
-            }
-            
-            Gson gson = new Gson();
-            try (FileReader reader = new FileReader(configFile)) {
-                JsonObject config = gson.fromJson(reader, JsonObject.class);
-                
-                // 遍历所有物品配置
-                for (Map.Entry<String, JsonElement> entry : config.entrySet()) {
-                    String itemName = entry.getKey();
-                    
-                    // 跳过注释和示例
-                    if (itemName.startsWith("_")) {
-                        continue;
-                    }
-                    
-                    ResourceLocation itemKey = ResourceLocation.tryParse(itemName);
-                    if (itemKey == null) {
-                        continue;
-                    }
-                    
-                    JsonElement itemConfig = entry.getValue();
-                    
-                    // 创建武器数据
-                    WeaponData weaponData = new WeaponData();
-                    
-                    // 添加默认初始属性
-                    WeaponConfig.addInitialModifiers(weaponData);
-                    
-                    // 如果有自定义配置，应用自定义配置
-                    if (itemConfig.isJsonObject()) {
-                        JsonObject itemJson = itemConfig.getAsJsonObject();
-                        
-                        // 加载元素数据
-                        if (itemJson.has("elementData")) {
-                            JsonObject elementDataJson = itemJson.getAsJsonObject("elementData");
-                            
-                            // 不再读取Basic层
-                            
-                            // 不再读取Usage层
-                            
-                            // 加载初始属性
-                            if (elementDataJson.has("InitialModifiers")) {
-                                // 清除默认属性
-                                weaponData.getInitialModifiers().clear();
-                                
-                                JsonArray initialModifiersArray = elementDataJson.getAsJsonArray("InitialModifiers");
-                                for (JsonElement modifierJson : initialModifiersArray) {
-                                    if (modifierJson.isJsonObject()) {
-                                        JsonObject modifierObject = modifierJson.getAsJsonObject();
-                                        
-                                        String name = modifierObject.get("name").getAsString();
-                                        double amount = modifierObject.get("amount").getAsDouble();
-                                        String operation = modifierObject.get("operation").getAsString();
-                                        
-                                        // 生成UUID
-                                        UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
-                                        
-                                        // 创建并添加初始属性
-                                        InitialModifierEntry initialModifier = new InitialModifierEntry(name, name, amount, operation, uuid, "custom");
-                                        weaponData.addInitialModifier(initialModifier);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 添加到额外配置映射
-                    additionalConfigs.put(itemKey, weaponData);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-        return additionalConfigs;
     }
     
     /**
@@ -159,6 +84,8 @@ public class AdditionalConfigApplier {
                 ItemStack stack = new ItemStack(item);
                 // 只保存InitialModifier层数据
                 WeaponDataManager.saveInitialModifierData(stack, weaponData);
+                // 将配置好的物品保存到全局映射中，供游戏运行时使用
+                WeaponConfig.cacheConfiguredItemStack(itemKey, stack);
             }
             
             return true;

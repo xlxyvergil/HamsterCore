@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
+import com.xlxyvergil.hamstercore.element.ElementType;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +30,14 @@ import java.util.UUID;
 public class TacZConfigApplier {
 
     private static final String TACZ_MOD_ID = "tacz";
+
+    /**
+     * 加载TACZ配置并应用到物品
+     * 在onServerStarted事件中调用此方法
+     */
+    public static void load() {
+        applyConfigs();
+    }
 
     /**
      * 应用TACZ的配置
@@ -160,6 +169,12 @@ public class TacZConfigApplier {
                                  
                     // 直接添加初始属性
                     weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
+                    
+                    // 只有基础元素和复合元素才添加到Basic层
+                    ElementType type = ElementType.byName(name);
+                    if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+                        weaponData.addBasicElement(name, "def", 0);
+                    }
                 }
             }
         }

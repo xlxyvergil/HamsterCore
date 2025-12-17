@@ -117,19 +117,42 @@ public class EntityInfoDisplayHandler {
 
                 // 添加武器元素属性信息
                 Map<String, Double> combinedElements = cacheData.getCombinedElements();
-                if (!combinedElements.isEmpty()) {
+                Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+                
+                // 检查是否有任何元素值
+                boolean hasElements = !combinedElements.isEmpty() || !physicalElements.isEmpty();
+                
+                if (hasElements) {
                     // 添加元素属性标题
                     message.append(Component.translatable("hamstercore.ui.element_ratios").withStyle(ChatFormatting.DARK_GREEN));
                     
-                    // 遍历所有基础元素和复合元素
-                    for (ElementType elementType : ElementType.getAllTypes()) {
-                        if (elementType != null && (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex())) {
-                            Double elementValue = combinedElements.get(elementType.getName());
-                            if (elementValue != null && elementValue > 0) {
-                                String elementName = Component.translatable("element." + elementType.getName() + ".name").getString();
-                                message.append(Component.literal(String.format("  %s: %.2f", elementName, elementValue))
-                                    .withStyle(style -> style.withColor(elementType.getColor().getColor())));
-                            }
+                    // 先显示物理元素
+                    for (ElementType elementType : ElementType.getPhysicalElements()) {
+                        Double elementValue = physicalElements.get(elementType.getName());
+                        if (elementValue != null && elementValue > 0) {
+                            MutableComponent elementName = elementType.getColoredName();
+                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                                .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                        }
+                    }
+                    
+                    // 再显示基础元素
+                    for (ElementType elementType : ElementType.getBasicElements()) {
+                        Double elementValue = combinedElements.get(elementType.getName());
+                        if (elementValue != null && elementValue > 0) {
+                            MutableComponent elementName = elementType.getColoredName();
+                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                                .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                        }
+                    }
+                    
+                    // 最后显示复合元素
+                    for (ElementType elementType : ElementType.getComplexElements()) {
+                        Double elementValue = combinedElements.get(elementType.getName());
+                        if (elementValue != null && elementValue > 0) {
+                            MutableComponent elementName = elementType.getColoredName();
+                            message.append(Component.literal(String.format("  %s: %.2f", elementName.getString(), elementValue))
+                                .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                         }
                     }
                 }

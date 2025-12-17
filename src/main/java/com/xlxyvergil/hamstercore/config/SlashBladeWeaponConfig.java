@@ -42,7 +42,7 @@ public class SlashBladeWeaponConfig {
     // 配置文件路径
     private static final String CONFIG_DIR = "config/hamstercore/";
     private static final String WEAPON_DIR = CONFIG_DIR + "Weapon/";
-    private static final String SLASHBLADE_WEAPONS_FILE = WEAPON_DIR + "slashblade_weapons.json";
+    public static final String SLASHBLADE_WEAPONS_FILE = WEAPON_DIR + "slashblade_weapons.json";
     
     // 拔刀剑配置缓存
     private static Map<String, WeaponData> slashBladeConfigCache = new HashMap<>();
@@ -58,7 +58,10 @@ public class SlashBladeWeaponConfig {
         if (!ModList.get().isLoaded(SLASHBLADE_MOD_ID)) {
             return;
         }
-        
+         File configFile = new File(SLASHBLADE_WEAPONS_FILE);
+        if (configFile.exists()) {
+            return; // 配置文件已存在，不再生成
+        }
         Map<String, Object> slashBladeConfigs = new HashMap<>();
         
         // 获取所有拔刀剑translationKey
@@ -279,6 +282,12 @@ public class SlashBladeWeaponConfig {
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
         // 添加到初始属性列表
-        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "default"));
+        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "def"));
+        
+        // 只有基础元素和复合元素才添加到Basic层
+        ElementType type = ElementType.byName(elementType);
+        if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+            data.addBasicElement(elementType, "def", 0);
+        }
     }
 }

@@ -65,10 +65,7 @@ public class ElementCalculationCoordinator {
         // 4. 调用ElementCombinationModifier处理元素复合
         Map<String, Double> combinedElements = processElementCombinations(weaponData, elementsForCombination);
         
-        // 5. 将物理元素添加到最终复合结果中
-        combinedElements.putAll(physicalElements);
-        
-        // 6. 将计算结果缓存到AffixCacheManager中
+        // 5. 将计算结果缓存到AffixCacheManager中
         AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
         cacheData.setCriticalStats(specialStats);
         cacheData.setPhysicalElements(physicalElements);

@@ -10,6 +10,8 @@ import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import com.xlxyvergil.hamstercore.element.ElementType;
+
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
@@ -24,6 +26,14 @@ import java.util.UUID;
  * 处理拔刀剑的NBT应用
  */
 public class SlashBladeConfigApplier {
+
+    /**
+     * 加载拔刀剑配置并应用到物品
+     * 在onServerStarted事件中调用此方法
+     */
+    public static void load() {
+        applyConfigs();
+    }
 
     /**
      * 应用拔刀剑的配置
@@ -156,6 +166,12 @@ public class SlashBladeConfigApplier {
                                 
                     // 添加到初始属性列表
                     weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operationStr, uuid, "config"));
+                    
+                    // 只有基础元素和复合元素才添加到Basic层
+                    ElementType type = ElementType.byName(name);
+                    if (type != null && (type.getTypeCategory() == ElementType.TypeCategory.BASIC || type.getTypeCategory() == ElementType.TypeCategory.COMPLEX)) {
+                        weaponData.addBasicElement(name, "def", 0);
+                    }
                 }
             }
         }

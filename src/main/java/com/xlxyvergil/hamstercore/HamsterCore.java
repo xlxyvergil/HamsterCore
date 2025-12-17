@@ -95,24 +95,20 @@ public class HamsterCore {
                 SlashBladeWeaponConfig.loadSlashBladeConfigFile();
             }
             
-            // 4. 应用普通物品元素属性
-            int normalAppliedCount = NormalConfigApplier.applyConfigToItem();
-            
-            // 5. 应用MOD特殊物品元素属性（TACZ枪械和拔刀剑）
-            int tacZAppliedCount = 0;
-            int slashBladeAppliedCount = 0;
+            // 4. 应用所有配置
+            NormalConfigApplier.load();
             
             // 只有在对应模组加载时才应用配置
             if (ModList.get().isLoaded("tacz")) {
-                tacZAppliedCount = TacZConfigApplier.applyConfigs();
+                TacZConfigApplier.load();
             }
             
             if (ModList.get().isLoaded("slashblade")) {
-                slashBladeAppliedCount = SlashBladeConfigApplier.applyConfigs();
+                SlashBladeConfigApplier.load();
             }
             
-            // 6. 应用额外配置
-            int additionalAppliedCount = AdditionalConfigApplier.applyConfigToItem();
+            // 应用额外配置
+            AdditionalConfigApplier.load();
         } catch (Exception e) {
             e.printStackTrace();
         }

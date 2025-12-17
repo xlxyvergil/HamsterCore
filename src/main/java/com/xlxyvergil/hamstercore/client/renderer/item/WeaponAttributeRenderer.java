@@ -43,8 +43,11 @@ public class WeaponAttributeRenderer {
         // 添加"Weapon Attributes"标题
         tooltipElements.add(Component.translatable("hamstercore.ui.weapon_attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
         
-        // 显示物理元素（基础元素和复合元素）
-        addAllElements(stack, tooltipElements, cacheData);
+        // 显示物理元素
+        addPhysicalElements(stack, tooltipElements, cacheData);
+        
+        // 显示基础元素和复合元素
+        addBasicAndComplexElements(stack, tooltipElements, cacheData);
         
         // 显示特殊元素属性（暴击率、暴击伤害、触发率等）
         addSpecialAttributes(stack, tooltipElements, cacheData);
@@ -54,32 +57,73 @@ public class WeaponAttributeRenderer {
     }
     
     /**
-     * 显示物理元素（基础元素和复合元素）
+     * 显示物理元素
      */
-    private void addAllElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+    private void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+        if (physicalElements.isEmpty()) {
+            return;
+        }
+        
+        // 遍历所有物理元素类型
+        for (ElementType elementType : ElementType.getPhysicalElements()) {
+            // 获取元素值
+            Double value = physicalElements.get(elementType.getName());
+            if (value == null || value <= 0) {
+                continue;
+            }
+            
+            // 格式化并添加到工具提示
+            String formattedValue = String.format("%.1f", value);
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
+        }
+    }
+    
+    /**
+     * 显示基础元素和复合元素
+     */
+    private void addBasicAndComplexElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
         Map<String, Double> combinedElements = cacheData.getCombinedElements();
         if (combinedElements.isEmpty()) {
             return;
         }
         
-        // 遍历所有元素类型
-        for (ElementType elementType : ElementType.getAllTypes()) {
-            // 处理物理元素、基础元素和复合元素
-            if (elementType.isPhysical() || elementType.isBasic() || elementType.isComplex()) {
-                // 获取元素值
-                Double value = combinedElements.get(elementType.getName());
-                if (value == null || value <= 0) {
-                    continue;
-                }
-                
-                // 格式化并添加到工具提示
-                String formattedValue = String.format("%.1f", value);
-                MutableComponent component = Component.literal("  ")
-                        .append(elementType.getColoredName())
-                        .append(Component.literal(": "))
-                        .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
-                tooltipElements.add(component);
+        // 遍历所有基础元素类型
+        for (ElementType elementType : ElementType.getBasicElements()) {
+            // 获取元素值
+            Double value = combinedElements.get(elementType.getName());
+            if (value == null || value <= 0) {
+                continue;
             }
+            
+            // 格式化并添加到工具提示
+            String formattedValue = String.format("%.1f", value);
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
+        }
+        
+        // 遍历所有复合元素类型
+        for (ElementType elementType : ElementType.getComplexElements()) {
+            // 获取元素值
+            Double value = combinedElements.get(elementType.getName());
+            if (value == null || value <= 0) {
+                continue;
+            }
+            
+            // 格式化并添加到工具提示
+            String formattedValue = String.format("%.1f", value);
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
         }
     }
     
