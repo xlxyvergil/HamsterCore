@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore;
 
 import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
+import com.xlxyvergil.hamstercore.command.AffixCommand;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
@@ -19,7 +20,9 @@ import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
@@ -55,6 +58,14 @@ public class HamsterCore {
         
         // 注册客户端事件
         WeaponAttributeRenderer.registerEvents();
+    }
+    
+    /**
+     * 注册命令
+     */
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        AffixCommand.register(event.getDispatcher());
     }
     
     

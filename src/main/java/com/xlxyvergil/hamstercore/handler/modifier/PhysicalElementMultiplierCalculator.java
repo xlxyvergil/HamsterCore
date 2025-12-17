@@ -16,7 +16,7 @@ public class PhysicalElementMultiplierCalculator {
      * @return 物理元素总倍率
      */
     public static double calculatePhysicalElementMultiplier(LivingEntity attacker, WeaponData data) {
-        double totalPhysicalMultiplier = 1.0; // 默认物理元素倍率为1.0（无加成）
+        double totalPhysicalMultiplier = 0.0; // 默认物理元素倍率为0.0（无加成）
         
         // 如果数据为空，返回默认值
         if (data == null) {
@@ -37,8 +37,8 @@ public class PhysicalElementMultiplierCalculator {
             }
         }
         
-        // 物理元素总倍率 = 1.0 + 所有物理元素倍率之和
-        totalPhysicalMultiplier = 1.0 + physicalTotalRatio;
+        // 物理元素总倍率 = 所有物理元素倍率之和
+        totalPhysicalMultiplier = physicalTotalRatio;
         
         return totalPhysicalMultiplier;
     }

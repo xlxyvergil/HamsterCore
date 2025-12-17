@@ -1,5 +1,7 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
+import com.xlxyvergil.hamstercore.element.WeaponData;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,10 +18,10 @@ public class CriticalMultiplierCalculator {
 
     
     /**
-     * 计算暴击倍率（使用预计算的特殊元素和派系元素值）
+     * 计算暴击倍率（使用预计算的特殊元素）
      * @param attacker 攻击者
      * @param weapon 武器物品堆
-     * @param specialAndFactionValues 特殊元素和派系元素值（从Forge属性系统预计算）
+     * @param specialAndFactionValues 特殊元素
      * @return 暴击倍率
      */
     public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues) {
@@ -63,7 +65,17 @@ public class CriticalMultiplierCalculator {
         
         // 暴击倍率（暴击伤害） =1 + 暴击等级 × (武器总暴击倍率 − 1)
         // 武器总暴击倍率 = 武器基础暴击倍率 × (1 +暴击倍率增益)
-        double totalCriticalDamage = criticalDamage; // 简化处理，暂不考虑暴击倍率增益
+        
+        // 获取武器基础暴击倍率
+        double baseCriticalMultiplier = getBaseCriticalMultiplier(weapon);
+        
+        // 计算暴击倍率增益（假设critical_damage值即为增益值）
+        double criticalDamageBonus = criticalDamage;
+        
+        // 计算武器总暴击倍率
+        double totalCriticalDamage = baseCriticalMultiplier * (1 + criticalDamageBonus);
+        
+        // 计算最终暴击倍率
         criticalMultiplier = 1 + criticalLevel * (totalCriticalDamage - 1);
         
         
@@ -73,5 +85,29 @@ public class CriticalMultiplierCalculator {
         }
         
         return criticalMultiplier;
+    }
+    
+    /**
+     * 获取武器基础暴击倍率
+     * @param weapon 武器物品堆
+     * @return 武器基础暴击倍率，默认为0.5（0.5倍伤害）
+     */
+    private static double getBaseCriticalMultiplier(ItemStack weapon) {
+        if (weapon.isEmpty()) {
+            return 0.5; // 默认基础暴击倍率为0.5
+        }
+        
+        // 尝试从WeaponData获取基础暴击倍率
+        WeaponData weaponData = WeaponDataManager.getWeaponData(weapon);
+        if (weaponData != null) {
+            // 检查是否有基础暴击倍率配置
+            Double baseCritMultiplier = weaponData.getUsageValue("base_critical_multiplier");
+            if (baseCritMultiplier != null) {
+                return baseCritMultiplier;
+            }
+        }
+        
+        // 默认基础暴击倍率为0.5
+        return 0.5;
     }
 }

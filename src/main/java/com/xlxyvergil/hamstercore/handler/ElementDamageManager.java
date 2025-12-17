@@ -118,7 +118,7 @@ public class ElementDamageManager {
         
         // 计算最终伤害：将物理元素总倍率与元素倍率相加（减去1.0是因为两者都以1.0为基准）
         damageData.finalDamage = (float) (baseDamage * (1.0 + damageData.factionModifier) 
-                                         * (damageData.elementMultiplier + damageData.physicalElementMultiplier - 1.0) 
+                                         * (damageData.elementMultiplier + damageData.physicalElementMultiplier) 
                                          * damageData.criticalMultiplier 
                                          * damageData.armorReduction);
         

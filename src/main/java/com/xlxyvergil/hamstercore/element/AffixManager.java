@@ -8,17 +8,42 @@ import java.util.UUID;
 
 public class AffixManager {
     /**
+     * 检查InitialModifier中是否已存在指定类型的元素
+     */
+    private static boolean hasElementTypeInInitialModifiers(WeaponData weaponData, String elementType) {
+        return weaponData.getInitialModifiers().stream()
+                .anyMatch(entry -> entry.getElementType().equals(elementType));
+    }
+    
+    /**
+     * 从Basic层移除指定类型的元素
+     */
+    private static void removeFromBasicLayer(WeaponData weaponData, String elementType) {
+        weaponData.getBasicElements().remove(elementType);
+    }
+    
+    /**
      * 添加词缀
      */
     public static void addAffix(ItemStack stack, String name, String elementType, double amount, String operation, UUID uuid, String source) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
+        
+        // 检查是否是该类型第一次加入InitialModifier
+        boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, elementType);
+        
         InitialModifierEntry entry = new InitialModifierEntry(name, elementType, amount, operation, uuid, source);
         weaponData.addInitialModifier(entry);
         
-        // 为基础元素添加basic条目，用于元素复合
-        if (ElementType.byName(elementType) != null && ElementType.byName(elementType).isBasic()) {
-            weaponData.addBasicElement(elementType, source, (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+        // 只有基础元素和复合元素在第一次加入时才添加到Basic层
+        if (isFirstTime) {
+            ElementType type = ElementType.byName(elementType);
+            if (type != null && (type.isBasic() || type.isComplex())) {
+                weaponData.addBasicElement(elementType, source, (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+            }
         }
+        
+        // 显式保存WeaponData到NBT
+        WeaponDataManager.saveElementData(stack, weaponData);
         
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
@@ -48,6 +73,12 @@ public class AffixManager {
             }
         }
         
+        // modify操作不会影响Basic层，因为元素类型没有改变，只是数值改变
+        // Basic层只记录元素类型的存在和顺序，不记录具体数值
+        
+        // 显式保存WeaponData到NBT
+        WeaponDataManager.saveElementData(stack, weaponData);
+        
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
         // 失效AffixManager的临时缓存
@@ -59,7 +90,32 @@ public class AffixManager {
      */
     public static void removeAffix(ItemStack stack, UUID uuid) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
+        
+        // 获取要删除的条目的元素类型
+        String removedElementType = null;
+        for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
+            if (entry.getUuid().equals(uuid)) {
+                removedElementType = entry.getElementType();
+                break;
+            }
+        }
+        
+        // 删除词缀
         weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(uuid));
+        
+        // 检查是否需要从Basic层移除（只有当该类型的元素完全不存在时才移除）
+        if (removedElementType != null) {
+            boolean stillExists = hasElementTypeInInitialModifiers(weaponData, removedElementType);
+            if (!stillExists) {
+                ElementType type = ElementType.byName(removedElementType);
+                if (type != null && (type.isBasic() || type.isComplex())) {
+                    removeFromBasicLayer(weaponData, removedElementType);
+                }
+            }
+        }
+        
+        // 显式保存WeaponData到NBT
+        WeaponDataManager.saveElementData(stack, weaponData);
         
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
@@ -72,7 +128,28 @@ public class AffixManager {
      */
     public static void batchAddAffixes(ItemStack stack, List<InitialModifierEntry> entries) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-        entries.forEach(weaponData::addInitialModifier);
+        
+        // 收集所有需要添加的元素类型
+        for (InitialModifierEntry entry : entries) {
+            String elementType = entry.getElementType();
+            
+            // 检查是否是该类型第一次加入InitialModifier
+            boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, elementType);
+            
+            // 添加到InitialModifier
+            weaponData.addInitialModifier(entry);
+            
+            // 只有基础元素和复合元素在第一次加入时才添加到Basic层
+            if (isFirstTime) {
+                ElementType type = ElementType.byName(elementType);
+                if (type != null && (type.isBasic() || type.isComplex())) {
+                    weaponData.addBasicElement(elementType, entry.getSource(), (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+                }
+            }
+        }
+        
+        // 显式保存WeaponData到NBT
+        WeaponDataManager.saveElementData(stack, weaponData);
         
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);

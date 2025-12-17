@@ -10,13 +10,13 @@ import com.xlxyvergil.hamstercore.element.WeaponData;
 public class ElementMultiplierCalculator {
     
     /**
-     * 计算元素总倍率（使用WeaponData中的usage层数据）
+     * 计算元素总倍率
      * @param attacker 攻击者
      * @param data 武器数据（包含usage层数据）
      * @return 元素总倍率
      */
     public static double calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker, WeaponData data) {
-        double totalElementMultiplier = 1.0; // 默认元素倍率为1.0（无加成）
+        double totalElementMultiplier = 0.0; // 默认元素倍率为0.0（无加成）
         
         // 如果数据为空，返回默认值
         if (data == null) {
@@ -26,7 +26,7 @@ public class ElementMultiplierCalculator {
         // 计算元素总倍率（所有元素倍率之和）
         double elementTotalRatio = 0.0;
         
-        // 从WeaponData的usage层数据中获取基础元素和复合元素
+        // 缓存中获取基础元素和复合元素
         String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
         String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
         
@@ -46,8 +46,8 @@ public class ElementMultiplierCalculator {
             }
         }
         
-        // 元素总倍率 = 1.0 + 所有元素倍率之和
-        totalElementMultiplier = 1.0 + elementTotalRatio;
+        // 元素总倍率 = 所有元素倍率之和
+        totalElementMultiplier = elementTotalRatio;
         
         return totalElementMultiplier;
     }
