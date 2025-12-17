@@ -12,6 +12,27 @@ import java.util.Map;
  */
 public class FactionModifierCalculator {
     
+    /**
+     * 派系克制计算结果类
+     */
+    public static class FactionResult {
+        private final double factionModifier; // HM 总克制系数
+        private final Map<String, Double> breakdown; // 各元素的克制系数分解
+        
+        public FactionResult(double factionModifier, Map<String, Double> breakdown) {
+            this.factionModifier = factionModifier;
+            this.breakdown = new HashMap<>(breakdown);
+        }
+        
+        public double getFactionModifier() {
+            return factionModifier;
+        }
+        
+        public Map<String, Double> getBreakdown() {
+            return breakdown;
+        }
+    }
+    
     // 派系克制关系表
     private static final Map<String, Map<String, Double>> FACTION_RESISTANCES = new HashMap<>();
     
@@ -59,27 +80,28 @@ public class FactionModifierCalculator {
     
     
     /**
-     * 计算针对特定派系的HM值（派系克制系数）
+     * 计算针对特定派系的HM值（派系克制系数）- 返回详细结果，既用于显示也用于计算
      * HM = 派系元素数据值 + 克制系数
      * @param weaponData 武器数据（从缓存获取）
      * @param targetFaction 目标派系
      * @param cacheData 缓存的元素数据
-     * @return HM值（派系克制系数）
+     * @return 派系克制计算结果
      */
-    public static double calculateFactionModifier(WeaponData weaponData, String targetFaction, AffixCacheManager.AffixCacheData cacheData) {
+    public static FactionResult calculateFactionModifier(WeaponData weaponData, String targetFaction, AffixCacheManager.AffixCacheData cacheData) {
         if (weaponData == null || targetFaction == null || cacheData == null) {
-            return 0.0;
+            return new FactionResult(0.0, new HashMap<>());
         }
         
         // 获取目标派系的克制关系
         String factionName = targetFaction.toLowerCase();
         Map<String, Double> resistances = FACTION_RESISTANCES.get(factionName);
         if (resistances == null) {
-            return 0.0; // 未知派系，无克制关系
+            return new FactionResult(0.0, new HashMap<>()); // 未知派系，无克制关系
         }
         
         // 计算HM值：基于元素类型和派系克制关系
         double hm = 0.0;
+        Map<String, Double> breakdown = new HashMap<>();
         
         // 检查武器是否对目标派系有特殊元素数据
         String factionElementName = factionName; // 派系元素名称与派系名称相同
@@ -89,14 +111,18 @@ public class FactionModifierCalculator {
         Double factionElementValue = factionElements.get(factionElementName);
         
         if (factionElementValue != null) {
+            breakdown.put("faction_element", factionElementValue);
+            
             // 获取武器所有有克制关系的元素，并累加克制系数
             double totalResistance = 0.0;
+            Map<String, Double> resistanceBreakdown = new HashMap<>();
             
             // 检查派系元素
             for (String elementType : factionElements.keySet()) {
                 Double resistance = resistances.get(elementType);
                 if (resistance != null) {
                     totalResistance += resistance;
+                    resistanceBreakdown.put("faction_" + elementType, resistance);
                 }
             }
             
@@ -106,6 +132,7 @@ public class FactionModifierCalculator {
                 Double resistance = resistances.get(elementType);
                 if (resistance != null) {
                     totalResistance += resistance;
+                    resistanceBreakdown.put("combined_" + elementType, resistance);
                 }
             }
             
@@ -115,13 +142,16 @@ public class FactionModifierCalculator {
                 Double resistance = resistances.get(elementType);
                 if (resistance != null) {
                     totalResistance += resistance;
+                    resistanceBreakdown.put("physical_" + elementType, resistance);
                 }
             }
+            
+            breakdown.putAll(resistanceBreakdown);
             
             // HM = 派系元素数据值 + 总克制系数
             hm = factionElementValue + totalResistance;
         }
         
-        return hm;
+        return new FactionResult(hm, breakdown);
     }
 }

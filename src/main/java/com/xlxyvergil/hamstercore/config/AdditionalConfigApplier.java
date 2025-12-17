@@ -1,10 +1,5 @@
 package com.xlxyvergil.hamstercore.config;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import net.minecraft.resources.ResourceLocation;
@@ -12,12 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.UUID;
 
 /**
  * 额外配置应用类

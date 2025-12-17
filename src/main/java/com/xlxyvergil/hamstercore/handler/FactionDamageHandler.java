@@ -1,16 +1,12 @@
 package com.xlxyvergil.hamstercore.handler;
 
-import java.util.List;
-import java.util.Map;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementCalculationCoordinator;
-import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.faction.Faction;
-import com.xlxyvergil.hamstercore.util.ElementHelper;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,11 +20,6 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class FactionDamageHandler {
     
-    // 添加静态变量存储最近一次战斗信息
-    public static boolean lastAttackWasCritical = false;
-    public static int lastCriticalLevel = 0;
-    public static double lastCriticalMultiplier = 1.0;
-    public static List<ElementType> lastTriggeredElements = null;
     
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -85,8 +76,8 @@ public class FactionDamageHandler {
             // 设置最终伤害
             event.setAmount(damageData.getFinalDamage());
             
-            // 处理元素触发效果，使用新的ElementTriggerHandler类
-            ElementTriggerHandler.handleElementTriggers(livingAttacker, target);
+            // 处理元素触发效果，传递缓存数据
+            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData);
         }
     }
 }

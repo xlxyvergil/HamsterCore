@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 
 import java.util.Map;
+import java.util.HashMap;
 
 
 /**
@@ -11,20 +12,40 @@ import java.util.Map;
  */
 public class ElementMultiplierCalculator {
     
-    
+    /**
+     * 元素倍率计算结果类
+     */
+    public static class ElementResult {
+        private final double elementMultiplier; // 元素总倍率
+        private final Map<String, Double> breakdown; // 各元素的倍率分解
+        
+        public ElementResult(double elementMultiplier, Map<String, Double> breakdown) {
+            this.elementMultiplier = elementMultiplier;
+            this.breakdown = new HashMap<>(breakdown);
+        }
+        
+        public double getElementMultiplier() {
+            return elementMultiplier;
+        }
+        
+        public Map<String, Double> getBreakdown() {
+            return breakdown;
+        }
+    }
     
     /**
-     * 计算元素总倍率（使用缓存数据）
+     * 计算元素总倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
      * @param cacheData 缓存数据
-     * @return 元素总倍率
+     * @return 元素倍率计算结果
      */
-    public static double calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker, AffixCacheManager.AffixCacheData cacheData) {
+    public static ElementResult calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker, AffixCacheManager.AffixCacheData cacheData) {
         double totalElementMultiplier = 0.0; // 默认元素倍率为0.0（无加成）
+        Map<String, Double> breakdown = new HashMap<>();
         
         // 如果缓存数据为空，返回默认值
         if (cacheData == null) {
-            return totalElementMultiplier;
+            return new ElementResult(totalElementMultiplier, breakdown);
         }
         
         // 计算元素总倍率（所有元素倍率之和）
@@ -42,6 +63,7 @@ public class ElementMultiplierCalculator {
             Double value = combinedElements.get(type);
             if (value != null && value > 0) {
                 elementTotalRatio += value;
+                breakdown.put("basic_" + type, value);
             }
         }
         
@@ -50,12 +72,13 @@ public class ElementMultiplierCalculator {
             Double value = combinedElements.get(type);
             if (value != null && value > 0) {
                 elementTotalRatio += value;
+                breakdown.put("complex_" + type, value);
             }
         }
         
         // 元素总倍率 = 所有元素倍率之和
         totalElementMultiplier = elementTotalRatio;
         
-        return totalElementMultiplier;
+        return new ElementResult(totalElementMultiplier, breakdown);
     }
 }

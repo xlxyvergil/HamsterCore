@@ -1,10 +1,8 @@
 package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.util.ElementHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 
 import static com.xlxyvergil.hamstercore.element.ElementType.*;
 
@@ -18,22 +16,48 @@ public class ElementTriggerHandler {
     
     private static final Random RANDOM = new Random();
     
+    // 存储当前攻击会话中触发的元素信息（ThreadLocal确保线程安全）
+    private static final ThreadLocal<List<ElementType>> triggeredElements = ThreadLocal.withInitial(ArrayList::new);
+    
     /**
      * 处理元素触发效果
      * @param attacker 攻击者
      * @param target 目标实体
+     * @param cacheData 缓存的元素数据
      */
-    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target) {
+    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData) {
         // 只处理玩家攻击的情况
         if (!(attacker instanceof Player)) {
             return;
         }
         
-        Player player = (Player) attacker;
-        ItemStack weapon = player.getMainHandItem();
+        // 清空之前会话的触发元素记录
+        triggeredElements.get().clear();
         
-        // 获取武器上的元素属性（只获取实际生效的元素，从缓存中获取）
-        List<Map.Entry<ElementType, Double>> elementList = ElementDamageManager.getActiveElements(weapon);
+        // 从缓存数据中获取元素属性
+        List<Map.Entry<ElementType, Double>> elementList = new ArrayList<>();
+        
+        // 添加物理元素
+        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+        for (Map.Entry<String, Double> entry : physicalElements.entrySet()) {
+            if (entry.getValue() > 0.0) {
+                ElementType elementType = ElementType.byName(entry.getKey());
+                if (elementType != null) {
+                    elementList.add(new HashMap.SimpleEntry<>(elementType, entry.getValue()));
+                }
+            }
+        }
+        
+        // 添加复合元素
+        Map<String, Double> combinedElements = cacheData.getCombinedElements();
+        for (Map.Entry<String, Double> entry : combinedElements.entrySet()) {
+            if (entry.getValue() > 0.0) {
+                ElementType elementType = ElementType.byName(entry.getKey());
+                if (elementType != null) {
+                    elementList.add(new HashMap.SimpleEntry<>(elementType, entry.getValue()));
+                }
+            }
+        }
         
         // 检查武器是否有元素属性
         if (elementList.isEmpty()) {
@@ -64,9 +88,9 @@ public class ElementTriggerHandler {
             return;
         }
         
-        // 获取特殊元素值（从ElementHelper获取计算后的值）
-        Map<String, Double> specialValues = ElementHelper.getAllSpecialAndFactionValues(weapon);
-        double triggerChance = specialValues.getOrDefault("trigger_chance", 0.0);
+        // 获取特殊元素值（从缓存数据中获取）
+        Map<String, Double> criticalStats = cacheData.getCriticalStats();
+        double triggerChance = criticalStats.getOrDefault("trigger_chance", 0.0);
         
         // 判断是否触发
         if (RANDOM.nextDouble() > triggerChance) {
@@ -151,6 +175,9 @@ public class ElementTriggerHandler {
      * @param target 目标实体
      */
     private static void applyElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target) {
+        // 记录触发的元素
+        triggeredElements.get().add(elementType);
+        
         // 根据元素类型应用不同的效果
         if (elementType == IMPACT) {
             // 冲击效果：待设计
@@ -179,5 +206,20 @@ public class ElementTriggerHandler {
         } else if (elementType == VIRAL) {
             // 病毒效果：待设计
         }
+    }
+    
+    /**
+     * 获取当前攻击会话中触发的元素列表
+     * @return 触发的元素列表（不可修改的副本）
+     */
+    public static List<ElementType> getTriggeredElements() {
+        return new ArrayList<>(triggeredElements.get());
+    }
+    
+    /**
+     * 清空当前会话的触发元素记录
+     */
+    public static void clearTriggeredElements() {
+        triggeredElements.get().clear();
     }
 }

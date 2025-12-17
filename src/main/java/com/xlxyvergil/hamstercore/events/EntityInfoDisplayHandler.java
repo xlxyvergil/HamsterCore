@@ -11,6 +11,8 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilit
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
+import com.xlxyvergil.hamstercore.handler.ElementDamageManager.ModifierResults;
+import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -97,6 +99,11 @@ public class EntityInfoDisplayHandler {
             if (!weapon.isEmpty()) {
                 message.append(Component.literal("\n").append(Component.translatable("hamstercore.ui.weapon_attributes").append(": " + weapon.getDisplayName().getString())).withStyle(ChatFormatting.AQUA));
                 
+                // 从ElementDamageData中获取暴击信息
+                int currentCriticalLevel = damageData.getCriticalLevel();
+                double currentCriticalDamage = damageData.getCriticalDamage();
+                double currentCriticalMultiplier = damageData.getCriticalMultiplier();
+                
                 // 显示暴击率
                 double critChance = cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0);
                 if (critChance > 0) {
@@ -104,15 +111,43 @@ public class EntityInfoDisplayHandler {
                 }
                 
                 // 显示暴击伤害
-                double critDamage = cacheData.getCriticalStats().getOrDefault("critical_damage", 0.0);
-                if (critDamage > 0) {
-                    message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", critDamage * 100)).withStyle(ChatFormatting.YELLOW));
+                if (currentCriticalDamage > 0) {
+                    message.append(Component.translatable("hamstercore.ui.critical_damage").append(":" + String.format("%.1f%%", currentCriticalDamage * 100)).withStyle(ChatFormatting.YELLOW));
+                }
+                
+                // 显示当前暴击等级和暴击倍率
+                if (critChance > 0 && currentCriticalLevel > 0) {
+                    message.append(Component.literal("暴击等级:" + currentCriticalLevel + " 暴击倍率:" + String.format("%.2f", currentCriticalMultiplier)).withStyle(ChatFormatting.RED));
                 }
                 
                 // 显示触发率
                 double triggerChance = cacheData.getCriticalStats().getOrDefault("trigger_chance", 0.0);
                 if (triggerChance > 0) {
                     message.append(Component.translatable("hamstercore.ui.trigger_chance").append(":" + String.format("%.1f%%", triggerChance * 100)).withStyle(ChatFormatting.YELLOW));
+                }
+                
+                // 显示详细的modifier计算结果
+                ModifierResults modifierResults = damageData.getModifierResults();
+                if (modifierResults != null) {
+                    // 显示派系克制
+                    if (modifierResults.getFactionModifier() > 0) {
+                        message.append(Component.literal("派系克制(HM):" + String.format("%.2f", modifierResults.getFactionModifier())).withStyle(ChatFormatting.GOLD));
+                    }
+                    
+                    // 显示元素总倍率
+                    if (modifierResults.getElementMultiplier() > 0) {
+                        message.append(Component.literal("元素总倍率:" + String.format("%.2f", modifierResults.getElementMultiplier())).withStyle(ChatFormatting.GREEN));
+                    }
+                    
+                    // 显示物理元素总倍率
+                    if (modifierResults.getPhysicalElementMultiplier() > 0) {
+                        message.append(Component.literal("物理元素总倍率:" + String.format("%.2f", modifierResults.getPhysicalElementMultiplier())).withStyle(ChatFormatting.BLUE));
+                    }
+                    
+                    // 显示护甲减免
+                    if (modifierResults.getArmorReduction() < 1.0) {
+                        message.append(Component.literal("护甲减免(1-AM):" + String.format("%.2f%%", (1.0 - modifierResults.getArmorReduction()) * 100)).withStyle(ChatFormatting.GRAY));
+                    }
                 }
 
                 // 添加武器元素属性信息
@@ -157,6 +192,9 @@ public class EntityInfoDisplayHandler {
                     }
                 }
 
+                // 添加触发的元素信息
+                addTriggeredElementsToMessage(message);
+                
                 // 添加派系增伤信息
                 addFactionModifiersToMessage(message, weapon, cacheData);
             }
@@ -233,5 +271,38 @@ public class EntityInfoDisplayHandler {
         factionTypes.add("murmur");
         
         return factionTypes.contains(elementType);
+    }
+    
+    /**
+     * 添加触发的元素信息到消息中
+     * @param message 消息组件
+     */
+    private static void addTriggeredElementsToMessage(MutableComponent message) {
+        java.util.List<ElementType> triggeredElements = ElementTriggerHandler.getTriggeredElements();
+        
+        if (!triggeredElements.isEmpty()) {
+            message.append(Component.translatable("hamstercore.ui.triggered_elements").withStyle(ChatFormatting.LIGHT_PURPLE));
+            
+            // 统计每种元素的触发次数
+            java.util.Map<ElementType, Integer> elementCount = new java.util.HashMap<>();
+            for (ElementType element : triggeredElements) {
+                elementCount.put(element, elementCount.getOrDefault(element, 0) + 1);
+            }
+            
+            // 显示触发的元素和次数
+            for (java.util.Map.Entry<ElementType, Integer> entry : elementCount.entrySet()) {
+                ElementType elementType = entry.getKey();
+                int count = entry.getValue();
+                MutableComponent elementName = elementType.getColoredName();
+                
+                if (count > 1) {
+                    message.append(Component.literal(String.format("  %s x%d", elementName.getString(), count))
+                        .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                } else {
+                    message.append(Component.literal(String.format("  %s", elementName.getString()))
+                        .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                }
+            }
+        }
     }
 }

@@ -3,36 +3,21 @@ package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
-
-import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
-import com.xlxyvergil.hamstercore.util.ElementHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-import java.util.WeakHashMap;
-import net.minecraftforge.common.util.LazyOptional;
+import java.util.Map;
+
 
 
 /**
  * 元素伤害管理器
- * 负责管理武器元素数据的计算和缓存
- * 参考TACZ的附件缓存系统设计
+ * 负责管理武器元素数据的计算
+ * 使用 AffixCacheManager 进行数据缓存
  */
 public class ElementDamageManager {
-    
-    
-    // 使用WeakHashMap缓存计算结果
-    private static final Map<ElementDamageKey, LazyOptional<ElementDamageData>> DAMAGE_CACHE = new WeakHashMap<>();
-    
-    // 元素列表缓存
-    private static final Map<ItemStack, LazyOptional<List<Map.Entry<ElementType, Double>>>> ACTIVE_ELEMENTS_CACHE = new WeakHashMap<>();
-
     
     
     /**
@@ -47,22 +32,8 @@ public class ElementDamageManager {
      * @return 元素伤害数据
      */
     public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, AffixCacheManager.AffixCacheData cacheData) {
-        // 构建缓存键
-        ElementDamageKey key = new ElementDamageKey(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
-        
-        // 尝试从缓存中获取结果
-        LazyOptional<ElementDamageData> cached = DAMAGE_CACHE.get(key);
-        if (cached != null && cached.isPresent()) {
-            return cached.orElse(null);
-        }
-        
-        // 如果没有缓存或已失效，则重新计算
-        ElementDamageData computed = calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
-        LazyOptional<ElementDamageData> lazyComputed = LazyOptional.of(() -> computed);
-        
-        // 更新缓存
-        DAMAGE_CACHE.put(key, lazyComputed);
-        return computed;
+        // 直接计算元素伤害，不再缓存
+        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
     }
 
     
@@ -89,12 +60,45 @@ public class ElementDamageManager {
         // 获取武器数据
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
-        // 计算各部分的伤害修正系数，使用传递的缓存数据
-        damageData.factionModifier = FactionModifierCalculator.calculateFactionModifier(data, targetFaction, cacheData); // HM，使用缓存数据
-        damageData.elementMultiplier = ElementMultiplierCalculator.calculateElementMultiplier(attacker, cacheData); // 元素总倍率
-        damageData.physicalElementMultiplier = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, cacheData); // 物理元素总倍率
-        damageData.criticalMultiplier = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, null, cacheData); // 暴击伤害，不需要specialAndFactionValues
-        damageData.armorReduction = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor); // (1-AM)
+        // 计算各部分的伤害修正系数，使用传递的缓存数据，并存储详细结果
+        ModifierResults modifierResults = new ModifierResults();
+        
+        // 计算派系克制
+        FactionModifierCalculator.FactionResult factionResult = FactionModifierCalculator.calculateFactionModifier(data, targetFaction, cacheData);
+        damageData.factionModifier = factionResult.getFactionModifier();
+        modifierResults.setFactionModifier(factionResult.getFactionModifier());
+        modifierResults.setFactionBreakdown(factionResult.getBreakdown());
+        
+        // 计算元素倍率
+        ElementMultiplierCalculator.ElementResult elementResult = ElementMultiplierCalculator.calculateElementMultiplier(attacker, cacheData);
+        damageData.elementMultiplier = elementResult.getElementMultiplier();
+        modifierResults.setElementMultiplier(elementResult.getElementMultiplier());
+        modifierResults.setElementBreakdown(elementResult.getBreakdown());
+        
+        // 计算物理元素倍率
+        PhysicalElementMultiplierCalculator.PhysicalElementResult physicalResult = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, cacheData);
+        damageData.physicalElementMultiplier = physicalResult.getPhysicalElementMultiplier();
+        modifierResults.setPhysicalElementMultiplier(physicalResult.getPhysicalElementMultiplier());
+        modifierResults.setPhysicalElementBreakdown(physicalResult.getBreakdown());
+        
+        // 计算暴击倍率和暴击信息
+        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, null, cacheData);
+        damageData.criticalMultiplier = criticalResult.getMultiplier();
+        damageData.setCriticalInfo(criticalResult.getLevel(), criticalResult.getDamage());
+        modifierResults.setCriticalMultiplier(criticalResult.getMultiplier());
+        modifierResults.setCriticalLevel(criticalResult.getLevel());
+        modifierResults.setCriticalDamage(criticalResult.getDamage());
+        modifierResults.setCriticalChance(cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0));
+        
+        // 计算护甲减免
+        ArmorReductionCalculator.ArmorReductionResult armorResult = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor);
+        damageData.armorReduction = armorResult.getArmorReduction();
+        modifierResults.setArmorReduction(armorResult.getArmorReduction());
+        modifierResults.setArmorValue(armorResult.getArmorValue());
+        modifierResults.setArmorModifier(armorResult.getArmorModifier());
+        
+        // 存储所有modifier结果
+        damageData.setModifierResults(modifierResults);
         
         // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
         if (data == null) {
@@ -103,8 +107,7 @@ public class ElementDamageManager {
             return damageData;
         }
         
-        // 设置激活的元素列表
-        damageData.setActiveElements(getActiveElements(weapon));
+        
         
         // 计算最终伤害：将物理元素总倍率与元素倍率相加（减去1.0是因为两者都以1.0为基准）
         damageData.finalDamage = (float) (baseDamage * (1.0 + damageData.factionModifier) 
@@ -120,140 +123,91 @@ public class ElementDamageManager {
         return damageData;
     }
     
-    /**
-     * 获取武器上激活的元素列表
-     * @param weapon 武器物品
-     * @return 激活的元素实例列表
-     */
-    public static List<Map.Entry<ElementType, Double>> getActiveElements(ItemStack weapon) {
-        // 对于空的武器栈，直接返回空列表
-        if (weapon.isEmpty()) {
-            return new ArrayList<>();
-        }
-        
-        // 尝试从缓存中获取结果
-        LazyOptional<List<Map.Entry<ElementType, Double>>> cached = ACTIVE_ELEMENTS_CACHE.get(weapon);
-        if (cached != null && cached.isPresent()) {
-            return cached.orElse(new ArrayList<>());
-        }
-        
-        // 如果没有缓存或已失效，则重新计算
-        List<Map.Entry<ElementType, Double>> computed = getActiveElementsImpl(weapon);
-        LazyOptional<List<Map.Entry<ElementType, Double>>> lazyComputed = LazyOptional.of(() -> computed);
-        
-        // 更新缓存
-        ACTIVE_ELEMENTS_CACHE.put(weapon, lazyComputed);
-        return computed;
-    }
+    
+    
     
     /**
-     * 获取武器上激活的元素列表的实际实现
-     * @param weapon 武器物品
-     * @return 激活的元素实例列表
+     * 统一的 modifier 计算结果类
      */
-    private static List<Map.Entry<ElementType, Double>> getActiveElementsImpl(ItemStack weapon) {
-        // 使用新的四层数据结构，但不强制重新计算Usage层数据
-        WeaponData data = WeaponDataManager.loadElementData(weapon);
+    public static class ModifierResults {
+        // 派系克制结果
+        private double factionModifier; // HM 总克制系数
+        private Map<String, Double> factionBreakdown; // 各派系元素的克制系数分解
         
-        // 如果没有元素数据，返回空列表
-        if (data == null) {
-            return new ArrayList<>();
+        // 元素倍率结果
+        private double elementMultiplier; // 元素总倍率
+        private Map<String, Double> elementBreakdown; // 各元素的倍率分解
+        
+        // 物理元素倍率结果
+        private double physicalElementMultiplier; // 物理元素总倍率
+        private Map<String, Double> physicalElementBreakdown; // 各物理元素的倍率分解
+        
+        // 暴击结果
+        private double criticalMultiplier; // 暴击倍率
+        private int criticalLevel; // 暴击等级
+        private double criticalDamage; // 暴击伤害值
+        private double criticalChance; // 暴击率
+        
+        // 护甲减免结果
+        private double armorReduction; // (1-AM) 护甲减免系数
+        private double armorValue; // 原始护甲值
+        private double armorModifier; // AM值
+        
+        public ModifierResults() {
+            this.factionModifier = 0.0;
+            this.elementMultiplier = 0.0;
+            this.physicalElementMultiplier = 0.0;
+            this.criticalMultiplier = 1.0;
+            this.criticalLevel = 0;
+            this.criticalDamage = 0.0;
+            this.criticalChance = 0.0;
+            this.armorReduction = 1.0;
+            this.armorValue = 0.0;
+            this.armorModifier = 0.0;
+            this.factionBreakdown = new HashMap<>();
+            this.elementBreakdown = new HashMap<>();
+            this.physicalElementBreakdown = new HashMap<>();
         }
         
-        // 将Usage层数据转换为ElementType和值的映射列表
-        List<Map.Entry<ElementType, Double>> activeElements = new ArrayList<>();
+        // Getters and Setters
+        public double getFactionModifier() { return factionModifier; }
+        public void setFactionModifier(double factionModifier) { this.factionModifier = factionModifier; }
         
-        // 添加物理元素
-        String[] physicalTypes = {"slash", "puncture", "impact"};
-        for (String type : physicalTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
-                ElementType elementType = ElementType.byName(type);
-                if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
-                }
-            }
-        }
+        public Map<String, Double> getFactionBreakdown() { return factionBreakdown; }
+        public void setFactionBreakdown(Map<String, Double> factionBreakdown) { this.factionBreakdown = factionBreakdown; }
         
-        // 添加基础元素（未被复合的）
-        String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
-        for (String type : basicTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
-                ElementType elementType = ElementType.byName(type);
-                if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
-                }
-            }
-        }
+        public double getElementMultiplier() { return elementMultiplier; }
+        public void setElementMultiplier(double elementMultiplier) { this.elementMultiplier = elementMultiplier; }
         
-        // 添加复合元素
-        String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
-        for (String type : complexTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
-                ElementType elementType = ElementType.byName(type);
-                if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
-                }
-            }
-        }
+        public Map<String, Double> getElementBreakdown() { return elementBreakdown; }
+        public void setElementBreakdown(Map<String, Double> elementBreakdown) { this.elementBreakdown = elementBreakdown; }
         
-        // 添加特殊属性元素（包括派系元素）
-        String[] specialTypes = {"critical_chance", "critical_damage", "trigger_chance", 
-                                "grineer", "infested", "corpus", "orokin", "sentient", "murmur"};
-        for (String type : specialTypes) {
-            Double value = data.getUsageValue(type);
-            if (value != null && value > 0) {
-                ElementType elementType = ElementType.byName(type);
-                if (elementType != null) {
-                    activeElements.add(new HashMap.SimpleEntry<>(elementType, value));
-                }
-            }
-        }
+        public double getPhysicalElementMultiplier() { return physicalElementMultiplier; }
+        public void setPhysicalElementMultiplier(double physicalElementMultiplier) { this.physicalElementMultiplier = physicalElementMultiplier; }
         
-        return activeElements;
-    }
-    
-    /**
-     * 计算元素伤害的实际实现
-     * @param key 缓存键
-     * @return 元素伤害数据
-     */
-    private static ElementDamageData calculateElementDamageImpl(ElementDamageKey key) {
-        LivingEntity attacker = key.getAttacker();
-        LivingEntity target = key.getTarget();
-        float baseDamage = key.getBaseDamage();
-        ItemStack weapon = key.getWeapon();
-        String targetFaction = key.getTargetFaction();
-        Double targetArmor = key.getTargetArmor();
+        public Map<String, Double> getPhysicalElementBreakdown() { return physicalElementBreakdown; }
+        public void setPhysicalElementBreakdown(Map<String, Double> physicalElementBreakdown) { this.physicalElementBreakdown = physicalElementBreakdown; }
         
-        // 获取缓存的元素数据
-        AffixCacheManager.AffixCacheData cacheData = null;
-        if (!weapon.isEmpty()) {
-            cacheData = AffixCacheManager.getOrCreateCache(weapon);
-        }
+        public double getCriticalMultiplier() { return criticalMultiplier; }
+        public void setCriticalMultiplier(double criticalMultiplier) { this.criticalMultiplier = criticalMultiplier; }
         
-        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
-    }
-    
-    /**
-     * 使指定武器的缓存失效
-     * @param weapon 武器物品
-     */
-    public static void invalidateCache(ItemStack weapon) {
-        // 遍历并移除与该武器相关的所有缓存项
-        DAMAGE_CACHE.entrySet().removeIf(entry -> 
-            entry.getKey().getWeapon() != null && ItemStack.matches(entry.getKey().getWeapon(), weapon));
-        ACTIVE_ELEMENTS_CACHE.remove(weapon);
-    }
-    
-    /**
-     * 使所有缓存失效
-     */
-    public static void invalidateAllCache() {
-        DAMAGE_CACHE.clear();
-        ACTIVE_ELEMENTS_CACHE.clear();
+        public int getCriticalLevel() { return criticalLevel; }
+        public void setCriticalLevel(int criticalLevel) { this.criticalLevel = criticalLevel; }
+        
+        public double getCriticalDamage() { return criticalDamage; }
+        public void setCriticalDamage(double criticalDamage) { this.criticalDamage = criticalDamage; }
+        
+        public double getCriticalChance() { return criticalChance; }
+        public void setCriticalChance(double criticalChance) { this.criticalChance = criticalChance; }
+        
+        public double getArmorReduction() { return armorReduction; }
+        public void setArmorReduction(double armorReduction) { this.armorReduction = armorReduction; }
+        
+        public double getArmorValue() { return armorValue; }
+        public void setArmorValue(double armorValue) { this.armorValue = armorValue; }
+        
+        public double getArmorModifier() { return armorModifier; }
+        public void setArmorModifier(double armorModifier) { this.armorModifier = armorModifier; }
     }
     
     /**
@@ -267,7 +221,9 @@ public class ElementDamageManager {
         private double physicalElementMultiplier;
         private double criticalMultiplier;
         private double armorReduction;
-        private List<Map.Entry<ElementType, Double>> activeElements;
+        private int criticalLevel;
+        private double criticalDamage;
+        private ModifierResults modifierResults;
         
         public ElementDamageData(float baseDamage) {
             this.baseDamage = baseDamage;
@@ -277,7 +233,9 @@ public class ElementDamageManager {
             this.physicalElementMultiplier = 1.0;
             this.criticalMultiplier = 1.0;
             this.armorReduction = 1.0;
-            this.activeElements = new ArrayList<>();
+            this.criticalLevel = 0;
+            this.criticalDamage = 0.0;
+            this.modifierResults = new ModifierResults();
         }
         
         // Getters
@@ -309,91 +267,30 @@ public class ElementDamageManager {
             return armorReduction;
         }
         
-        /**
-         * 获取激活的元素列表
-         * @return 激活的元素实例列表
-         */
-        public List<Map.Entry<ElementType, Double>> getActiveElements() {
-            return activeElements;
+        public int getCriticalLevel() {
+            return criticalLevel;
+        }
+        
+        public double getCriticalDamage() {
+            return criticalDamage;
         }
         
         /**
-         * 设置激活的元素列表
-         * @param activeElements 激活的元素实例列表
+         * 设置暴击等级和暴击伤害
+         * @param criticalLevel 暴击等级
+         * @param criticalDamage 暴击伤害
          */
-        public void setActiveElements(List<Map.Entry<ElementType, Double>> activeElements) {
-            this.activeElements = activeElements;
-        }
-    }
-    
-    /**
-     * 元素伤害计算缓存键
-     */
-    private static class ElementDamageKey {
-        private final LivingEntity attacker;
-        private final LivingEntity target;
-        private final float baseDamage;
-        private final ItemStack weapon;
-        private final String targetFaction;
-        private final Double targetArmor;
-        
-        public ElementDamageKey(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
-            this.attacker = attacker;
-            this.target = target;
-            this.baseDamage = baseDamage;
-            this.weapon = weapon;
-            this.targetFaction = targetFaction;
-            this.targetArmor = targetArmor;
+        public void setCriticalInfo(int criticalLevel, double criticalDamage) {
+            this.criticalLevel = criticalLevel;
+            this.criticalDamage = criticalDamage;
         }
         
-        public LivingEntity getAttacker() {
-            return attacker;
+        public ModifierResults getModifierResults() {
+            return modifierResults;
         }
         
-        public LivingEntity getTarget() {
-            return target;
-        }
-        
-        public float getBaseDamage() {
-            return baseDamage;
-        }
-        
-        public ItemStack getWeapon() {
-            return weapon;
-        }
-        
-        public String getTargetFaction() {
-            return targetFaction;
-        }
-        
-        public Double getTargetArmor() {
-            return targetArmor;
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            
-            ElementDamageKey that = (ElementDamageKey) obj;
-            
-            if (Float.compare(that.baseDamage, baseDamage) != 0) return false;
-            if (!attacker.equals(that.attacker)) return false;
-            if (!target.equals(that.target)) return false;
-            if (!ItemStack.matches(weapon, that.weapon)) return false;
-            if (targetFaction != null ? !targetFaction.equals(that.targetFaction) : that.targetFaction != null) return false;
-            return targetArmor != null ? targetArmor.equals(that.targetArmor) : that.targetArmor == null;
-        }
-        
-        @Override
-        public int hashCode() {
-            int result = attacker.hashCode();
-            result = 31 * result + target.hashCode();
-            result = 31 * result + (baseDamage != 0.0f ? Float.floatToIntBits(baseDamage) : 0);
-            result = 31 * result + (weapon.isEmpty() ? 0 : weapon.getItem().hashCode());
-            result = 31 * result + (targetFaction != null ? targetFaction.hashCode() : 0);
-            result = 31 * result + (targetArmor != null ? targetArmor.hashCode() : 0);
-            return result;
+        public void setModifierResults(ModifierResults modifierResults) {
+            this.modifierResults = modifierResults;
         }
     }
 }

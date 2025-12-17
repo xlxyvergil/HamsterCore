@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
@@ -13,22 +12,42 @@ import java.util.Random;
  */
 public class CriticalMultiplierCalculator {
     
-    
-
-    
-    
-    
-    
+    /**
+     * 暴击计算结果类
+     */
+    public static class CriticalResult {
+        private final double multiplier;
+        private final int level;
+        private final double damage;
+        
+        public CriticalResult(double multiplier, int level, double damage) {
+            this.multiplier = multiplier;
+            this.level = level;
+            this.damage = damage;
+        }
+        
+        public double getMultiplier() {
+            return multiplier;
+        }
+        
+        public int getLevel() {
+            return level;
+        }
+        
+        public double getDamage() {
+            return damage;
+        }
+    }
     
     /**
-     * 计算暴击倍率（使用缓存数据）
+     * 计算暴击倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
      * @param weapon 武器物品堆
      * @param specialAndFactionValues 特殊元素
      * @param cacheData 缓存数据
-     * @return 暴击倍率
+     * @return 暴击计算结果
      */
-    public static double calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
+    public static CriticalResult calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
         double criticalMultiplier = 1.0; // 默认暴击倍率
         
         // 首先尝试从缓存中获取暴击数据，如果没有则使用传统方法
@@ -45,15 +64,16 @@ public class CriticalMultiplierCalculator {
             criticalDamage = specialAndFactionValues.getOrDefault("critical_damage", 0.0);
         }
         
-        // 使用Random判断是否暴击
+        // 使用Random判断暴击等级
         Random random = new Random();
-        // 暴击等级判断：n% < 暴击几率 ≤ (n% + 100%)
-        // 概率达到的暴击等级：(n% + 100%) ÷ 100
-        // 保底达到的暴击等级：(n% + 100%) ÷ 100 - 1
+        // 暴击等级判断逻辑：
+        // 每个暴击等级需要100%的暴击率，超出保底的部分由随机数决定是否达到更高等级
+        // 例如：150%暴击率 = 保底1级 + 50%概率达到2级
         
         double chancePercent = criticalChance * 100;
         int guaranteedCriticalLevel = (int) Math.floor((chancePercent + 100) / 100) - 1; // 保底暴击等级
         int maxCriticalLevel = (int) Math.floor((chancePercent + 100) / 100); // 最大可能暴击等级
+        double extraChance = chancePercent - (guaranteedCriticalLevel * 100); // 超出保底等级的部分
         
         // 确保暴击等级至少为0
         if (guaranteedCriticalLevel < 0) {
@@ -64,12 +84,14 @@ public class CriticalMultiplierCalculator {
             maxCriticalLevel = 0;
         }
         
-        // 判断是否能达到更高的暴击等级
-        int criticalLevel = guaranteedCriticalLevel;
-        double extraChance = chancePercent - (guaranteedCriticalLevel * 100); // 超出保底等级的部分
-        
+        // 先判断随机数是否达到更高等级
+        int criticalLevel;
         if (random.nextDouble() * 100 < extraChance) {
+            // 达到更高暴击等级
             criticalLevel = maxCriticalLevel;
+        } else {
+            // 保底暴击等级
+            criticalLevel = guaranteedCriticalLevel;
         }
         
         // 暴击倍率计算公式：
@@ -84,11 +106,6 @@ public class CriticalMultiplierCalculator {
         // 计算最终暴击倍率（基于暴击等级的增幅）
         criticalMultiplier = 1 + criticalLevel * (totalCriticalDamage - 1);
         
-        // 如果攻击者是玩家，向玩家发送暴击信息
-        if (attacker instanceof Player player) {
-            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("暴击! 等级: " + criticalLevel + ", 伤害倍率: " + String.format("%.2f", criticalMultiplier)).withStyle(net.minecraft.ChatFormatting.GOLD));
-        }
-        
-        return criticalMultiplier;
+        return new CriticalResult(criticalMultiplier, criticalLevel, criticalDamage);
     }
 }
