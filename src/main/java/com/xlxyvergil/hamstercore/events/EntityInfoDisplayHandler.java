@@ -232,7 +232,7 @@ public class EntityInfoDisplayHandler {
                         Double elementValue = physicalElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal("\n  ")
+                            message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                             hasAnyElement = true;
@@ -244,7 +244,7 @@ public class EntityInfoDisplayHandler {
                         Double elementValue = combinedElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal("\n  ")
+                            message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                             hasAnyElement = true;
@@ -256,7 +256,7 @@ public class EntityInfoDisplayHandler {
                         Double elementValue = combinedElements.get(elementType.getName());
                         if (elementValue != null && elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
-                            message.append(Component.literal("\n  ")
+                            message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
                                 .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                             hasAnyElement = true;
@@ -384,11 +384,11 @@ public class EntityInfoDisplayHandler {
                 MutableComponent elementName = elementType.getColoredName();
                 
                 if (count > 1) {
-                    message.append(Component.literal("\n  ")
+                    message.append(Component.literal(" ")
                         .append(String.format("%s x%d", elementName.getString(), count))
                         .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                 } else {
-                    message.append(Component.literal("\n  ")
+                    message.append(Component.literal(" ")
                         .append(String.format("%s", elementName.getString()))
                         .withStyle(style -> style.withColor(elementType.getColor().getColor())));
                 }
