@@ -2,10 +2,9 @@ package com.xlxyvergil.hamstercore.events;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityHealthModifierCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
-import com.xlxyvergil.hamstercore.network.EntityArmorSyncToClient;
-import com.xlxyvergil.hamstercore.network.EntityFactionSyncToClient;
-import com.xlxyvergil.hamstercore.network.EntityLevelSyncToClient;
+import com.xlxyvergil.hamstercore.network.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -69,12 +68,24 @@ public class EntityConversionHandler {
             });
         });
         
-        // 复制护甲
+        // 复制护甲（包括基础护甲和实际护甲）
         originalEntity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(originalArmorCap -> {
             targetEntity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(targetArmorCap -> {
+                // 复制基础护甲值
+                targetArmorCap.setBaseArmor(originalArmorCap.getBaseArmor());
+                // 复制实际护甲值
                 targetArmorCap.setArmor(originalArmorCap.getArmor());
                 // 同步到客户端
                 EntityArmorSyncToClient.sync(targetEntity);
+            });
+        });
+        
+        // 复制生命值修饰符
+        originalEntity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(originalHealthCap -> {
+            targetEntity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(targetHealthCap -> {
+                targetHealthCap.setHealthModifier(originalHealthCap.getHealthModifier());
+                // 生命值修饰符网络同步
+                EntityHealthModifierSyncToClient.sync(targetEntity);
             });
         });
     }

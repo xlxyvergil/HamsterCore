@@ -5,6 +5,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.*;
 import com.xlxyvergil.hamstercore.level.HealthModifierSystem;
 import com.xlxyvergil.hamstercore.network.EntityArmorSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityFactionSyncToClient;
+import com.xlxyvergil.hamstercore.network.EntityHealthModifierSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityLevelSyncToClient;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import net.minecraft.server.level.ServerLevel;
@@ -101,6 +102,14 @@ public class EntityCapabilityAttacher {
                     new EntityArmorSyncToClient(entity.getId(), armorCap.getArmor())
                 );
             });
+            
+            // 同步生命值修饰符
+            entity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(healthCap -> {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.PLAYER.with(() -> player),
+                    new EntityHealthModifierSyncToClient(entity.getId(), healthCap.getHealthModifier(), healthCap.isInitialized())
+                );
+            });
         }
     }
     
@@ -159,5 +168,8 @@ public class EntityCapabilityAttacher {
         
         // 同步护甲到客户端
         EntityArmorSyncToClient.sync(entity);
+        
+        // 同步生命值修饰符到客户端
+        EntityHealthModifierSyncToClient.sync(entity);
     }
 }

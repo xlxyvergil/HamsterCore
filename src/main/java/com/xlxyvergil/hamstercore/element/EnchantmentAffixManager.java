@@ -77,9 +77,17 @@ public class EnchantmentAffixManager {
         // 首先验证并清理现有关联
         verifyEnchantmentAffixes(stack);
         
-        // 获取当前所有附魔
+        // 获取当前所有附魔并按固定顺序排序
         Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(stack);
-        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+        List<Map.Entry<Enchantment, Integer>> sortedEnchantments = new ArrayList<>(enchantments.entrySet());
+        sortedEnchantments.sort((e1, e2) -> {
+            // 按照附魔ID的字符串顺序排序，确保顺序一致
+            String id1 = getEnchantmentId(e1.getKey());
+            String id2 = getEnchantmentId(e2.getKey());
+            return id1.compareTo(id2);
+        });
+        
+        for (Map.Entry<Enchantment, Integer> entry : sortedEnchantments) {
             Enchantment enchantment = entry.getKey();
             int level = entry.getValue(); // 直接从映射中获取等级，避免触发事件
             String enchantmentId = getEnchantmentId(enchantment);
@@ -119,10 +127,18 @@ public class EnchantmentAffixManager {
      * 验证所有关联的附魔是否存在，并删除无效的关联
      */
     public static void verifyEnchantmentAffixes(ItemStack stack) {
-        // 获取当前所有附魔ID和等级的映射
-        Map<String, Integer> currentEnchantments = new HashMap<>();
+        // 获取当前所有附魔ID和等级的映射，按固定顺序
+        Map<String, Integer> currentEnchantments = new LinkedHashMap<>();
         Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(stack);
-        for (Map.Entry<Enchantment, Integer> entry : enchantments.entrySet()) {
+        List<Map.Entry<Enchantment, Integer>> sortedEnchantments = new ArrayList<>(enchantments.entrySet());
+        sortedEnchantments.sort((e1, e2) -> {
+            // 按照附魔ID的字符串顺序排序，确保顺序一致
+            String id1 = getEnchantmentId(e1.getKey());
+            String id2 = getEnchantmentId(e2.getKey());
+            return id1.compareTo(id2);
+        });
+        
+        for (Map.Entry<Enchantment, Integer> entry : sortedEnchantments) {
             Enchantment enchantment = entry.getKey();
             String enchantmentId = getEnchantmentId(enchantment);
             int level = entry.getValue(); // 直接从映射中获取等级，避免触发事件

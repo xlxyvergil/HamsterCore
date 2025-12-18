@@ -1,6 +1,9 @@
 package com.xlxyvergil.hamstercore.enchantment;
 
+import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -37,7 +40,15 @@ public class ElementEnchantment extends Enchantment {
     
     @Override
     public boolean canEnchant(ItemStack stack) {
-        return true;
+        if (stack.isEmpty()) {
+            return false;
+        }
+        
+        // 获取物品的ResourceLocation
+        ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        
+        // 检查是否为已配置的武器
+        return WeaponItemIds.isConfiguredWeapon(itemKey);
     }
     
     @Override

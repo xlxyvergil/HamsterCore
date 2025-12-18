@@ -35,21 +35,5 @@ public class AffixAPI {
         AffixManager.removeAffix(stack, uuid);
     }
 
-    /**
-     * 批量为物品添加词缀
-     * @param stack 物品栈
-     * @param entries 词缀条目列表
-     */
-    public static void batchAddAffixes(ItemStack stack, List<InitialModifierEntry> entries) {
-        AffixManager.batchAddAffixes(stack, entries);
-    }
-    
-    /**
-     * 批量为物品删除词缀
-     * @param stack 物品栈
-     * @param uuids 词缀唯一标识列表
-     */
-    public static void batchRemoveAffixes(ItemStack stack, List<UUID> uuids) {
-        AffixManager.batchRemoveAffixes(stack, uuids);
-    }
+
 }

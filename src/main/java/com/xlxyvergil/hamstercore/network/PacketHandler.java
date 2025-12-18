@@ -29,5 +29,9 @@ public class PacketHandler {
             EntityArmorSyncToClient::toBytes,
             EntityArmorSyncToClient::new,
             EntityArmorSyncToClient::handle);
+        NETWORK.registerMessage(id++, EntityHealthModifierSyncToClient.class,
+            EntityHealthModifierSyncToClient::toBytes,
+            EntityHealthModifierSyncToClient::new,
+            EntityHealthModifierSyncToClient::handle);
     }
 }

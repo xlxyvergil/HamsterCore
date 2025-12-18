@@ -27,10 +27,17 @@ public class WeaponData {
     
     /**
      * 添加Basic层元素
+     * 每种元素类型只能有一个条目，记录首次添加的信息
      */
     public void addBasicElement(String type, String source, int order) {
+        // 检查该类型是否已存在
+        if (basicElements.containsKey(type)) {
+            // 如果已存在，不进行任何操作，保持首次添加的记录
+            return;
+        }
+        
         BasicEntry entry = new BasicEntry(type, source, order);
-        basicElements.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
+        basicElements.put(type, new ArrayList<>(Arrays.asList(entry)));
     }
     
     /**
@@ -80,10 +87,26 @@ public class WeaponData {
     }
     
     /**
-     * 获取Basic层元素
+     * 获取Basic层元素（按添加顺序排序）
      */
     public Map<String, List<BasicEntry>> getBasicElements() {
-        return basicElements;
+        // 创建一个新的LinkedHashMap，按照order顺序重新排列
+        Map<String, List<BasicEntry>> sortedBasicElements = new LinkedHashMap<>();
+        
+        // 将所有entry收集到一个列表中，按order排序
+        List<Map.Entry<String, List<BasicEntry>>> entries = new ArrayList<>(basicElements.entrySet());
+        entries.sort((e1, e2) -> {
+            int order1 = e1.getValue().get(0).getOrder();
+            int order2 = e2.getValue().get(0).getOrder();
+            return Integer.compare(order1, order2);
+        });
+        
+        // 按顺序添加到新的Map中
+        for (Map.Entry<String, List<BasicEntry>> entry : entries) {
+            sortedBasicElements.put(entry.getKey(), entry.getValue());
+        }
+        
+        return sortedBasicElements;
     }
     
     /**
@@ -143,7 +166,13 @@ public class WeaponData {
                     CompoundTag entryTag = listTag.getCompound(i);
                     entries.add(BasicEntry.fromNBT(entryTag));
                 }
-                data.basicElements.put(key, entries);
+                // 确保每种元素类型只保留第一个条目（按order排序）
+                if (!entries.isEmpty()) {
+                    entries.sort((e1, e2) -> Integer.compare(e1.getOrder(), e2.getOrder()));
+                    List<BasicEntry> singleEntry = new ArrayList<>();
+                    singleEntry.add(entries.get(0)); // 只保留order最小的条目
+                    data.basicElements.put(key, singleEntry);
+                }
             }
         }
         
