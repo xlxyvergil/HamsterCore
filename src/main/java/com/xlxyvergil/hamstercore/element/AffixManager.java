@@ -3,7 +3,10 @@ package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class AffixManager {
@@ -38,7 +41,9 @@ public class AffixManager {
         if (isFirstTime) {
             ElementType type = ElementType.byName(elementType);
             if (type != null && (type.isBasic() || type.isComplex())) {
-                weaponData.addBasicElement(elementType, source, (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+                // 使用当前Basic层元素的数量作为order值，保证唯一性和递增性
+                int order = weaponData.getBasicElements().size();
+                weaponData.addBasicElement(elementType, source, order);
             }
         }
         
@@ -129,12 +134,57 @@ public class AffixManager {
     public static void batchAddAffixes(ItemStack stack, List<InitialModifierEntry> entries) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         
-        // 收集所有需要添加的元素类型
-        for (InitialModifierEntry entry : entries) {
+        // 对要添加的元素进行排序
+        List<InitialModifierEntry> sortedEntries = new ArrayList<>(entries);
+        // 自定义排序逻辑：基础元素按冰、电、火、毒顺序，其余按字母顺序
+        sortedEntries.sort((entry1, entry2) -> {
+            String type1 = entry1.getElementType();
+            String type2 = entry2.getElementType();
+            
+            // 定义基础元素的排序顺序
+            Map<String, Integer> basicElementOrder = new LinkedHashMap<>();
+            basicElementOrder.put("cold", 0);     // 冰
+            basicElementOrder.put("electricity", 1); // 电
+            basicElementOrder.put("heat", 2);      // 火
+            basicElementOrder.put("toxin", 3);     // 毒
+            
+            // 检查是否都是基础元素
+            boolean isBasic1 = basicElementOrder.containsKey(type1);
+            boolean isBasic2 = basicElementOrder.containsKey(type2);
+            
+            if (isBasic1 && isBasic2) {
+                // 都是基础元素，按照预定义顺序排序
+                return Integer.compare(basicElementOrder.get(type1), basicElementOrder.get(type2));
+            } else if (isBasic1) {
+                // 只有第一个是基础元素，排在前面
+                return -1;
+            } else if (isBasic2) {
+                // 只有第二个是基础元素，排在前面
+                return 1;
+            } else {
+                // 都不是基础元素，按照字母顺序排序
+                return type1.compareTo(type2);
+            }
+        });
+        
+        // 收集所有第一次加入的元素类型及其索引
+        Map<String, Integer> firstTimeElements = new LinkedHashMap<>();
+        int order = 0;
+        
+        // 第一步：收集所有第一次加入的元素类型
+        for (InitialModifierEntry entry : sortedEntries) {
+            String elementType = entry.getElementType();
+            if (!hasElementTypeInInitialModifiers(weaponData, elementType)) {
+                firstTimeElements.put(elementType, order++);
+            }
+        }
+        
+        // 第二步：逐个添加词缀
+        for (InitialModifierEntry entry : sortedEntries) {
             String elementType = entry.getElementType();
             
             // 检查是否是该类型第一次加入InitialModifier
-            boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, elementType);
+            boolean isFirstTime = firstTimeElements.containsKey(elementType);
             
             // 添加到InitialModifier
             weaponData.addInitialModifier(entry);
@@ -143,7 +193,7 @@ public class AffixManager {
             if (isFirstTime) {
                 ElementType type = ElementType.byName(elementType);
                 if (type != null && (type.isBasic() || type.isComplex())) {
-                    weaponData.addBasicElement(elementType, entry.getSource(), (int) (System.currentTimeMillis() % Integer.MAX_VALUE));
+                    weaponData.addBasicElement(elementType, entry.getSource(), firstTimeElements.get(elementType));
                 }
             }
         }
