@@ -156,4 +156,45 @@ public class AffixManager {
         // 失效AffixManager的临时缓存
         AffixManagerCache.invalidateCache(stack);
     }
+    
+    /**
+     * 批量删除词缀
+     */
+    public static void batchRemoveAffixes(ItemStack stack, List<UUID> uuids) {
+        WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
+        
+        // 收集所有需要检查的元素类型
+        for (UUID uuid : uuids) {
+            // 获取要删除的条目的元素类型
+            String removedElementType = null;
+            for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
+                if (entry.getUuid().equals(uuid)) {
+                    removedElementType = entry.getElementType();
+                    break;
+                }
+            }
+            
+            // 删除词缀
+            weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(uuid));
+            
+            // 检查是否需要从Basic层移除（只有当该类型的元素完全不存在时才移除）
+            if (removedElementType != null) {
+                boolean stillExists = hasElementTypeInInitialModifiers(weaponData, removedElementType);
+                if (!stillExists) {
+                    ElementType type = ElementType.byName(removedElementType);
+                    if (type != null && (type.isBasic() || type.isComplex())) {
+                        removeFromBasicLayer(weaponData, removedElementType);
+                    }
+                }
+            }
+        }
+        
+        // 显式保存WeaponData到NBT
+        WeaponDataManager.saveElementData(stack, weaponData);
+        
+        // 计算并缓存元素值
+        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 失效AffixManager的临时缓存
+        AffixManagerCache.invalidateCache(stack);
+    }
 }

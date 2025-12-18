@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.ElementType.TypeCategory;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import net.minecraft.world.item.ItemStack;
@@ -57,10 +58,10 @@ public class ElementHelper {
 
             if (type.isPhysical()) {
                 physicalValues.put(typeName, value);
-            } else if (type.getTypeCategory() == ElementType.TypeCategory.SPECIAL || 
-                       type.getTypeCategory() == ElementType.TypeCategory.CRITICAL_CHANCE || 
-                       type.getTypeCategory() == ElementType.TypeCategory.CRITICAL_DAMAGE || 
-                       type.getTypeCategory() == ElementType.TypeCategory.TRIGGER_CHANCE) {
+            } else if (type.getTypeCategory() == TypeCategory.SPECIAL || 
+                       type.getTypeCategory() == TypeCategory.CRITICAL_CHANCE || 
+                       type.getTypeCategory() == TypeCategory.CRITICAL_DAMAGE || 
+                       type.getTypeCategory() == TypeCategory.TRIGGER_CHANCE) {
                 specialAndFactionValues.put(typeName, value);
             } else {
                 basicAndComplexValues.put(typeName, value);

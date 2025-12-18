@@ -40,11 +40,6 @@ public class HamsterCore {
         
         // 注册附魔
         ModEnchantments.register(modEventBus);
-        
-        // 初始化配置
-        FactionConfig.load();
-        ArmorConfig.load();
-        LevelSystem.init();
                 
         // 初始化网络包
         PacketHandler.init();
@@ -72,7 +67,10 @@ public class HamsterCore {
         try {                  
             // 1. 初始化兼容性检查 - 在服务器启动时检查，确保所有模组都已加载
             // 只有在模组加载后才初始化对应的获取器
-            
+        FactionConfig.load();
+        ArmorConfig.load();
+        LevelSystem.init();
+
             // 2. 让SlashBladeItemsFetcher获取数据
             // 直接检查模组是否加载，避免触发类初始化
             if (ModList.get().isLoaded("slashblade")) {

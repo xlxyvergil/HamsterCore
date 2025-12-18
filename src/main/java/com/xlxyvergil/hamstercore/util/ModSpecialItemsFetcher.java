@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.util;
 
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.api.item.IGun;
+import com.tacz.guns.init.ModItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -139,7 +140,7 @@ public class ModSpecialItemsFetcher {
         try {
             // 直接使用TACZ的API获取枪械物品
             // 注意：这里使用了编译时依赖，但在运行时只有当TACZ确实加载时才会执行此代码
-            return com.tacz.guns.init.ModItems.MODERN_KINETIC_GUN.get();
+            return ModItems.MODERN_KINETIC_GUN.get();
         } catch (NoClassDefFoundError e) {
             // 类不存在，说明TACZ未正确加载
             return null;

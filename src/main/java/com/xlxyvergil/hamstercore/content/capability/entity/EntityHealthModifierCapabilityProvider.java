@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.content.capability.entity;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -11,10 +10,13 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class EntityFactionCapabilityProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
-    public static final Capability<EntityFactionCapability> CAPABILITY = EntityFactionCapability.CAPABILITY;
+public class EntityHealthModifierCapabilityProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+    public static final Capability<EntityHealthModifierCapability> CAPABILITY = EntityHealthModifierCapability.CAPABILITY;
 
-    private final LazyOptional<EntityFactionCapability> lazyCapability = LazyOptional.of(EntityFactionCapability::new);
+    private final LazyOptional<EntityHealthModifierCapability> lazyCapability = LazyOptional.of(EntityHealthModifierCapability::new);
+
+    public EntityHealthModifierCapabilityProvider() {
+    }
 
     @Nonnull
     @Override
@@ -27,15 +29,15 @@ public class EntityFactionCapabilityProvider implements ICapabilityProvider, INB
 
     @Override
     public CompoundTag serializeNBT() {
-        return lazyCapability.map(EntityFactionCapability::serializeNBT).orElse(new CompoundTag());
+        return lazyCapability.map(EntityHealthModifierCapability::serializeNBT).orElse(new CompoundTag());
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
         lazyCapability.ifPresent(cap -> cap.deserializeNBT(nbt));
     }
-    
-    public void setEntityType(EntityType<?> entityType) {
-        lazyCapability.ifPresent(cap -> cap.setEntityType(entityType));
+
+    public void setHealthModifier(double healthModifier) {
+        lazyCapability.ifPresent(cap -> cap.setHealthModifier(healthModifier));
     }
 }

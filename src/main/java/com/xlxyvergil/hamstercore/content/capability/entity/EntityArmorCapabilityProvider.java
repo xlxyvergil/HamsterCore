@@ -17,7 +17,6 @@ public class EntityArmorCapabilityProvider implements ICapabilityProvider, INBTS
     public static final Capability<EntityArmorCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
     private final LazyOptional<EntityArmorCapability> lazyCapability = LazyOptional.of(EntityArmorCapability::new);
-    private EntityType<?> entityType;
 
     @Nonnull
     @Override
@@ -39,7 +38,6 @@ public class EntityArmorCapabilityProvider implements ICapabilityProvider, INBTS
     }
     
     public void setEntityType(EntityType<?> entityType) {
-        this.entityType = entityType;
         lazyCapability.ifPresent(cap -> cap.setEntityType(entityType));
     }
     

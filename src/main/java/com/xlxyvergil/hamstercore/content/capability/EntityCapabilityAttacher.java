@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.content.capability;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.content.capability.entity.*;
+import com.xlxyvergil.hamstercore.level.HealthModifierSystem;
 import com.xlxyvergil.hamstercore.network.EntityArmorSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityFactionSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityLevelSyncToClient;
@@ -37,6 +38,9 @@ public class EntityCapabilityAttacher {
             EntityFactionCapabilityProvider factionProvider = new EntityFactionCapabilityProvider();
             factionProvider.setEntityType(livingEntity.getType());
             event.addCapability(EntityFactionCapability.ID, factionProvider);
+            
+            // 附加实体生命值修饰符能力
+            event.addCapability(EntityHealthModifierCapability.ID, new EntityHealthModifierCapabilityProvider());
         }
     }
     
@@ -105,6 +109,7 @@ public class EntityCapabilityAttacher {
      * 1. 派系
      * 2. 等级
      * 3. 护甲（基于派系和等级）
+     * 4. 生命值修饰符（基于等级）
      */
     private static void initializeEntityCapabilities(LivingEntity entity) {
         // 1. 初始化派系
@@ -134,6 +139,9 @@ public class EntityCapabilityAttacher {
                     // 初始化实体能力，传入基础等级20和当前等级
                     armorCap.initializeEntityCapabilities(20, level);
                 });
+        
+        // 4. 初始化生命值修饰符（基于等级）
+        HealthModifierSystem.applyHealthModifier(entity);
         
         // 在所有能力初始化完成后，同步到所有正在跟踪该实体的玩家
         syncEntityCapabilitiesToClients(entity);

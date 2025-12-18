@@ -4,7 +4,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tiers;
 import net.minecraftforge.fml.ModList;
+import mods.flammpfeil.slashblade.item.ItemSlashBlade;
+import mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -164,7 +167,7 @@ public class SlashBladeItemsFetcher {
             
             var registryAccess = server.registryAccess();
             var slashBladeRegistry = registryAccess.lookupOrThrow(
-                mods.flammpfeil.slashblade.registry.slashblade.SlashBladeDefinition.REGISTRY_KEY
+                SlashBladeDefinition.REGISTRY_KEY
             );
             
             slashBladeIDs = new HashSet<>();
@@ -208,7 +211,7 @@ public class SlashBladeItemsFetcher {
         
         try {
             // 直接调用拔刀剑的API
-            return stack.getItem() instanceof mods.flammpfeil.slashblade.item.ItemSlashBlade;
+            return stack.getItem() instanceof ItemSlashBlade;
         } catch (NoClassDefFoundError e) {
             // 类不存在，说明拔刀剑未正确加载
             return false;
@@ -231,9 +234,9 @@ public class SlashBladeItemsFetcher {
         try {
             // 直接使用拔刀剑的API获取枪械物品
             // 注意：这里使用了编译时依赖，但在运行时只有当拔刀剑确实加载时才会执行此代码
-            return new mods.flammpfeil.slashblade.item.ItemSlashBlade(
-                net.minecraft.world.item.Tiers.DIAMOND, 1, -2.0F, 
-                new net.minecraft.world.item.Item.Properties());
+            return new ItemSlashBlade(
+                Tiers.DIAMOND, 1, -2.0F, 
+                new Item.Properties());
         } catch (NoClassDefFoundError e) {
             // 类不存在，说明拔刀剑未正确加载
             return null;
@@ -255,7 +258,7 @@ public class SlashBladeItemsFetcher {
         
         try {
             // 直接使用拔刀剑的Capability API
-            var bladeState = stack.getCapability(mods.flammpfeil.slashblade.item.ItemSlashBlade.BLADESTATE);
+            var bladeState = stack.getCapability(ItemSlashBlade.BLADESTATE);
             if (bladeState.isPresent()) {
                 String translationKey = bladeState.resolve().get().getTranslationKey();
                 if (translationKey != null && !translationKey.isBlank()) {

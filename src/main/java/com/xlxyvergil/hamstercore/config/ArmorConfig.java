@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.xlxyvergil.hamstercore.faction.Faction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
@@ -107,7 +109,7 @@ public class ArmorConfig {
             
             // 添加MOD默认护甲映射
             JsonObject modMappings = new JsonObject();
-            modMappings.addProperty("minecraft", 10.0);
+            modMappings.addProperty("minecraft", 20.0);
             json.add("modDefaultArmors", modMappings);
             
             // 添加派系默认护甲映射
@@ -119,6 +121,32 @@ public class ArmorConfig {
             factionMappings.addProperty("SENTIENT", 25.0);
             factionMappings.addProperty("MURMUR", 12.0);
             json.add("factionDefaultArmors", factionMappings);
+            
+            // 遍历所有实体类型，添加mod实体到配置文件中
+            BuiltInRegistries.ENTITY_TYPE.forEach(entityType -> {
+                ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
+                String entityKey = entityId.toString();
+                String modId = entityId.getNamespace();
+                
+                // 只处理mod实体（非minecraft命名空间）和有生命属性的实体
+                if (!entityMappings.has(entityKey) && !modId.equals("minecraft")) {
+                    // 检查实体是否有生命属性（通过实体分类判断）
+                    MobCategory classification = entityType.getCategory();
+                    if (classification != MobCategory.MISC) {
+                        // 获取实体的派系
+                        String faction = getFactionForEntity(entityType);
+                        
+                        // 根据派系获取默认护甲值
+                        double armorValue = factionMappings.has(faction) ? factionMappings.get(faction).getAsDouble() : defaultArmor;
+                        
+                        // 添加mod实体到配置文件
+                        entityMappings.addProperty(entityKey, armorValue);
+                    }
+                }
+            });
+            
+            // 更新实体护甲映射到json
+            json.add("entityArmorMap", entityMappings);
             
             // 写入配置文件
             try (BufferedWriter writer = Files.newBufferedWriter(configPath)) {
@@ -215,5 +243,13 @@ public class ArmorConfig {
     
     public Map<String, Double> getFactionDefaultArmors() {
         return factionDefaultArmors;
+    }
+    
+    // 获取实体的派系
+    private String getFactionForEntity(EntityType<?> entityType) {
+        // 使用FactionConfig来获取实体的派系
+        FactionConfig factionConfig = FactionConfig.load();
+        Faction faction = factionConfig.getFactionForEntity(entityType);
+        return faction.name();
     }
 }

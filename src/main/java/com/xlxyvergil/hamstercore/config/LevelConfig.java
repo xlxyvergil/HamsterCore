@@ -22,6 +22,7 @@ public class LevelConfig {
     private int distanceBaseLevel = 50; // 1000格内的基础等级
     private int distanceLevelPer100Blocks = 25; // 每100格增加的等级
     private int distanceThreshold = 1000; // 距离阈值
+    private boolean enableHealthSystem = true; // 是否启用生命值系统，默认为启用
     
     public static LevelConfig load() {
         Path configFolderPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FOLDER);
@@ -57,6 +58,7 @@ public class LevelConfig {
             json.addProperty("distanceBaseLevel", distanceBaseLevel); // 1000格内的基础等级
             json.addProperty("distanceLevelPer100Blocks", distanceLevelPer100Blocks); // 每100格增加的等级
             json.addProperty("distanceThreshold", distanceThreshold); // 距离阈值
+            json.addProperty("enableHealthSystem", enableHealthSystem); // 是否启用生命值系统
             
             // 写入配置文件
             try (BufferedWriter writer = Files.newBufferedWriter(configPath)) {
@@ -89,6 +91,10 @@ public class LevelConfig {
         if (json.has("distanceThreshold")) {
             distanceThreshold = json.get("distanceThreshold").getAsInt();
         }
+        
+        if (json.has("enableHealthSystem")) {
+            enableHealthSystem = json.get("enableHealthSystem").getAsBoolean();
+        }
     }
     
     // Getters
@@ -110,5 +116,9 @@ public class LevelConfig {
     
     public int getDistanceThreshold() {
         return distanceThreshold;
+    }
+    
+    public boolean isHealthSystemEnabled() {
+        return enableHealthSystem;
     }
 }

@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
 import java.util.UUID;
 
 /**

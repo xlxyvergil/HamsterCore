@@ -383,14 +383,18 @@ public class EntityInfoDisplayHandler {
                 int count = entry.getValue();
                 MutableComponent elementName = elementType.getColoredName();
                 
-                if (count > 1) {
-                    message.append(Component.literal(" ")
-                        .append(String.format("%s x%d", elementName.getString(), count))
-                        .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                if (isFirst) {
+                    isFirst = false;
                 } else {
-                    message.append(Component.literal(" ")
-                        .append(String.format("%s", elementName.getString()))
-                        .withStyle(style -> style.withColor(elementType.getColor().getColor())));
+                    message.append(Component.literal(" "));
+                }
+                
+                if (count > 1) {
+                    message.append(String.format("%s x%d", elementName.getString(), count))
+                        .withStyle(style -> style.withColor(elementType.getColor().getColor()));
+                } else {
+                    message.append(String.format("%s", elementName.getString()))
+                        .withStyle(style -> style.withColor(elementType.getColor().getColor()));
                 }
             }
         }

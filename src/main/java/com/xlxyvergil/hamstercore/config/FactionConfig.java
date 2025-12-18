@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.xlxyvergil.hamstercore.faction.Faction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.*;
@@ -64,8 +66,8 @@ public class FactionConfig {
                 ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
                 String entityKey = entityId.toString();
                 
-                // 为每个实体添加默认派系映射
-                if (!entityMappings.has(entityKey)) {
+                // 过滤掉MISC分类的实体，只处理有生命的实体
+                if (entityType.getCategory() != MobCategory.MISC && !entityMappings.has(entityKey)) {
                     // 根据已有的规则设置派系
                     if (isInfestedEntity(entityType)) {
                         entityMappings.addProperty(entityKey, "INFESTED");
@@ -121,9 +123,15 @@ public class FactionConfig {
         }
     }
     
-    public com.xlxyvergil.hamstercore.faction.Faction getFactionForEntity(EntityType<?> entityType) {
+    public Faction getFactionForEntity(EntityType<?> entityType) {
         ResourceLocation entityId = EntityType.getKey(entityType);
         String entityKey = entityId.toString();
+        
+        // 玩家固定为OROKIN派系
+        if (entityKey.equals("minecraft:player")) {
+            return Faction.OROKIN;
+        }
+        
         String modId = entityId.getNamespace();
         
         // 首先检查实体特定映射
@@ -131,9 +139,9 @@ public class FactionConfig {
             String factionName = entityFactionMap.get(entityKey);
             // 确保派系名称有效
             try {
-                return com.xlxyvergil.hamstercore.faction.Faction.valueOf(factionName);
+                return Faction.valueOf(factionName);
             } catch (IllegalArgumentException e) {
-                return com.xlxyvergil.hamstercore.faction.Faction.valueOf(defaultFaction);
+                return Faction.OROKIN;
             }
         }
         
@@ -142,17 +150,17 @@ public class FactionConfig {
             String factionName = modDefaultFactions.get(modId);
             // 确保派系名称有效
             try {
-                return com.xlxyvergil.hamstercore.faction.Faction.valueOf(factionName);
+                return Faction.valueOf(factionName);
             } catch (IllegalArgumentException e) {
-                return com.xlxyvergil.hamstercore.faction.Faction.valueOf(defaultFaction);
+                return Faction.OROKIN;
             }
         }
         
         // 返回默认派系
         try {
-            return com.xlxyvergil.hamstercore.faction.Faction.valueOf(defaultFaction);
+            return Faction.valueOf(defaultFaction);
         } catch (IllegalArgumentException e) {
-            return com.xlxyvergil.hamstercore.faction.Faction.OROKIN; // fallback to OROKIN
+            return Faction.OROKIN; // fallback to OROKIN
         }
     }
     
@@ -206,8 +214,7 @@ public class FactionConfig {
         String entityKey = entityId.toString();
         
         return entityKey.equals("minecraft:iron_golem") ||
-               entityKey.equals("minecraft:snow_golem") ||
-               entityKey.equals("minecraft:player");
+               entityKey.equals("minecraft:snow_golem");
     }
     
     // 判断是否为Grineer派系实体

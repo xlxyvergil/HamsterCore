@@ -7,6 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.MobSpawnEvent;
@@ -84,11 +86,18 @@ public class LevelSystem {
     
     public static void init() {
         levelConfig = LevelConfig.load();
+        // 初始化生命值修饰符系统
+        HealthModifierSystem.init(levelConfig);
     }
     
     public static int calculateEntityLevel(LivingEntity entity) {
         if (levelConfig == null) {
             return 20; // 返回默认等级20
+        }
+        
+        // 玩家固定等级为30
+        if (entity instanceof Player) {
+            return 30;
         }
         
         Level level = entity.level();
@@ -123,16 +132,22 @@ public class LevelSystem {
             int level = calculateEntityLevel(entity);
             cap.setLevel(level);
         });
+        
+        // 为实体应用生命值修饰符
+        HealthModifierSystem.applyHealthModifier(entity);
     }
     
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity() instanceof LivingEntity livingEntity && !event.getEntity().level().isClientSide() && !(livingEntity instanceof net.minecraft.world.entity.Mob)) {
+        if (event.getEntity() instanceof LivingEntity livingEntity && !event.getEntity().level().isClientSide() && !(livingEntity instanceof Mob)) {
             // 为非Mob实体设置等级Capability
             livingEntity.getCapability(EntityLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
                 int level = calculateEntityLevel(livingEntity);
                 cap.setLevel(level);
             });
+            
+            // 为非Mob实体应用生命值修饰符
+            HealthModifierSystem.applyHealthModifier(livingEntity);
         }
     }
 }
