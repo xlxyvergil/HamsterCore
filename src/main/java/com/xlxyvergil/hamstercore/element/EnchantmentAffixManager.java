@@ -9,6 +9,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import com.xlxyvergil.hamstercore.enchantment.ElementEnchantment;
+import com.xlxyvergil.hamstercore.config.WeaponItemIds;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.*;
 
@@ -69,6 +71,11 @@ public class EnchantmentAffixManager {
      * 这是动态更新的核心方法，会检查所有当前附魔并确保其对应的词缀都已应用
      */
     public static void updateEnchantmentAffixes(ItemStack stack) {
+        // 检查物品是否为已配置的武器，如果不是则不处理
+        if (!isConfiguredWeapon(stack)) {
+            return;
+        }
+        
         // 检查物品是否含有我们的数据（武器数据），如果没有则不处理
         if (WeaponDataManager.getWeaponData(stack) == null) {
             return;
@@ -188,10 +195,29 @@ public class EnchantmentAffixManager {
     }
 
     /**
+     * 检查物品是否为已配置的武器
+     * 通过WeaponItemIds缓存系统确认物品是否可以使用附魔
+     */
+    private static boolean isConfiguredWeapon(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        
+        // 获取物品的ResourceLocation
+        var itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (itemKey == null || itemKey == BuiltInRegistries.ITEM.getDefaultKey()) {
+            return false;
+        }
+        
+        // 通过WeaponItemIds检查是否为已配置的武器
+        return WeaponItemIds.isConfiguredWeapon(itemKey);
+    }
+    
+    /**
      * 获取附魔ID
      */
     private static String getEnchantmentId(Enchantment enchantment) {
-        return net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT.getKey(enchantment).toString();
+        return BuiltInRegistries.ENCHANTMENT.getKey(enchantment).toString();
     }
 
     /**

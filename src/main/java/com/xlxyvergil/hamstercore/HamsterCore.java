@@ -15,6 +15,7 @@ import com.xlxyvergil.hamstercore.config.AdditionalConfigApplier;
 import com.xlxyvergil.hamstercore.config.NormalConfigApplier;
 import com.xlxyvergil.hamstercore.config.SlashBladeConfigApplier;
 import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
+import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
 import net.minecraftforge.common.MinecraftForge;
@@ -108,6 +109,9 @@ public class HamsterCore {
             
             // 应用额外配置
             AdditionalConfigApplier.load();
+            
+            // 5. 初始化武器ID缓存 - 在所有配置加载完成后收集所有武器ID
+            WeaponItemIds.initializeAllWeaponIds();
         } catch (Exception e) {
             e.printStackTrace();
         }

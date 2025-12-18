@@ -55,6 +55,8 @@ public class NormalConfigApplier {
                     appliedCount++;
                 }
             }
+            
+            // 注意：WeaponItemIds现在通过统一的初始化系统收集所有ID，不需要手动添加
         } catch (Exception e) {
             e.printStackTrace();
         }

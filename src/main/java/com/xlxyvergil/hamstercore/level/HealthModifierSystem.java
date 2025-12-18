@@ -90,13 +90,14 @@ public class HealthModifierSystem {
             healthAttribute.removeModifier(existingModifier);
         }
         
-        // 添加新的乘法修饰符
+        // 使用Operation.MULTIPLY_TOTAL (Operation 2) 应用生命值修饰符
+        // 计算公式：最终生命值 = 基础生命值 × (1 + modifierValue)
         healthAttribute.addPermanentModifier(
                 new AttributeModifier(
                         HEALTH_MODIFIER_UUID,
                         HEALTH_MODIFIER_NAME,
                         modifierValue,
-                        Operation.MULTIPLY_BASE
+                        Operation.MULTIPLY_TOTAL
                 )
         );
         
