@@ -84,7 +84,7 @@ public class ShieldConfig {
             // 为不同派系的实体添加默认护盾值
             // Corpus派系实体
             entityMappings.addProperty("minecraft:iron_golem", 60.0f);
-            entityMappings.addProperty("minecraft:snow_golem", 60.0f);
+            entityMappings.addProperty("minecraft:snow_golem", 30.0f);
             
             json.add("entityBaseShields", entityMappings);
             
@@ -95,9 +95,9 @@ public class ShieldConfig {
             
             // 添加派系默认护盾映射（仅适用于敌对怪物）
             JsonObject factionMappings = new JsonObject();
-            factionMappings.addProperty("CORPUS", 30.0f);
-            factionMappings.addProperty("OROKIN", 30.0f);
-            factionMappings.addProperty("SENTIENT", 30.0f);
+            factionMappings.addProperty("CORPUS", 20.0f);
+            factionMappings.addProperty("OROKIN", 15.0f);
+            factionMappings.addProperty("SENTIENT", 10.0f);
             json.add("factionDefaultShields", factionMappings);
             
             // 遍历所有实体类型，添加mod实体到配置文件中

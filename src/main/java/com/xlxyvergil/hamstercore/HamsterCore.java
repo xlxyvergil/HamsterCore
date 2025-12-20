@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore;
 
 import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
+import com.xlxyvergil.hamstercore.config.ClientConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
@@ -49,6 +50,9 @@ public class HamsterCore {
     private void setup(final FMLCommonSetupEvent event) {
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
+        
+        // 加载客户端配置
+        ClientConfig.load();
         
         // 注册客户端事件
         WeaponAttributeRenderer.registerEvents();

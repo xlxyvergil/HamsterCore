@@ -71,39 +71,44 @@ public class EntityCapabilityAttacher {
         // 加载护盾配置
         ShieldConfig shieldConfig = ShieldConfig.load();
         
-        // 获取实体类型和分类
-        EntityType<?> entityType = entity.getType();
-        MobCategory classification = entityType.getCategory();
+        // 1. 首先检查实体是否在entityBaseShields中明确配置
+        float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
+        boolean hasExplicitConfig = baseShield >= 0; // -1表示未找到配置
         
-        // 排除被动生物、中立生物和环境生物
-        if (classification == MobCategory.CREATURE || 
-            classification == MobCategory.AMBIENT || 
-            classification == MobCategory.WATER_CREATURE ||
-            classification == MobCategory.WATER_AMBIENT) {
-            return false;
+        if (hasExplicitConfig) {
+            return baseShield > 0; // 有明确配置且护盾值大于0
         }
         
-        // 获取实体的派系
+        // 2. 如果没有明确配置，检查是否属于允许护盾的派系（CORPUS、OROKIN、SENTIENT）
+        // 并且是敌对怪物（排除被动、中立、环境生物）
         String factionName = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
             .map(factionCap -> {
                 Faction faction = factionCap.getFaction();
                 return faction != null ? faction.name() : "OROKIN";
             })
             .orElse("OROKIN"); // 默认派系
-            
-        // 检查该派系是否启用护盾
-        boolean factionHasShield = ShieldConfig.isFactionShieldEnabled(factionName);
         
-        // 获取基础护盾值
-        float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType(), factionName);
+        boolean isAllowedFaction = "CORPUS".equals(factionName) || 
+                                "OROKIN".equals(factionName) || 
+                                "SENTIENT".equals(factionName);
         
-        // 检查实体是否在配置文件中有明确的护盾设置
-        boolean entityHasShieldConfig = baseShield >= 0; // -1表示未找到配置
+        if (!isAllowedFaction) {
+            return false;
+        }
         
-        // 确定是否应该给予护盾：
-        // 1. 实体在配置文件中有护盾设置
-        // 2. 或者实体所属派系默认有护盾（Corpus/Orokin/Sentient）且为敌对怪物
-        return entityHasShieldConfig || factionHasShield;
+        MobCategory classification = entity.getType().getCategory();
+        boolean isHostileMob = classification != MobCategory.CREATURE && 
+                             classification != MobCategory.AMBIENT && 
+                             classification != MobCategory.WATER_CREATURE &&
+                             classification != MobCategory.WATER_AMBIENT;
+        
+        if (!isHostileMob) {
+            return false;
+        }
+        
+        // 3. 检查派系是否有默认护盾值
+        float factionShield = shieldConfig.getFactionDefaultShields().getOrDefault(factionName, -1.0f);
+        return factionShield > 0;
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -291,20 +296,33 @@ public class EntityCapabilityAttacher {
                     // 加载护盾配置
                     ShieldConfig shieldConfig = ShieldConfig.load();
                     
-                    // 检查该派系是否启用护盾
-                    boolean factionHasShield = ShieldConfig.isFactionShieldEnabled(factionName);
+                    // 1. 首先检查实体是否在entityBaseShields中明确配置
+                    float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
+                    boolean hasExplicitConfig = baseShield >= 0; // -1表示未找到配置
                     
-                    // 获取基础护盾值
-                    float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType(), factionName);
-                    
-                    // 检查实体是否在配置文件中明确设置了护盾值
-                    boolean entityHasShieldConfig = baseShield >= 0; // -1表示未找到配置
-                    
-                    // 确定是否应该给予护盾：
-                    // 1. 实体在配置文件中有护盾设置
-                    // 2. 或者实体所属派系默认有护盾（Corpus/Orokin/Sentient）且为敌对怪物
-                    if (!entityHasShieldConfig && !factionHasShield) {
-                        return;
+                    if (!hasExplicitConfig) {
+                        // 2. 如果没有明确配置，检查是否属于允许护盾的派系（CORPUS、OROKIN、SENTIENT）
+                        // 并且是敌对怪物（排除被动、中立、环境生物）
+                        boolean isAllowedFaction = "CORPUS".equals(factionName) || 
+                                                "OROKIN".equals(factionName) || 
+                                                "SENTIENT".equals(factionName);
+                        
+                        MobCategory classification = entity.getType().getCategory();
+                        boolean isHostileMob = classification != MobCategory.CREATURE && 
+                                             classification != MobCategory.AMBIENT && 
+                                             classification != MobCategory.WATER_CREATURE &&
+                                             classification != MobCategory.WATER_AMBIENT;
+                        
+                        if (!isAllowedFaction || !isHostileMob) {
+                            // 不满足护盾条件，直接返回
+                            return;
+                        }
+                        
+                        // 3. 使用派系默认护盾值
+                        baseShield = shieldConfig.getFactionDefaultShields().get(factionName);
+                        if (baseShield <= 0) {
+                            return; // 派系默认护盾值无效
+                        }
                     }
                     
                     // 如果基础护盾值小于等于0，则不赋予护盾

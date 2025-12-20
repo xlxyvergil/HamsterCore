@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.client.renderer.EntityShieldRenderer;
 import com.xlxyvergil.hamstercore.config.ClientConfig;
+import com.xlxyvergil.hamstercore.config.ShieldConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -20,7 +21,7 @@ public class ShieldBarRenderer {
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
         // 检查配置是否启用了实体护盾条显示
-        if (!ClientConfig.SHOW_ENTITY_SHIELD_BAR.get()) {
+        if (!ClientConfig.getInstance().isShowEntityShieldBar()) {
             return;
         }
         
@@ -46,17 +47,25 @@ public class ShieldBarRenderer {
                     return; // 距离太远，跳过渲染
                 }
                 
-                // 检查实体是否在玩家视线范围内
-                AABB entityBoundingBox = entity.getBoundingBoxForCulling();
-                if (!mc.player.hasLineOfSight(entity)) {
+                // 简化视线检测，使用Minecraft内置的hasLineOfSight方法
+                if (!mc.player.hasLineOfSight(livingEntity)) {
                     return; // 没有视线接触，跳过渲染
+                }
+                
+                // 检查实体是否应该有护盾
+                if (!shouldEntityHaveShield(livingEntity)) {
+                    return; // 实体不应该有护盾，跳过渲染
                 }
                 
                 // 检查实体是否拥有护盾能力并且护盾值大于0
                 livingEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
-                    if (shieldCap.getMaxShield() > 0 && shieldCap.getCurrentShield() > 0) {
+                    float currentShield = shieldCap.getCurrentShield();
+                    float maxShield = shieldCap.getMaxShield();
+                    if (maxShield > 0 && currentShield > 0) {
                         EntityShieldRenderer.renderEntityShield(
                             livingEntity,
+                            currentShield,
+                            maxShield,
                             event.getPartialTick(),
                             event.getPoseStack(),
                             mc.renderBuffers().bufferSource()
@@ -65,5 +74,29 @@ public class ShieldBarRenderer {
                 });
             }
         });
+    }
+    
+    /**
+     * 检查实体是否应该有护盾
+     * @param entity 要检查的实体
+     * @return 如果实体应该有护盾返回true，否则返回false
+     */
+    private static boolean shouldEntityHaveShield(LivingEntity entity) {
+        ShieldConfig shieldConfig = ShieldConfig.load();
+        
+        // 1. 玩家总是可以有护盾
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            return true;
+        }
+        
+        // 2. 检查是否是配置文件中指定的实体
+        if (shieldConfig.hasShieldConfigured(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))) {
+            return true;
+        }
+        
+        // 3. 检查是否是允许护盾的派系生物
+        return entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
+            .map(factionCap -> ShieldConfig.isFactionShieldEnabled(factionCap.getFaction().name()))
+            .orElse(false);
     }
 }
