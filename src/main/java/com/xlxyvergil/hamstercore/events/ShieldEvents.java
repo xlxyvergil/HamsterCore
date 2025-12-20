@@ -87,11 +87,23 @@ public class ShieldEvents {
                 return;
             }
             
+            // 记录旧的护盾值
+            float oldCurrentShield = shieldCap.getCurrentShield();
+            float oldMaxShield = shieldCap.getMaxShield();
+            
             // 处理护盾恢复
             handleShieldRegeneration(player, shieldCap);
             
             // 处理护盾保险机制
             handleShieldGating(player, shieldCap);
+            
+            // 如果护盾值发生了变化，则同步到客户端
+            if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                    new EntityShieldSyncToClient(player.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                );
+            }
         }
     }
     
@@ -103,14 +115,20 @@ public class ShieldEvents {
                 if (entityObject instanceof LivingEntity entity && !(entity instanceof Player)) { // 玩家已经在onPlayerTick中处理过了
                     EntityShieldCapability shieldCap = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
                     
-                    if (shieldCap != null) { // 不再检查护盾是否低于最大值，始终同步以确保客户端显示正确
+                    if (shieldCap != null) {
+                        // 记录旧的护盾值
+                        float oldCurrentShield = shieldCap.getCurrentShield();
+                        float oldMaxShield = shieldCap.getMaxShield();
+                        
                         handleShieldRegeneration(entity, shieldCap);
                         
-                        // 同步护盾值到客户端
-                        PacketHandler.NETWORK.send(
-                            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
-                        );
+                        // 如果护盾值发生了变化，则同步到客户端
+                        if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
+                            PacketHandler.NETWORK.send(
+                                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                                new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                            );
+                        }
                     }
                 }
             }

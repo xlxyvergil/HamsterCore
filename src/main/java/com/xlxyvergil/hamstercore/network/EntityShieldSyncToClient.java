@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.network;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
-import com.xlxyvergil.hamstercore.client.ShieldHUDUpdater;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import net.minecraft.client.Minecraft;
@@ -51,16 +50,6 @@ public class EntityShieldSyncToClient {
                     }
                 }
             }
-            
-            // 更新HUD显示，如果当前玩家是我们正在更新的实体
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                if (Minecraft.getInstance().level != null) {
-                    Entity entity = Minecraft.getInstance().level.getEntity(entityId);
-                    if (entity instanceof LivingEntity && entity == Minecraft.getInstance().player) {
-                        ShieldHUDUpdater.updateShieldDisplay(currentShield, maxShield);
-                    }
-                }
-            });
         });
         ctx.get().setPacketHandled(true);
     }

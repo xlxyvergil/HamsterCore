@@ -19,11 +19,6 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 public class ShieldHUDUpdater {
     private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("textures/gui/icons.png");
     
-    // 添加静态变量来存储当前渲染的护盾值
-    private static float renderedCurrentShield = 0;
-    private static float renderedMaxShield = 0;
-    private static boolean shieldDataInitialized = false;
-    
     /**
      * 渲染玩家护盾HUD（采用Malum的位置计算方式）
      * 
@@ -41,19 +36,12 @@ public class ShieldHUDUpdater {
             return;
         }
         
-        // 获取当前护盾值和最大护盾值
+        // 获取当前护盾值和最大护盾值（每次都从实际能力中获取最新值）
         float currentShield = shieldCap.getCurrentShield();
         float maxShield = shieldCap.getMaxShield();
         
-        // 更新渲染缓存值
-        if (!shieldDataInitialized || currentShield != renderedCurrentShield || maxShield != renderedMaxShield) {
-            renderedCurrentShield = currentShield;
-            renderedMaxShield = maxShield;
-            shieldDataInitialized = true;
-        }
-        
         // 如果最大护盾值为0，则不渲染
-        if (renderedMaxShield <= 0) {
+        if (maxShield <= 0) {
             return;
         }
         
@@ -77,7 +65,7 @@ public class ShieldHUDUpdater {
         }
         
         // 计算护盾条的填充比例
-        float shieldPercent = renderedCurrentShield / renderedMaxShield;
+        float shieldPercent = currentShield / maxShield;
         int shieldBarWidth = (int) (shieldPercent * 81); // 81是标准血条的宽度
         
         // 根据护盾百分比确定颜色
@@ -109,7 +97,7 @@ public class ShieldHUDUpdater {
         }
         
         // 绘制护盾数值
-        String shieldText = String.format("%.0f/%.0f", renderedCurrentShield, renderedMaxShield);
+        String shieldText = String.format("%.0f/%.0f", currentShield, maxShield);
         int textWidth = Minecraft.getInstance().font.width(shieldText);
         guiGraphics.drawString(
             Minecraft.getInstance().font,
@@ -126,15 +114,5 @@ public class ShieldHUDUpdater {
         int healthRows = Mth.ceil((maxHealth + absorb) / 2.0F / 10.0F);
         int rowHeight = Math.max(10 - (healthRows - 2), 3);
         gui.leftHeight += rowHeight * 2 - 15; // 为护盾条预留空间
-    }
-    
-    /**
-     * 提供一个方法用于外部更新护盾显示值
-     * 当EntityShieldSyncToClient数据包到达时调用此方法
-     */
-    public static void updateShieldDisplay(float currentShield, float maxShield) {
-        renderedCurrentShield = currentShield;
-        renderedMaxShield = maxShield;
-        shieldDataInitialized = true;
     }
 }
