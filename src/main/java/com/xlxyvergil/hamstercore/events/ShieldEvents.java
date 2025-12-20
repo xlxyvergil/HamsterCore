@@ -30,8 +30,8 @@ public class ShieldEvents {
         EntityShieldCapability shieldCap = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
         
         // 检查实体是否真正拥有有效的护盾能力
-        if (shieldCap == null || shieldCap.getMaxShield() < 0 || shieldCap.getCurrentShield() <= 0) {
-            return; // 没有护盾能力或者护盾为0，直接返回
+        if (shieldCap == null || shieldCap.getMaxShield() < 0) {
+            return; // 没有护盾能力，直接返回
         }
 
         // 计算可以抵消的伤害量（1点伤害需要20点护盾抵消）
@@ -41,7 +41,8 @@ public class ShieldEvents {
         float damageAbsorbed = actualShieldConsumed / 20.0f;
         
         // 减少护盾值
-        shieldCap.setCurrentShield(shieldCap.getCurrentShield() - actualShieldConsumed);
+        float oldShield = shieldCap.getCurrentShield();
+        shieldCap.setCurrentShield(oldShield - actualShieldConsumed);
         
         // 更新受伤时间（用于恢复延迟）
         shieldCap.setLastHurtTime(entity.level().getGameTime());
@@ -54,11 +55,17 @@ public class ShieldEvents {
             event.setCanceled(true);
         }
         
-        // 同步护盾值到客户端
-        if (!entity.level().isClientSide() && entity.level() instanceof ServerLevel) {
+        // 确保护盾变化时同步（包括归零的情况）
+        if (oldShield != shieldCap.getCurrentShield()) {
+            // 同步逻辑将在下面的通用同步代码中处理
+        }
+        
+        // 同步护盾值到客户端（确保在服务器端）
+        if (!entity.level().isClientSide()) {
+            // 立即同步所有护盾变化，包括减少的情况
             PacketHandler.NETWORK.send(
-            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
+                PacketDistributor.TRACKING_ENTITY.with(() -> entity),
+                new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
             );
         }
         
@@ -102,8 +109,8 @@ public class ShieldEvents {
             // 处理护盾恢复
             handleShieldRegeneration(player, shieldCap);
             
-            // 处理护盾保险机制
-            handleShieldGating(player, shieldCap);
+                    // 处理护盾保险机制
+                    handleShieldGating(player, shieldCap);
             
             // 如果护盾值发生了变化，则同步到客户端
             if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {

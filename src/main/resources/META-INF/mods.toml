@@ -4,7 +4,7 @@ license="MIT"
 
 [[mods]]
 modId="hamstercore"
-version="1.0.0"
+version="1.0.1"
 displayName="HamsterCore"
 description="Core functionality for the Hamster mod suite"
 authors="xlxyvergil"

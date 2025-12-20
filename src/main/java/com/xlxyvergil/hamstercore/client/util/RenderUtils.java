@@ -68,10 +68,15 @@ public class RenderUtils {
                                  boolean force) {
         if (max <= 0) return;
         
+        // 计算填充宽度比例
+        float fillRatio = value / max;
+        int fillWidth = (int) (fill.width * fillRatio);
+        
         // 简化版本 - 不分段渲染，直接渲染一条
-        // 护盾填充和边框位置一致
-        renderBarCell(guiGraphics, x, y, width, height, fill, value);
-        renderBarCell(guiGraphics, x, y, width, height, bg, max);
+        // 渲染填充部分（根据实际比例）
+        renderBarCell(guiGraphics, x, y, width, height, fill, fillWidth);
+        // 渲染边框部分（完整显示）
+        renderBarCell(guiGraphics, x, y, width, height, bg, bg.width);
     }
 
     /**
