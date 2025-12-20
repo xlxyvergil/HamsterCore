@@ -11,11 +11,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 
 /**
  * 护盾HUD更新器
  */
+@OnlyIn(Dist.CLIENT)
 public class ShieldHUDUpdater {
     private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("textures/gui/icons.png");
     

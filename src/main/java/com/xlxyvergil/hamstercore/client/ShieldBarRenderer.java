@@ -11,10 +11,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+@OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ShieldBarRenderer {
     
@@ -25,8 +27,8 @@ public class ShieldBarRenderer {
             return;
         }
         
-        // 只在实体渲染阶段处理
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
+        // 在粒子渲染完成后进行渲染，确保护盾条显示在最上层
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             return;
         }
         
@@ -57,11 +59,11 @@ public class ShieldBarRenderer {
                     return; // 实体不应该有护盾，跳过渲染
                 }
                 
-                // 检查实体是否拥有护盾能力并且护盾值大于0
+                // 检查实体是否拥有护盾能力并且最大护盾值大于0
                 livingEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
                     float currentShield = shieldCap.getCurrentShield();
                     float maxShield = shieldCap.getMaxShield();
-                    if (maxShield > 0 && currentShield > 0) {
+                    if (maxShield > 0) { // 只要最大护盾值大于0就渲染，即使当前护盾为0也要显示空的护盾条
                         EntityShieldRenderer.renderEntityShield(
                             livingEntity,
                             currentShield,
@@ -70,6 +72,7 @@ public class ShieldBarRenderer {
                             event.getPoseStack(),
                             mc.renderBuffers().bufferSource()
                         );
+
                     }
                 });
             }
@@ -82,21 +85,14 @@ public class ShieldBarRenderer {
      * @return 如果实体应该有护盾返回true，否则返回false
      */
     private static boolean shouldEntityHaveShield(LivingEntity entity) {
-        ShieldConfig shieldConfig = ShieldConfig.load();
-        
-        // 1. 玩家总是可以有护盾
-        if (entity instanceof net.minecraft.world.entity.player.Player) {
-            return true;
-        }
-        
-        // 2. 检查是否是配置文件中指定的实体
-        if (shieldConfig.hasShieldConfigured(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))) {
-            return true;
-        }
-        
-        // 3. 检查是否是允许护盾的派系生物
-        return entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
-            .map(factionCap -> ShieldConfig.isFactionShieldEnabled(factionCap.getFaction().name()))
+        // 直接检查实体是否拥有护盾能力，这是最准确的判断方式
+        // 因为我们已经在EntityCapabilityAttacher中根据entityBaseShields配置决定是否附加护盾能力
+        return entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
+            .map(shieldCap -> {
+                // 检查护盾值是否有效（大于等于0）
+                float maxShield = shieldCap.getMaxShield();
+                return maxShield >= 0;
+            })
             .orElse(false);
     }
 }

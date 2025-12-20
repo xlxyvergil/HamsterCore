@@ -14,12 +14,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.joml.Matrix4f;
 
 /**
  * 实体护盾渲染器
  * 负责在实体头顶渲染护盾条
  */
+@OnlyIn(Dist.CLIENT)
 public class EntityShieldRenderer {
     
     private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("hamstercore", "textures/gui/icons.png");
@@ -54,12 +57,19 @@ public class EntityShieldRenderer {
         poseStack.pushPose();
         poseStack.translate(dx, dy, dz);
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
-        poseStack.scale(0.025F, -0.025F, 0.025F); // X轴使用正值避免镜像翻转
+        poseStack.scale(-0.025F, -0.025F, 0.025F); // X轴使用负值实现正确镜像翻转
+        
+        // 设置渲染状态
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderTexture(0, SHIELD_ICONS);
         
         // 绘制护盾条
         renderShieldBar(currentShield, maxShield, poseStack, buffer);
         
         poseStack.popPose();
+        
+
     }
     
     /**
@@ -71,7 +81,7 @@ public class EntityShieldRenderer {
      */
     private static void renderShieldBar(float currentShield, float maxShield, PoseStack poseStack, MultiBufferSource buffer) {
         // 计算护盾条的填充比例
-        float shieldPercent = currentShield / maxShield;
+        float shieldPercent = maxShield > 0 ? currentShield / maxShield : 0;
         
         // 护盾条的基本尺寸（参考ClientEvents中的文本尺寸）
         Font font = Minecraft.getInstance().font;
@@ -93,6 +103,11 @@ public class EntityShieldRenderer {
             color = 0xFFFF0000;
         }
         
+        // 如果护盾值为0，则使用灰色
+        if (maxShield <= 0) {
+            color = 0xFF808080; // 灰色
+        }
+        
         // 获取渲染器
         Matrix4f matrix = poseStack.last().pose();
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.gui());
@@ -102,8 +117,11 @@ public class EntityShieldRenderer {
         
         // 绘制护盾条前景
         int fillWidth = (int)(barWidth * shieldPercent);
+        // 即使fillWidth为0，也要绘制一个像素宽度的线条来表示护盾条存在
         if (fillWidth > 0) {
-            fillRect(matrix, vertexConsumer, -barWidth/2 + 1, 1, fillWidth - 2, barHeight - 2, color);
+            fillRect(matrix, vertexConsumer, barWidth/2 - fillWidth + 1, 1, fillWidth - 2, barHeight - 2, color);
+        } else if (currentShield >= 0) { // 当前护盾大于等于0时（包括0），绘制一个像素宽度的线条
+            fillRect(matrix, vertexConsumer, barWidth/2 - 1, 1, 1, barHeight - 2, color);
         }
         
         // 绘制护盾数值（显示百分比）
@@ -113,8 +131,6 @@ public class EntityShieldRenderer {
         textWidth = font.width(shieldComponent); // 使用已有的变量
         
         // 设置文字渲染状态
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
         RenderSystem.depthMask(true);
         
         // 渲染文字（在护盾条下方）
@@ -154,13 +170,13 @@ public class EntityShieldRenderer {
         float g = (float)(color >> 8 & 255) / 255.0F;
         float b = (float)(color & 255) / 255.0F;
         
-        // 左上角
-        consumer.vertex(matrix, x, y + height, 0).color(r, g, b, a).endVertex();
-        // 右上角
-        consumer.vertex(matrix, x + width, y + height, 0).color(r, g, b, a).endVertex();
-        // 右下角
-        consumer.vertex(matrix, x + width, y, 0).color(r, g, b, a).endVertex();
         // 左下角
         consumer.vertex(matrix, x, y, 0).color(r, g, b, a).endVertex();
+        // 右下角
+        consumer.vertex(matrix, x + width, y, 0).color(r, g, b, a).endVertex();
+        // 右上角
+        consumer.vertex(matrix, x + width, y + height, 0).color(r, g, b, a).endVertex();
+        // 左上角
+        consumer.vertex(matrix, x, y + height, 0).color(r, g, b, a).endVertex();
     }
 }

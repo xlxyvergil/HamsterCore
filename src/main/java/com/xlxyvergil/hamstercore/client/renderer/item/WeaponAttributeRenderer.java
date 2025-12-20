@@ -10,6 +10,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
  * 武器属性渲染器
  * 负责在物品栏界面显示武器的各种属性
  */
+@OnlyIn(Dist.CLIENT)
 public class WeaponAttributeRenderer {
     
     public static void registerEvents() {

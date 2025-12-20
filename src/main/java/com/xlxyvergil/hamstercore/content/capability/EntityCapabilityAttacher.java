@@ -73,42 +73,31 @@ public class EntityCapabilityAttacher {
         
         // 1. 首先检查实体是否在entityBaseShields中明确配置
         float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
-        boolean hasExplicitConfig = baseShield >= 0; // -1表示未找到配置
-        
-        if (hasExplicitConfig) {
-            return baseShield > 0; // 有明确配置且护盾值大于0
+        if (baseShield >= 0) { // 找到了明确配置
+            return baseShield > 0; // 护盾值大于0才赋予护盾能力
         }
         
-        // 2. 如果没有明确配置，检查是否属于允许护盾的派系（CORPUS、OROKIN、SENTIENT）
-        // 并且是敌对怪物（排除被动、中立、环境生物）
-        String factionName = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
-            .map(factionCap -> {
-                Faction faction = factionCap.getFaction();
-                return faction != null ? faction.name() : "OROKIN";
-            })
-            .orElse("OROKIN"); // 默认派系
+        // 2. 如果没有明确配置，检查实体是否属于CORPUS、OROKIN或SENTIENT派系
+        // 获取实体的派系
+        Faction faction = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
+                .map(factionCap -> factionCap.getFaction())
+                .orElse(null); // 使用null代替Faction.NONE，因为没有NONE派系
         
-        boolean isAllowedFaction = "CORPUS".equals(factionName) || 
-                                "OROKIN".equals(factionName) || 
-                                "SENTIENT".equals(factionName);
-        
-        if (!isAllowedFaction) {
-            return false;
+        // 检查是否为CORPUS、OROKIN或SENTIENT派系的怪物
+        if (faction == Faction.CORPUS || faction == Faction.OROKIN || faction == Faction.SENTIENT) {
+            // 检查是否为敌对怪物（通过实体分类判断）
+            MobCategory classification = entity.getType().getCategory();
+            if (classification != MobCategory.MISC && 
+                classification != MobCategory.CREATURE && 
+                classification != MobCategory.AMBIENT && 
+                classification != MobCategory.WATER_CREATURE &&
+                classification != MobCategory.WATER_AMBIENT) {
+                return true; // 是这三个派系的敌对怪物，赋予护盾能力
+            }
         }
         
-        MobCategory classification = entity.getType().getCategory();
-        boolean isHostileMob = classification != MobCategory.CREATURE && 
-                             classification != MobCategory.AMBIENT && 
-                             classification != MobCategory.WATER_CREATURE &&
-                             classification != MobCategory.WATER_AMBIENT;
-        
-        if (!isHostileMob) {
-            return false;
-        }
-        
-        // 3. 检查派系是否有默认护盾值
-        float factionShield = shieldConfig.getFactionDefaultShields().getOrDefault(factionName, -1.0f);
-        return factionShield > 0;
+        // 其他情况不赋予护盾能力
+        return false;
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -179,10 +168,13 @@ public class EntityCapabilityAttacher {
             
             // 同步护盾（仅当实体拥有护盾能力时）
             entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
-                PacketHandler.NETWORK.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
-                );
+                // 检查护盾值是否有效
+                if (shieldCap.getMaxShield() >= 0) {
+                    PacketHandler.NETWORK.send(
+                        PacketDistributor.PLAYER.with(() -> player),
+                        new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                    );
+                }
             });
         }
     }
@@ -253,14 +245,6 @@ public class EntityCapabilityAttacher {
                         .map(levelCap -> levelCap.getLevel())
                         .orElse(20); // 默认等级20
                     
-                    // 获取实体的派系
-                    String factionName = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
-                        .map(factionCap -> {
-                            Faction faction = factionCap.getFaction();
-                            return faction != null ? faction.name() : "OROKIN";
-                        })
-                        .orElse("OROKIN"); // 默认派系
-                    
                     // 检查是否为玩家
                     boolean isPlayer = entity instanceof Player;
                     
@@ -300,53 +284,75 @@ public class EntityCapabilityAttacher {
                     float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
                     boolean hasExplicitConfig = baseShield >= 0; // -1表示未找到配置
                     
-                    if (!hasExplicitConfig) {
-                        // 2. 如果没有明确配置，检查是否属于允许护盾的派系（CORPUS、OROKIN、SENTIENT）
-                        // 并且是敌对怪物（排除被动、中立、环境生物）
-                        boolean isAllowedFaction = "CORPUS".equals(factionName) || 
-                                                "OROKIN".equals(factionName) || 
-                                                "SENTIENT".equals(factionName);
+                    // 只有在entityBaseShields中明确配置了护盾值的实体才初始化护盾能力
+                    if (hasExplicitConfig && baseShield > 0) {
+                        // 计算护盾系数（怪物护盾与等级有关）
+                        float shieldCoefficient = 1 + 0.02f * (float) Math.pow(level - 20, 1.76);
+                        float maxShield = baseShield * shieldCoefficient;
                         
+                        // 设置最大护盾和当前护盾
+                        shieldCap.setMaxShield(maxShield);
+                        shieldCap.setCurrentShield(maxShield);
+                        
+                        // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
+                        float regenRate = 15.0f + 0.05f * maxShield;
+                        shieldCap.setRegenRate(regenRate);
+                        
+                        // 计算并设置护盾恢复延迟
+                        int regenDelayNormal = 3 * 20; // 怪物（mobs）护盾恢复延迟：3秒
+                        int regenDelayDepleted = 3 * 20; // 怪物护盾耗尽时恢复延迟：3秒
+                        shieldCap.setRegenDelay(regenDelayNormal);
+                        shieldCap.setRegenDelayDepleted(regenDelayDepleted);
+                        return; // 处理完明确配置的实体后直接返回
+                    }
+                    
+                    // 2. 如果没有明确配置，检查实体是否属于CORPUS、OROKIN或SENTIENT派系
+                    // 获取实体的派系
+                    Faction faction = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
+                            .map(factionCap -> factionCap.getFaction())
+                            .orElse(null); // 使用null代替Faction.NONE，因为没有NONE派系
+                    
+                    // 检查是否为CORPUS、OROKIN或SENTIENT派系的怪物
+                    if (faction == Faction.CORPUS || faction == Faction.OROKIN || faction == Faction.SENTIENT) {
+                        // 检查是否为敌对怪物（通过实体分类判断）
                         MobCategory classification = entity.getType().getCategory();
-                        boolean isHostileMob = classification != MobCategory.CREATURE && 
-                                             classification != MobCategory.AMBIENT && 
-                                             classification != MobCategory.WATER_CREATURE &&
-                                             classification != MobCategory.WATER_AMBIENT;
-                        
-                        if (!isAllowedFaction || !isHostileMob) {
-                            // 不满足护盾条件，直接返回
-                            return;
-                        }
-                        
-                        // 3. 使用派系默认护盾值
-                        baseShield = shieldConfig.getFactionDefaultShields().get(factionName);
-                        if (baseShield <= 0) {
-                            return; // 派系默认护盾值无效
+                        if (classification != MobCategory.MISC && 
+                            classification != MobCategory.CREATURE && 
+                            classification != MobCategory.AMBIENT && 
+                            classification != MobCategory.WATER_CREATURE &&
+                            classification != MobCategory.WATER_AMBIENT) {
+                            
+                            // 获取派系的基础护盾值
+                            float factionBaseShield = shieldConfig.getFactionDefaultShields()
+                                    .getOrDefault(faction.name(), 0.0f);
+                            
+                            if (factionBaseShield > 0) {
+                                // 计算护盾系数（怪物护盾与等级有关）
+                                float shieldCoefficient = 1 + 0.02f * (float) Math.pow(level - 20, 1.76);
+                                float maxShield = factionBaseShield * shieldCoefficient;
+                                
+                                // 设置最大护盾和当前护盾
+                                shieldCap.setMaxShield(maxShield);
+                                shieldCap.setCurrentShield(maxShield);
+                                
+                                // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
+                                float regenRate = 15.0f + 0.05f * maxShield;
+                                shieldCap.setRegenRate(regenRate);
+                                
+                                // 计算并设置护盾恢复延迟
+                                int regenDelayNormal = 3 * 20; // 怪物（mobs）护盾恢复延迟：3秒
+                                int regenDelayDepleted = 3 * 20; // 怪物护盾耗尽时恢复延迟：3秒
+                                shieldCap.setRegenDelay(regenDelayNormal);
+                                shieldCap.setRegenDelayDepleted(regenDelayDepleted);
+                                return; // 处理完派系相关实体后直接返回
+                            }
                         }
                     }
                     
-                    // 如果基础护盾值小于等于0，则不赋予护盾
-                    if (baseShield <= 0) {
-                        return;
-                    }
-                    
-                    // 计算护盾系数（怪物护盾与等级有关）
-                    float shieldCoefficient = 1 + 0.02f * (float) Math.pow(level - 20, 1.76);
-                    float maxShield = baseShield * shieldCoefficient;
-                    
-                    // 设置最大护盾和当前护盾
-                    shieldCap.setMaxShield(maxShield);
-                    shieldCap.setCurrentShield(maxShield);
-                    
-                    // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
-                    float regenRate = 15.0f + 0.05f * maxShield;
-                    shieldCap.setRegenRate(regenRate);
-                    
-                    // 计算并设置护盾恢复延迟
-                    int regenDelayNormal = 3 * 20; // 怪物（mobs）护盾恢复延迟：3秒
-                    int regenDelayDepleted = 3 * 20; // 怪物护盾耗尽时恢复延迟：3秒
-                    shieldCap.setRegenDelay(regenDelayNormal);
-                    shieldCap.setRegenDelayDepleted(regenDelayDepleted);
+                    // 如果既没有明确配置也不是指定派系的怪物，则完全移除护盾能力
+                    // 这里我们通过将护盾值设为负数来标记该实体不应具有护盾能力
+                    shieldCap.setMaxShield(-1);
+                    shieldCap.setCurrentShield(-1);
                 });
     }
     
@@ -384,7 +390,10 @@ public class EntityCapabilityAttacher {
         
         // 同步护盾到客户端（仅当实体拥有护盾能力时）
         entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
-            EntityShieldSyncToClient.sync(entity);
+            // 检查护盾值是否有效
+            if (shieldCap.getMaxShield() >= 0) {
+                EntityShieldSyncToClient.sync(entity);
+            }
         });
     }
 }

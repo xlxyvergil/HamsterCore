@@ -56,7 +56,8 @@ public class EntityShieldSyncToClient {
     
     public static void sync(LivingEntity entity) {
         EntityShieldCapability shieldCap = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
-        if (shieldCap != null) {
+        // 检查实体是否真正拥有有效的护盾能力
+        if (shieldCap != null && shieldCap.getMaxShield() >= 0) {
             PacketHandler.NETWORK.send(
                 PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())

@@ -54,8 +54,10 @@ public class HamsterCore {
         // 加载客户端配置
         ClientConfig.load();
         
-        // 注册客户端事件
-        WeaponAttributeRenderer.registerEvents();
+        // 注册客户端事件（仅在客户端）
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+            WeaponAttributeRenderer.registerEvents();
+        }
     }
     
     

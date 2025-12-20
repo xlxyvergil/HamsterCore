@@ -29,7 +29,6 @@ public class ShieldConfig {
     private static ShieldConfig INSTANCE;
     
     private Map<String, Float> entityBaseShields = new HashMap<>();
-    private Map<String, Float> modDefaultShields = new HashMap<>();
     private Map<String, Float> factionDefaultShields = new HashMap<>();
     private float playerBaseShield = 200.0f; // 玩家基础护盾值
     
@@ -87,11 +86,6 @@ public class ShieldConfig {
             entityMappings.addProperty("minecraft:snow_golem", 30.0f);
             
             json.add("entityBaseShields", entityMappings);
-            
-            // 添加MOD默认护盾映射
-            JsonObject modMappings = new JsonObject();
-            modMappings.addProperty("minecraft", 20.0f);
-            json.add("modDefaultShields", modMappings);
             
             // 添加派系默认护盾映射（仅适用于敌对怪物）
             JsonObject factionMappings = new JsonObject();
@@ -154,13 +148,6 @@ public class ShieldConfig {
             );
         }
         
-        if (json.has("modDefaultShields")) {
-            JsonObject modMappings = json.getAsJsonObject("modDefaultShields");
-            modMappings.entrySet().forEach(entry -> 
-                modDefaultShields.put(entry.getKey(), entry.getValue().getAsFloat())
-            );
-        }
-        
         if (json.has("factionDefaultShields")) {
             JsonObject factionMappings = json.getAsJsonObject("factionDefaultShields");
             factionMappings.entrySet().forEach(entry -> 
@@ -172,16 +159,10 @@ public class ShieldConfig {
     public float getBaseShieldForEntity(EntityType<?> entityType) {
         ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
         String entityName = entityId.toString();
-        String modId = entityId.getNamespace();
         
-        // 首先检查是否有针对具体实体的配置
+        // 只检查是否有针对具体实体的配置
         if (entityBaseShields.containsKey(entityName)) {
             return entityBaseShields.get(entityName);
-        }
-        
-        // 然后检查是否有针对MOD的默认配置
-        if (modDefaultShields.containsKey(modId)) {
-            return modDefaultShields.get(modId);
         }
         
         // 返回-1表示未找到配置
@@ -191,16 +172,10 @@ public class ShieldConfig {
     public float getBaseShieldForEntity(EntityType<?> entityType, String faction) {
         ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
         String entityName = entityId.toString();
-        String modId = entityId.getNamespace();
         
         // 首先检查是否有针对具体实体的配置
         if (entityBaseShields.containsKey(entityName)) {
             return entityBaseShields.get(entityName);
-        }
-        
-        // 然后检查是否有针对MOD的默认配置
-        if (modDefaultShields.containsKey(modId)) {
-            return modDefaultShields.get(modId);
         }
         
         // 然后检查是否有针对派系的默认配置（仅适用于敌对怪物）
@@ -242,10 +217,6 @@ public class ShieldConfig {
     // Getters
     public Map<String, Float> getEntityBaseShields() {
         return entityBaseShields;
-    }
-    
-    public Map<String, Float> getModDefaultShields() {
-        return modDefaultShields;
     }
     
     public Map<String, Float> getFactionDefaultShields() {

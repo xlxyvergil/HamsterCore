@@ -29,7 +29,8 @@ public class ShieldEvents {
         // 获取实体的护盾能力
         EntityShieldCapability shieldCap = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
         
-        if (shieldCap == null || shieldCap.getCurrentShield() <= 0) {
+        // 检查实体是否真正拥有有效的护盾能力
+        if (shieldCap == null || shieldCap.getMaxShield() < 0 || shieldCap.getCurrentShield() <= 0) {
             return; // 没有护盾能力或者护盾为0，直接返回
         }
 
@@ -83,7 +84,8 @@ public class ShieldEvents {
             // 获取玩家的护盾能力
             EntityShieldCapability shieldCap = player.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
             
-            if (shieldCap == null) {
+            // 检查玩家是否真正拥有有效的护盾能力
+            if (shieldCap == null || shieldCap.getMaxShield() < 0) {
                 return;
             }
             
@@ -115,20 +117,23 @@ public class ShieldEvents {
                 if (entityObject instanceof LivingEntity entity && !(entity instanceof Player)) { // 玩家已经在onPlayerTick中处理过了
                     EntityShieldCapability shieldCap = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).orElse(null);
                     
-                    if (shieldCap != null) {
-                        // 记录旧的护盾值
-                        float oldCurrentShield = shieldCap.getCurrentShield();
-                        float oldMaxShield = shieldCap.getMaxShield();
-                        
-                        handleShieldRegeneration(entity, shieldCap);
-                        
-                        // 如果护盾值发生了变化，则同步到客户端
-                        if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
-                            PacketHandler.NETWORK.send(
-                                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                                new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
-                            );
-                        }
+                    // 检查实体是否真正拥有有效的护盾能力
+                    if (shieldCap == null || shieldCap.getMaxShield() < 0) {
+                        continue;
+                    }
+                    
+                    // 记录旧的护盾值
+                    float oldCurrentShield = shieldCap.getCurrentShield();
+                    float oldMaxShield = shieldCap.getMaxShield();
+                    
+                    handleShieldRegeneration(entity, shieldCap);
+                    
+                    // 如果护盾值发生了变化，则同步到客户端
+                    if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
+                        PacketHandler.NETWORK.send(
+                            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                        );
                     }
                 }
             }
