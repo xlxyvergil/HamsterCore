@@ -6,8 +6,7 @@ public enum Faction {
     CORPUS("Corpus"),
     OROKIN("Orokin"),
     SENTIENT("Sentient"),
-    MURMUR("Murmur"),
-    NONE("None");
+    MURMUR("Murmur");
     
     private final String displayName;
     

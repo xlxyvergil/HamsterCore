@@ -35,7 +35,7 @@ public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
                 faction = Faction.OROKIN;
             }
         }
-        return faction != null ? faction : Faction.NONE;
+        return faction != null ? faction : Faction.OROKIN;
     }
 
     public void setFaction(Faction faction) {
@@ -49,7 +49,8 @@ public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
     @Override
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        if (faction != null && faction != Faction.NONE) {
+        // 移除了 faction != null && faction != Faction.OROKIN 的判断
+        if (faction != null) {
             tag.putString("Faction", faction.name());
         }
         return tag;
@@ -61,10 +62,10 @@ public class EntityFactionCapability implements INBTSerializable<CompoundTag> {
             try {
                 faction = Faction.valueOf(tag.getString("Faction"));
             } catch (IllegalArgumentException e) {
-                faction = Faction.NONE;
+                faction = Faction.OROKIN;
             }
         } else {
-            faction = Faction.NONE;
+            faction = Faction.OROKIN;
         }
     }
 }

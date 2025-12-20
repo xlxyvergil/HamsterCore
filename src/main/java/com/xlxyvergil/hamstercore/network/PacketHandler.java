@@ -33,5 +33,9 @@ public class PacketHandler {
             EntityHealthModifierSyncToClient::toBytes,
             EntityHealthModifierSyncToClient::new,
             EntityHealthModifierSyncToClient::handle);
+        NETWORK.registerMessage(id++, EntityShieldSyncToClient.class,
+            EntityShieldSyncToClient::toBytes,
+            EntityShieldSyncToClient::new,
+            EntityShieldSyncToClient::handle);
     }
 }

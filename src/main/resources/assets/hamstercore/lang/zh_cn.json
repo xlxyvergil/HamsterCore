@@ -12,6 +12,7 @@
   "faction.sentient.name": "灵煞",
   "faction.murmur.name": "低语者",
   "hamstercore.hud.faction_prefix": "派系: ",
+  "hamstercore.hud.shield_info": "护盾: %s/%s",
   
   "element.impact.name": "冲击",
   "element.puncture.name": "穿刺",

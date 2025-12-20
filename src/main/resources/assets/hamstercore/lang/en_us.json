@@ -12,6 +12,7 @@
   "faction.sentient.name": "Sentient",
   "faction.murmur.name": "Murmur",
   "hamstercore.hud.faction_prefix": "Faction: ",
+  "hamstercore.hud.shield_info": "Shield: %s/%s",
   
   "element.impact.name": "Impact",
   "element.puncture.name": "Puncture",
