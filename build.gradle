@@ -3,6 +3,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 version = mod_version
@@ -165,6 +166,12 @@ repositories {
         }
     }
     
+    // Mixin repository
+    maven {
+        name = 'sponge'
+        url = 'https://repo.spongepowered.org/maven'
+    }
+    
     // JEI repositories (from TouhouLittleMaid)
     maven {
         // location of the maven that hosts JEI files since January 2023
@@ -192,6 +199,11 @@ dependencies {
     // If the group id is "net.minecraft" and the artifact id is one of ["client", "server", "joined"],
     // then special handling is done to allow a setup of a vanilla dependency without the use of an external repository.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // Mixin dependency
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    testAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation 'org.spongepowered:mixin:0.8.5'
 
     // Placebo dependency (required for DeferredHelper)
     implementation fg.deobf("dev.shadowsoffire:Placebo:${minecraft_version}-${placeboVersion}")
@@ -250,7 +262,8 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'MixinConfigs'           : 'hamstercore.mixins.json'
         ])
     }
 
@@ -281,6 +294,11 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
     // 防止类加载器冲突的额外配置
     options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
+}
+
+// Mixin configuration
+mixin {
+    disableAnnotationProcessorCheck()
 }
 
 // 防止依赖冲突的配置 - 完全排除所有外部 Log4j 依赖

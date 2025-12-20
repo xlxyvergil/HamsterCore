@@ -57,8 +57,8 @@ public class ShieldEvents {
         // 同步护盾值到客户端
         if (!entity.level().isClientSide() && entity.level() instanceof ServerLevel) {
             PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+            PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
             );
         }
         
@@ -72,6 +72,12 @@ public class ShieldEvents {
                 // 设置护盾保险激活状态
                 shieldCap.setGatingActive(true);
                 shieldCap.setGatingDuration(immunityTime);
+                
+                // 立即同步护盾保险状态到客户端
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                    new EntityShieldSyncToClient(player.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), true)
+                );
             }
         }
     }
@@ -103,7 +109,7 @@ public class ShieldEvents {
             if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
                 PacketHandler.NETWORK.send(
                     PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                    new EntityShieldSyncToClient(player.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                    new EntityShieldSyncToClient(player.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
                 );
             }
         }
@@ -132,7 +138,7 @@ public class ShieldEvents {
                     if (oldCurrentShield != shieldCap.getCurrentShield() || oldMaxShield != shieldCap.getMaxShield()) {
                         PacketHandler.NETWORK.send(
                             PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
+                            new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
                         );
                     }
                 }
@@ -172,6 +178,11 @@ public class ShieldEvents {
             
             if (newDuration <= 0) {
                 shieldCap.setGatingActive(false);
+                // 同步护盾保险状态结束到客户端
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                    new EntityShieldSyncToClient(player.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), false)
+                );
             }
         }
     }

@@ -3,13 +3,15 @@ package com.xlxyvergil.hamstercore.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.client.renderer.EntityShieldRenderer;
+import com.xlxyvergil.hamstercore.client.util.RenderUtils;
 import com.xlxyvergil.hamstercore.config.ClientConfig;
-import com.xlxyvergil.hamstercore.config.ShieldConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
-import com.xlxyvergil.hamstercore.client.util.RayTrace;
+import com.xlxyvergil.hamstercore.api.IRenderContextProvider;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -17,6 +19,9 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+/**
+ * 护盾条渲染器 - 完全参照 battery_shield 的实现，进行适当简化
+ */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ShieldBarRenderer {
@@ -28,74 +33,59 @@ public class ShieldBarRenderer {
             return;
         }
         
-        // 在粒子渲染完成后进行渲染，确保护盾条显示在最上层
+        // 完全按照 battery_shield 的实现
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             return;
         }
         
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null) {
-            return;
-        }
+        // 完全按照 battery_shield 的方式获取 GuiGraphics
+        final GuiGraphics guiGraphics = ((IRenderContextProvider) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
         
-        // 获取玩家视角位置
-        Vec3 playerEyePosition = mc.player.getEyePosition(event.getPartialTick());
-        
-        // 遍历所有实体并渲染它们的护盾条
-        mc.level.entitiesForRendering().forEach(entity -> {
-            if (entity instanceof LivingEntity livingEntity && entity != mc.player) {
-                // 检查实体是否在渲染距离内（16格以内）
-                double distanceSq = playerEyePosition.distanceToSqr(entity.position());
-                if (distanceSq > 32 * 32) {
-                    return; // 距离太远，跳过渲染
-                }
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null && minecraft.player != null) {
+            Vec3 fromPos = minecraft.player.getEyePosition(event.getPartialTick());
+            
+            // 完全按照 battery_shield 的实体获取方式
+            minecraft.level.getEntities(minecraft.player,
+                    AABB.ofSize(minecraft.player.position(), 32, 32, 32),
+                    EntitySelector.LIVING_ENTITY_STILL_ALIVE).forEach((entity) -> {
+                LivingEntity living = (LivingEntity) entity;
                 
-                // 使用更精确的视线检测
-                RayTrace rayTrace = new RayTrace();
-                if (!rayTrace.entityReachable(32, mc, playerEyePosition, livingEntity)) {
-                    return; // 没有视线接触，跳过渲染
-                }
-                
-                // 检查实体是否应该有护盾
-                if (!shouldEntityHaveShield(livingEntity)) {
-                    return; // 实体不应该有护盾，跳过渲染
-                }
+                // 完全按照 battery_shield 的视线检测
+                if (com.xlxyvergil.hamstercore.client.util.RenderUtils.raytrace(living)) return;
                 
                 // 检查实体是否拥有护盾能力并且最大护盾值大于0
-                // 如果满足条件，则同时渲染护盾条和百分比数据（它们在同一个渲染调用中）
-                livingEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
+                living.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
                     float currentShield = shieldCap.getCurrentShield();
                     float maxShield = shieldCap.getMaxShield();
-                    if (maxShield > 0) { // 只要最大护盾值大于0就渲染，即使当前护盾为0也要显示空的护盾条
-                        // 这个调用会同时渲染护盾条和百分比数据
-                        EntityShieldRenderer.renderEntityShield(
-                            livingEntity,
+                    
+                    if (maxShield > 0) {
+                        // 完全按照 battery_shield 的渲染方式
+                        PoseStack poseStack = guiGraphics.pose();
+                        poseStack.pushPose();
+                        
+                        // 计算位置 - 按照 battery_shield 的方式
+                        Vec3 livingFrom = living.getPosition(event.getPartialTick()).add(0, living.getBbHeight() + 0.5f, 0);
+                        Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
+                        
+                        // 变换矩阵 - 完全按照 battery_shield
+                        poseStack.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
+                        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-minecraft.getEntityRenderDispatcher().camera.getYRot()));
+                        poseStack.mulPose(com.mojang.math.Axis.XP.rotationDegrees(minecraft.getEntityRenderDispatcher().camera.getXRot()));
+                        poseStack.scale(-0.025f, -0.025f, 1);
+                        
+                        // 渲染护盾条 - 使用我们简化的方法
+                        EntityShieldRenderer.renderShieldBar(
                             currentShield,
                             maxShield,
-                            event.getPartialTick(),
-                            event.getPoseStack(),
-                            mc.renderBuffers().bufferSource()
+                            poseStack,
+                            minecraft.renderBuffers().bufferSource()
                         );
+                        
+                        poseStack.popPose();
                     }
                 });
-            }
-        });
-    }
-    
-    /**
-     * 检查实体是否应该有护盾
-     * @param entity 要检查的实体
-     * @return 如果实体应该有护盾返回true，否则返回false
-     */
-    private static boolean shouldEntityHaveShield(LivingEntity entity) {
-        // 直接检查实体是否拥有护盾能力，这是最准确的判断方式
-        // 因为我们已经在EntityCapabilityAttacher中根据entityBaseShields配置决定是否附加护盾能力
-        return entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
-            .map(shieldCap -> {
-                // 检查护盾值是否有效（大于等于0）
-                float maxShield = shieldCap.getMaxShield();
-                return maxShield >= 0;
-            })
-            .orElse(false);
+            });
+        }
     }
 }

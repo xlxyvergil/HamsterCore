@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import net.minecraft.client.Minecraft;
@@ -62,8 +61,9 @@ public class ShieldHUDUpdater {
         // 获取玩家的护甲值
         float armorValue = (float) player.getAttribute(Attributes.ARMOR).getValue();
         
-        // 计算顶部位置
-        int top = height - gui.leftHeight;
+        // 计算顶部位置，确保护盾条不被聊天框遮挡
+        // 确保护盾条显示在聊天框上方
+        int top = Math.min(height - gui.leftHeight, height - 50);
         
         // 如果玩家没有护甲，则护盾条向下偏移一点，占据护甲条的位置
         if (armorValue <= 0) {
@@ -72,7 +72,7 @@ public class ShieldHUDUpdater {
         
         // 计算护盾条的填充比例
         float shieldPercent = currentShield / maxShield;
-        int shieldBarWidth = (int) (shieldPercent * 81); // 81是标准血条的宽度
+        int shieldBarWidth = (int) (shieldPercent * 82); // 82是护盾条的宽度
         
         // 检查是否处于护盾保险状态
         boolean isGating = shieldCap.isGatingActive();
@@ -80,22 +80,21 @@ public class ShieldHUDUpdater {
         // 绘制护盾条背景框架
         if (maxShield > 0) {
             RenderSystem.setShaderTexture(0, isGating ? SHIELD_FRAME_GATING : SHIELD_FRAME);
-            guiGraphics.blit(isGating ? SHIELD_FRAME_GATING : SHIELD_FRAME, left - 1, top - 1, 0, 0, 82, 6, 82, 6);
+            guiGraphics.blit(isGating ? SHIELD_FRAME_GATING : SHIELD_FRAME, left, top, 0, 0, 82, 6, 82, 6);
         }
         
         // 绘制护盾条填充
         if (shieldBarWidth > 0) {
             RenderSystem.setShaderTexture(0, isGating ? SHIELD_ICONS_GATING : SHIELD_ICONS);
-            guiGraphics.blit(isGating ? SHIELD_ICONS_GATING : SHIELD_ICONS, left + 1, top + 1, 0, 0, shieldBarWidth, 4, shieldBarWidth, 4);
+            guiGraphics.blit(isGating ? SHIELD_ICONS_GATING : SHIELD_ICONS, left, top, 0, 0, shieldBarWidth, 6, shieldBarWidth, 6);
         }
         
         // 绘制护盾数值
         String shieldText = String.format("%.0f/%.0f", currentShield, maxShield);
-        int textWidth = Minecraft.getInstance().font.width(shieldText);
         guiGraphics.drawString(
             Minecraft.getInstance().font,
             shieldText,
-            left + 81 + 5, // 条右侧5像素处
+            left + 82 + 4, // 护盾右边，间隔4像素
             top - 2,
             0xFFFFFF,
             true

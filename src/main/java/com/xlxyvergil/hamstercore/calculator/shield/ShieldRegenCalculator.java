@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.calculator.shield;
 
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 
 /**
  * 护盾恢复计算器

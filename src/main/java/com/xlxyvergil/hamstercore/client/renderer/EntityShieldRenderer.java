@@ -1,189 +1,24 @@
 package com.xlxyvergil.hamstercore.client.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
+import com.xlxyvergil.hamstercore.client.util.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.joml.Matrix4f;
 
 /**
- * 实体护盾渲染器
- * 负责在实体头顶渲染护盾条
+ * 实体护盾渲染器 - 完全参照 battery_shield 的实现，进行适当简化
  */
 @OnlyIn(Dist.CLIENT)
 public class EntityShieldRenderer {
     
-    private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("hamstercore", "textures/gui/shield_bar.png");
-    private static final ResourceLocation SHIELD_FRAME = new ResourceLocation("hamstercore", "textures/gui/shield_frame.png");
-    
     /**
-     * 渲染实体的护盾条（纯渲染函数，不包含任何检查逻辑）
-     * @param entity 实体
-     * @param currentShield 当前护盾值
-     * @param maxShield 最大护盾值
-     * @param partialTick 部分刻
-     * @param poseStack 渲染矩阵栈
-     * @param buffer 缓冲区
+     * 渲染护盾条 - 完全按照 battery_shield 的方式
      */
-    public static void renderEntityShield(LivingEntity entity, float currentShield, float maxShield, float partialTick, PoseStack poseStack, MultiBufferSource buffer) {
-        // 获取相机位置
-        Vec3 cameraPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-        
-        // 获取实体的位置
-        double x = Mth.lerp(partialTick, entity.xOld, entity.getX());
-        double y = Mth.lerp(partialTick, entity.yOld, entity.getY());
-        double z = Mth.lerp(partialTick, entity.zOld, entity.getZ());
-        
-        // 计算实体头顶的位置（在实体上方一点）
-        Vec3 entityPos = new Vec3(x, y + entity.getBbHeight() + 0.3, z);
-        
-        // 计算相对于相机的位置
-        double dx = entityPos.x - cameraPos.x;
-        double dy = entityPos.y - cameraPos.y;
-        double dz = entityPos.z - cameraPos.z;
-        
-        // 应用渲染变换（参考ClientEvents中的renderFactionTag方法）
-        poseStack.pushPose();
-        poseStack.translate(dx, dy, dz);
-        poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
-        poseStack.scale(0.025F, -0.025F, 0.025F); // X轴使用正值避免镜像翻转
-        
-        // 设置渲染状态
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        
-        // 绘制护盾条
-        renderShieldBar(currentShield, maxShield, poseStack, buffer);
-        
-        poseStack.popPose();
-        
-
-    }
-    
-    /**
-     * 渲染护盾条
-     * @param currentShield 当前护盾值
-     * @param maxShield 最大护盾值
-     * @param poseStack 渲染矩阵栈
-     * @param buffer 缓冲区
-     */
-    private static void renderShieldBar(float currentShield, float maxShield, PoseStack poseStack, MultiBufferSource buffer) {
-        // 计算护盾条的填充比例
-        float shieldPercent = maxShield > 0 ? currentShield / maxShield : 0;
-        
-        // 护盾条的基本尺寸（参考ClientEvents中的文本尺寸）
-        Font font = Minecraft.getInstance().font;
-        String sampleText = "100%"; // 百分比显示的最大长度
-        int textWidth = font.width(sampleText);
-        int barWidth = textWidth + 8; // 护盾条比文本稍宽一些
-        int barHeight = 5; // 与文本高度协调
-        
-        // 如果最大护盾值为0，则不渲染
-        if (maxShield <= 0) {
-            return;
-        }
-        
-        // 设置渲染状态
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        
-        // 绘制护盾条背景框架
-        // 绘制框架纹理，只在有最大护盾值时显示
-        if (maxShield > 0) {
-            drawTexturedRect(poseStack, buffer, -barWidth/2 - 1, -1, barWidth + 2, barHeight + 2, SHIELD_FRAME);
-        }
-        
-        // 绘制护盾条前景
-        int fillWidth = (int)(barWidth * shieldPercent);
-        // 只有当fillWidth大于0时才绘制填充
-        if (fillWidth > 0) {
-            drawTexturedRect(poseStack, buffer, -barWidth/2 + 1, 1, fillWidth - 2, barHeight - 2, SHIELD_ICONS);
-        }
-        
-        // 绘制护盾数值（显示百分比）
-        int shieldPercentInt = (int) Math.round(shieldPercent * 100); // 使用已有的float shieldPercent
-        String shieldText = shieldPercentInt + "%";
-        Component shieldComponent = Component.literal(shieldText);
-        textWidth = font.width(shieldComponent); // 使用已有的变量
-        
-        // 始终显示百分比文本
-        boolean showPercentage = maxShield > 0;
-        
-        // 设置文字渲染状态
-        RenderSystem.depthMask(true);
-        
-        // 渲染文字（在护盾条右侧）
-        if (showPercentage) {
-            poseStack.pushPose();
-            poseStack.translate(barWidth / 2 + 5, -4, 0); // 在护盾条右侧5像素处显示
-            // 绘制主要文本
-            font.drawInBatch(
-                shieldComponent,
-                0.0F, // 左对齐
-                0.0F,
-                0xFFFFFFFF,
-                false,
-                poseStack.last().pose(),
-                buffer,
-                Font.DisplayMode.NORMAL,
-                0,
-                15728880
-            );
-            poseStack.popPose();
-        }
-        
-        // 结束渲染
-        RenderSystem.disableBlend();
-    }
-    
-    private static void drawTexturedRect(PoseStack poseStack, MultiBufferSource buffer, int x, int y, int width, int height, ResourceLocation texture) {
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        
-        Matrix4f matrix = poseStack.last().pose();
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.gui());
-        
-        // 直接使用纹理坐标绘制矩形，不应用额外的颜色
-        vertexConsumer.vertex(matrix, x, y, 0).uv(0, 1).endVertex();
-        vertexConsumer.vertex(matrix, x + width, y, 0).uv(1, 1).endVertex();
-        vertexConsumer.vertex(matrix, x + width, y + height, 0).uv(1, 0).endVertex();
-        vertexConsumer.vertex(matrix, x, y + height, 0).uv(0, 0).endVertex();
-    }
-    
-    /**
-     * 绘制矩形（从旧代码复制过来并修改以支持纹理）
-     * @param matrix 矩阵
-     * @param consumer 顶点消费者
-     * @param x X坐标
-     * @param y Y坐标
-     * @param width 宽度
-     * @param height 高度
-     * @param color 颜色
-     */
-    private static void fillRect(Matrix4f matrix, VertexConsumer consumer, int x, int y, int width, int height, int color) {
-        float a = (float)(color >> 24 & 255) / 255.0F;
-        float r = (float)(color >> 16 & 255) / 255.0F;
-        float g = (float)(color >> 8 & 255) / 255.0F;
-        float b = (float)(color & 255) / 255.0F;
-        
-        consumer.vertex(matrix, x, y, 0).color(r, g, b, a).uv(0, 1).endVertex();
-        consumer.vertex(matrix, x + width, y, 0).color(r, g, b, a).uv(1, 1).endVertex();
-        consumer.vertex(matrix, x + width, y + height, 0).color(r, g, b, a).uv(1, 0).endVertex();
-        consumer.vertex(matrix, x, y + height, 0).color(r, g, b, a).uv(0, 0).endVertex();
+    public static void renderShieldBar(float currentShield, float maxShield, PoseStack poseStack, MultiBufferSource buffer) {
+        // 使用 RenderUtils 渲染护盾条 - 向右偏移10像素
+        RenderUtils.renderShieldBar(poseStack, -38, -15, 96, 6, currentShield, maxShield);
     }
 }

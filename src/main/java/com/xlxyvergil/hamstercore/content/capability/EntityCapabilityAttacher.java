@@ -59,6 +59,8 @@ public class EntityCapabilityAttacher {
     
     /**
      * 检查实体是否应该拥有护盾能力
+     * 注意：这个方法在AttachCapabilitiesEvent阶段调用，此时派系能力可能还未完全初始化
+     * 因此这里只检查明确配置的实体，派系相关的检查延迟到initializeShieldCapability方法中
      * @param entity 实体
      * @return 如果实体应该拥有护盾能力则返回true，否则返回false
      */
@@ -71,33 +73,16 @@ public class EntityCapabilityAttacher {
         // 加载护盾配置
         ShieldConfig shieldConfig = ShieldConfig.load();
         
-        // 1. 首先检查实体是否在entityBaseShields中明确配置
+        // 检查实体是否在entityBaseShields中明确配置
         float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
         if (baseShield >= 0) { // 找到了明确配置
             return baseShield > 0; // 护盾值大于0才赋予护盾能力
         }
         
-        // 2. 如果没有明确配置，检查实体是否属于CORPUS、OROKIN或SENTIENT派系
-        // 获取实体的派系
-        Faction faction = entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY)
-                .map(factionCap -> factionCap.getFaction())
-                .orElse(null); // 使用null代替Faction.NONE，因为没有NONE派系
-        
-        // 检查是否为CORPUS、OROKIN或SENTIENT派系的怪物
-        if (faction == Faction.CORPUS || faction == Faction.OROKIN || faction == Faction.SENTIENT) {
-            // 检查是否为敌对怪物（通过实体分类判断）
-            MobCategory classification = entity.getType().getCategory();
-            if (classification != MobCategory.MISC && 
-                classification != MobCategory.CREATURE && 
-                classification != MobCategory.AMBIENT && 
-                classification != MobCategory.WATER_CREATURE &&
-                classification != MobCategory.WATER_AMBIENT) {
-                return true; // 是这三个派系的敌对怪物，赋予护盾能力
-            }
-        }
-        
-        // 其他情况不赋予护盾能力
-        return false;
+        // 对于派系相关的实体，我们也在这里附加护盾能力
+        // 因为在能力附加阶段还无法获取派系信息，所以我们需要先附加护盾能力
+        // 然后在初始化阶段根据派系信息来决定是否设置护盾值
+        return true; // 暂时为所有实体附加护盾能力，后续初始化时会过滤
     }
     
     @SubscribeEvent(priority = EventPriority.LOWEST)

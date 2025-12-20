@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.HamsterCore;
-import com.xlxyvergil.hamstercore.config.ClientConfig;
 import com.xlxyvergil.hamstercore.config.DisplayConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
@@ -18,7 +17,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
