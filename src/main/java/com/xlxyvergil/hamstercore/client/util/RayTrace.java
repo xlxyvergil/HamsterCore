@@ -1,0 +1,97 @@
+package com.xlxyvergil.hamstercore.client.util;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+public class RayTrace implements BlockGetter {
+    private static final Minecraft minecraft = Minecraft.getInstance();
+
+    @Override
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        return minecraft.level.getBlockEntity(pos);
+    }
+
+    @Override
+    public BlockState getBlockState(BlockPos pos) {
+        return minecraft.level.getBlockState(pos);
+    }
+
+    @Override
+    public FluidState getFluidState(BlockPos pos) {
+        return minecraft.level.getFluidState(pos);
+    }
+
+    /**
+     * 检查玩家是否能看到指定的实体
+     * @param reachDistance 检测距离
+     * @param client Minecraft客户端实例
+     * @param position 玩家眼睛位置
+     * @param target 目标实体
+     * @return 如果玩家能看到目标实体返回true，否则返回false
+     */
+    public boolean entityReachable(double reachDistance, Minecraft client, Vec3 position, LivingEntity target) {
+        if(client.player == null) return false;
+        
+        HitResult blockHit = clip(setupRayTraceContext(client.player, reachDistance, ClipContext.Fluid.NONE));
+
+        if (!blockHit.getType().equals(HitResult.Type.MISS)) {
+            double blockDistance = blockHit.getLocation().distanceTo(position);
+            return blockDistance > target.distanceTo(client.player);
+        } else {
+            return true;
+        }
+    }
+
+    private ClipContext setupRayTraceContext(Player player, double distance, ClipContext.Fluid fluidHandling) {
+        float pitch = player.getXRot();
+        float yaw = player.getYRot();
+        Vec3 fromPos = player.getEyePosition(1.0F);
+        float float_3 = Mth.cos(-yaw * 0.017453292F - (float)Math.PI);
+        float float_4 = Mth.sin(-yaw * 0.017453292F - (float)Math.PI);
+        float float_5 = -Mth.cos(-pitch * 0.017453292F);
+        float xComponent = float_4 * float_5;
+        float yComponent = Mth.sin(-pitch * 0.017453292F);
+        float zComponent = float_3 * float_5;
+        Vec3 toPos = fromPos.add((double) xComponent * distance, (double) yComponent * distance, (double) zComponent * distance);
+        return new ClipContext(fromPos, toPos, ClipContext.Block.OUTLINE, fluidHandling, player);
+    }
+
+    @Override
+    public BlockHitResult clip(ClipContext context) {
+        return BlockGetter.traverseBlocks(context.getFrom(), context.getTo(), context, (c, pos) -> {
+            BlockState block = this.getBlockState(pos);
+            if (!block.canOcclude()) {
+                return null;
+            }
+            VoxelShape voxelshape = c.getBlockShape(block, this, pos);
+            return this.clipWithInteractionOverride(c.getFrom(), c.getTo(), pos, voxelshape, block);
+        }, (c) -> {
+            Vec3 vec3 = c.getFrom().subtract(c.getTo());
+            return BlockHitResult.miss(c.getTo(), net.minecraft.core.Direction.getNearest(vec3.x, vec3.y, vec3.z),
+                    new BlockPos((int) c.getTo().x, (int) c.getTo().y, (int) c.getTo().z));
+        });
+    }
+
+    @Override
+    public int getHeight() {
+        return minecraft.level.getHeight();
+    }
+
+    @Override
+    public int getMinBuildHeight() {
+        return minecraft.level.getMinBuildHeight();
+    }
+}

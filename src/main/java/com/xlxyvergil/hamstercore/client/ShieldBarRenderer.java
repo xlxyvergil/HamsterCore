@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.config.ClientConfig;
 import com.xlxyvergil.hamstercore.config.ShieldConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
+import com.xlxyvergil.hamstercore.client.util.RayTrace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -43,14 +44,15 @@ public class ShieldBarRenderer {
         // 遍历所有实体并渲染它们的护盾条
         mc.level.entitiesForRendering().forEach(entity -> {
             if (entity instanceof LivingEntity livingEntity && entity != mc.player) {
-                // 检查实体是否在渲染距离内（例如64格以内）
+                // 检查实体是否在渲染距离内（16格以内）
                 double distanceSq = playerEyePosition.distanceToSqr(entity.position());
-                if (distanceSq > 64 * 64) {
+                if (distanceSq > 32 * 32) {
                     return; // 距离太远，跳过渲染
                 }
                 
-                // 简化视线检测，使用Minecraft内置的hasLineOfSight方法
-                if (!mc.player.hasLineOfSight(livingEntity)) {
+                // 使用更精确的视线检测
+                RayTrace rayTrace = new RayTrace();
+                if (!rayTrace.entityReachable(32, mc, playerEyePosition, livingEntity)) {
                     return; // 没有视线接触，跳过渲染
                 }
                 
@@ -60,10 +62,12 @@ public class ShieldBarRenderer {
                 }
                 
                 // 检查实体是否拥有护盾能力并且最大护盾值大于0
+                // 如果满足条件，则同时渲染护盾条和百分比数据（它们在同一个渲染调用中）
                 livingEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
                     float currentShield = shieldCap.getCurrentShield();
                     float maxShield = shieldCap.getMaxShield();
                     if (maxShield > 0) { // 只要最大护盾值大于0就渲染，即使当前护盾为0也要显示空的护盾条
+                        // 这个调用会同时渲染护盾条和百分比数据
                         EntityShieldRenderer.renderEntityShield(
                             livingEntity,
                             currentShield,
@@ -72,7 +76,6 @@ public class ShieldBarRenderer {
                             event.getPoseStack(),
                             mc.renderBuffers().bufferSource()
                         );
-
                     }
                 });
             }

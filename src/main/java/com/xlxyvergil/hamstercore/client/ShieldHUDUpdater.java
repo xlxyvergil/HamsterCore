@@ -20,7 +20,10 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
  */
 @OnlyIn(Dist.CLIENT)
 public class ShieldHUDUpdater {
-    private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("textures/gui/icons.png");
+    private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("hamstercore", "textures/gui/shield_bar.png");
+    private static final ResourceLocation SHIELD_FRAME = new ResourceLocation("hamstercore", "textures/gui/shield_frame.png");
+    private static final ResourceLocation SHIELD_ICONS_GATING = new ResourceLocation("hamstercore", "textures/gui/shield_bar_gating.png");
+    private static final ResourceLocation SHIELD_FRAME_GATING = new ResourceLocation("hamstercore", "textures/gui/shield_frame_gating.png");
     
     /**
      * 渲染玩家护盾HUD（采用Malum的位置计算方式）
@@ -71,32 +74,19 @@ public class ShieldHUDUpdater {
         float shieldPercent = currentShield / maxShield;
         int shieldBarWidth = (int) (shieldPercent * 81); // 81是标准血条的宽度
         
-        // 根据护盾百分比确定颜色
-        int color;
-        if (shieldPercent > 0.7) {
-            // 绿色
-            color = 0xFF00FF00;
-        } else if (shieldPercent > 0.3) {
-            // 黄色
-            color = 0xFFFFFF00;
-        } else {
-            // 红色
-            color = 0xFFFF0000;
-        }
-        
         // 检查是否处于护盾保险状态
         boolean isGating = shieldCap.isGatingActive();
-        if (isGating) {
-            // 金色边框表示护盾保险状态
-            color = 0xFFFFD700;
-        }
         
-        // 绘制护盾条背景（外边框）
-        guiGraphics.fill(left, top, left + 81, top + 5, 0xFF404040); // 深灰色背景
+        // 绘制护盾条背景框架
+        if (maxShield > 0) {
+            RenderSystem.setShaderTexture(0, isGating ? SHIELD_FRAME_GATING : SHIELD_FRAME);
+            guiGraphics.blit(isGating ? SHIELD_FRAME_GATING : SHIELD_FRAME, left - 1, top - 1, 0, 0, 82, 6, 82, 6);
+        }
         
         // 绘制护盾条填充
         if (shieldBarWidth > 0) {
-            guiGraphics.fill(left + 1, top + 1, left + 1 + shieldBarWidth, top + 4, color);
+            RenderSystem.setShaderTexture(0, isGating ? SHIELD_ICONS_GATING : SHIELD_ICONS);
+            guiGraphics.blit(isGating ? SHIELD_ICONS_GATING : SHIELD_ICONS, left + 1, top + 1, 0, 0, shieldBarWidth, 4, shieldBarWidth, 4);
         }
         
         // 绘制护盾数值

@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.config.DisplayConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.client.util.RayTrace;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -14,6 +15,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -75,8 +77,15 @@ public class ClientEvents {
         
         // 计算距离，只在适当距离内渲染
         double distanceSqr = dispatcher.distanceToSqr(event.getEntity());
-        if (distanceSqr > 4096.0D) { // 64 blocks^2
+        if (distanceSqr > 1024.0D) { // 32 blocks^2
             return;
+        }
+        
+        // 视线检测
+        RayTrace rayTrace = new RayTrace();
+        Vec3 playerEyePosition = mc.player.getEyePosition(1.0F);
+        if (!rayTrace.entityReachable(32, mc, playerEyePosition, (LivingEntity) event.getEntity())) {
+            return; // 没有视线接触，跳过渲染
         }
 
         float f = event.getEntity().getNameTagOffsetY() + offset;

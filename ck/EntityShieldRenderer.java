@@ -6,8 +6,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 
@@ -27,8 +25,7 @@ import org.joml.Matrix4f;
 @OnlyIn(Dist.CLIENT)
 public class EntityShieldRenderer {
     
-    private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("hamstercore", "textures/gui/shield_bar.png");
-    private static final ResourceLocation SHIELD_FRAME = new ResourceLocation("hamstercore", "textures/gui/shield_frame.png");
+    private static final ResourceLocation SHIELD_ICONS = new ResourceLocation("hamstercore", "textures/gui/icons.png");
     
     /**
      * 渲染实体的护盾条（纯渲染函数，不包含任何检查逻辑）
@@ -60,11 +57,12 @@ public class EntityShieldRenderer {
         poseStack.pushPose();
         poseStack.translate(dx, dy, dz);
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
-        poseStack.scale(0.025F, -0.025F, 0.025F); // X轴使用正值避免镜像翻转
+        poseStack.scale(-0.025F, -0.025F, 0.025F); // X轴使用负值实现正确镜像翻转
         
         // 设置渲染状态
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderTexture(0, SHIELD_ICONS);
         
         // 绘制护盾条
         renderShieldBar(currentShield, maxShield, poseStack, buffer);
@@ -89,30 +87,41 @@ public class EntityShieldRenderer {
         Font font = Minecraft.getInstance().font;
         String sampleText = "100%"; // 百分比显示的最大长度
         int textWidth = font.width(sampleText);
-        int barWidth = textWidth + 8; // 护盾条比文本稍宽一些
-        int barHeight = 5; // 与文本高度协调
+        int barWidth = textWidth + 4; // 护盾条比文本稍宽一些
+        int barHeight = 3; // 与文本高度协调
         
-        // 如果最大护盾值为0，则不渲染
+        // 根据护盾百分比确定颜色
+        int color;
+        if (shieldPercent > 0.7) {
+            // 绿色
+            color = 0xFF00FF00;
+        } else if (shieldPercent > 0.3) {
+            // 黄色
+            color = 0xFFFFFF00;
+        } else {
+            // 红色
+            color = 0xFFFF0000;
+        }
+        
+        // 如果护盾值为0，则使用灰色
         if (maxShield <= 0) {
-            return;
+            color = 0xFF808080; // 灰色
         }
         
-        // 设置渲染状态
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        // 获取渲染器
+        Matrix4f matrix = poseStack.last().pose();
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.gui());
         
-        // 绘制护盾条背景框架
-        // 绘制框架纹理，只在有最大护盾值时显示
-        if (maxShield > 0) {
-            drawTexturedRect(poseStack, buffer, -barWidth/2 - 1, -1, barWidth + 2, barHeight + 2, SHIELD_FRAME);
-        }
+        // 绘制护盾条背景（深灰色）
+        fillRect(matrix, vertexConsumer, -barWidth/2, 0, barWidth, barHeight, 0xFF404040);
         
         // 绘制护盾条前景
         int fillWidth = (int)(barWidth * shieldPercent);
-        // 只有当fillWidth大于0时才绘制填充
+        // 即使fillWidth为0，也要绘制一个像素宽度的线条来表示护盾条存在
         if (fillWidth > 0) {
-            drawTexturedRect(poseStack, buffer, -barWidth/2 + 1, 1, fillWidth - 2, barHeight - 2, SHIELD_ICONS);
+            fillRect(matrix, vertexConsumer, barWidth/2 - fillWidth + 1, 1, fillWidth - 2, barHeight - 2, color);
+        } else if (currentShield >= 0) { // 当前护盾大于等于0时（包括0），绘制一个像素宽度的线条
+            fillRect(matrix, vertexConsumer, barWidth/2 - 1, 1, 1, barHeight - 2, color);
         }
         
         // 绘制护盾数值（显示百分比）
@@ -121,52 +130,32 @@ public class EntityShieldRenderer {
         Component shieldComponent = Component.literal(shieldText);
         textWidth = font.width(shieldComponent); // 使用已有的变量
         
-        // 始终显示百分比文本
-        boolean showPercentage = maxShield > 0;
-        
         // 设置文字渲染状态
         RenderSystem.depthMask(true);
         
-        // 渲染文字（在护盾条右侧）
-        if (showPercentage) {
-            poseStack.pushPose();
-            poseStack.translate(barWidth / 2 + 5, -4, 0); // 在护盾条右侧5像素处显示
-            // 绘制主要文本
-            font.drawInBatch(
-                shieldComponent,
-                0.0F, // 左对齐
-                0.0F,
-                0xFFFFFFFF,
-                false,
-                poseStack.last().pose(),
-                buffer,
-                Font.DisplayMode.NORMAL,
-                0,
-                15728880
-            );
-            poseStack.popPose();
-        }
+        // 渲染文字（在护盾条下方）
+        poseStack.pushPose();
+        poseStack.translate(0, barHeight + 3, 0); // 增加一些间距
+        font.drawInBatch(
+            shieldComponent,
+            -textWidth / 2.0F,
+            0.0F,
+            0xFFFFFFFF,
+            false,
+            matrix,
+            buffer,
+            Font.DisplayMode.NORMAL,
+            0,
+            15728880
+        );
+        poseStack.popPose();
         
         // 结束渲染
         RenderSystem.disableBlend();
     }
     
-    private static void drawTexturedRect(PoseStack poseStack, MultiBufferSource buffer, int x, int y, int width, int height, ResourceLocation texture) {
-        RenderSystem.setShaderTexture(0, texture);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        
-        Matrix4f matrix = poseStack.last().pose();
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.gui());
-        
-        // 直接使用纹理坐标绘制矩形，不应用额外的颜色
-        vertexConsumer.vertex(matrix, x, y, 0).uv(0, 1).endVertex();
-        vertexConsumer.vertex(matrix, x + width, y, 0).uv(1, 1).endVertex();
-        vertexConsumer.vertex(matrix, x + width, y + height, 0).uv(1, 0).endVertex();
-        vertexConsumer.vertex(matrix, x, y + height, 0).uv(0, 0).endVertex();
-    }
-    
     /**
-     * 绘制矩形（从旧代码复制过来并修改以支持纹理）
+     * 绘制矩形
      * @param matrix 矩阵
      * @param consumer 顶点消费者
      * @param x X坐标
@@ -181,9 +170,13 @@ public class EntityShieldRenderer {
         float g = (float)(color >> 8 & 255) / 255.0F;
         float b = (float)(color & 255) / 255.0F;
         
-        consumer.vertex(matrix, x, y, 0).color(r, g, b, a).uv(0, 1).endVertex();
-        consumer.vertex(matrix, x + width, y, 0).color(r, g, b, a).uv(1, 1).endVertex();
-        consumer.vertex(matrix, x + width, y + height, 0).color(r, g, b, a).uv(1, 0).endVertex();
-        consumer.vertex(matrix, x, y + height, 0).color(r, g, b, a).uv(0, 0).endVertex();
+        // 左下角
+        consumer.vertex(matrix, x, y, 0).color(r, g, b, a).endVertex();
+        // 右下角
+        consumer.vertex(matrix, x + width, y, 0).color(r, g, b, a).endVertex();
+        // 右上角
+        consumer.vertex(matrix, x + width, y + height, 0).color(r, g, b, a).endVertex();
+        // 左上角
+        consumer.vertex(matrix, x, y + height, 0).color(r, g, b, a).endVertex();
     }
 }
