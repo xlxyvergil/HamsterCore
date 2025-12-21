@@ -24,6 +24,19 @@ public class PlayerLevelHUDRenderer {
     private static final ResourceLocation EXPERIENCE_FRAME = 
         ResourceLocation.fromNamespaceAndPath(HamsterCore.MODID, "textures/gui/experience_frame.png");
     
+    // 数字格式化方法，防止数字过长
+    private static String formatNumber(int number) {
+        if (number < 1000) {
+            return String.valueOf(number);
+        } else if (number < 1000000) {
+            return String.format("%.1fk", number / 1000.0);
+        } else if (number < 1000000000) {
+            return String.format("%.1fm", number / 1000000.0);
+        } else {
+            return String.format("%.1fb", number / 1000000000.0);
+        }
+    }
+    
     public static void renderPlayerLevelHUD(ForgeGui gui, GuiGraphics guiGraphics, Player player, int width, int height) {
         // 获取玩家等级能力
         PlayerLevelCapability cap = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).orElse(null);
@@ -39,14 +52,22 @@ public class PlayerLevelHUDRenderer {
         int x = width / 2 - 91 - 1 - 5; // 91是快捷道具栏左侧到屏幕中心的距离，再减去经验条宽度和间距
         int y = height - 22; // 底边与道具栏底边平行（22是经验条高度）
         
-        // 渲染等级文本
-        String levelText = "Lv." + playerLevel + "/30";
         Font font = Minecraft.getInstance().font;
         
-        // 绘制文本（在经验条中间点的左边）
+        // 渲染等级文本（向上提升5像素）
+        String levelText = "Lv." + playerLevel + "/30";
         int textX = x - font.width(levelText) - 2; // 文本在经验条左边
-        int textY = y + 11 - font.lineHeight / 2; // 文本垂直居中
+        int textY = y + 11 - font.lineHeight / 2 - 5; // 文本垂直居中并向上提升5像素
         guiGraphics.drawString(font, Component.literal(levelText), textX, textY, 0xFFFFFF, false);
+        
+        // 渲染剩余经验文本（在等级文本下方）
+        int expToNext = cap.getExperienceToNextLevel();
+        int currentExp = cap.getCurrentLevelExperience();
+        int remainingExp = expToNext - currentExp;
+        String remainingExpText = formatNumber(remainingExp);
+        int remainingTextX = x - font.width(remainingExpText) - 2;
+        int remainingTextY = textY + font.lineHeight + 1; // 在等级文本下方
+        guiGraphics.drawString(font, Component.literal(remainingExpText), remainingTextX, remainingTextY, 0xFFFF00, false);
         
         // 渲染经验进度条（竖直）
         renderExperienceBar(guiGraphics, cap, x, y);
