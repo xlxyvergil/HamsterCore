@@ -84,6 +84,9 @@ public class HealthModifierSystem {
             return; // 如果实体没有最大生命值属性，跳过
         }
         
+        // 记录旧的最大生命值
+        double oldMaxHealth = entity.getMaxHealth();
+        
         // 移除已存在的修饰符（如果有）
         AttributeModifier existingModifier = healthAttribute.getModifier(HEALTH_MODIFIER_UUID);
         if (existingModifier != null) {
@@ -101,9 +104,17 @@ public class HealthModifierSystem {
                 )
         );
         
-        // 确保实体的生命值不超过新的最大值
-        if (entity.getHealth() > entity.getMaxHealth()) {
-            entity.setHealth(entity.getMaxHealth());
+        // 获取新的最大生命值
+        double newMaxHealth = entity.getMaxHealth();
+        
+        // 调整实体当前生命值以匹配新的最大生命值
+        if (newMaxHealth > oldMaxHealth) {
+            // 如果最大生命值增加了，相应地增加当前生命值
+            float healthIncrease = (float) (newMaxHealth - oldMaxHealth);
+            entity.heal(healthIncrease);
+        } else if (entity.getHealth() > newMaxHealth) {
+            // 如果最大生命值减少了且当前生命值高于新的最大值，则调整当前生命值
+            entity.setHealth((float) newMaxHealth);
         }
     }
 }
