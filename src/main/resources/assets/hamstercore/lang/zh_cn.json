@@ -125,5 +125,11 @@
   "enchantment.hamstercore.murmur.desc": "增加对低语者派系的伤害",
   "enchantment.hamstercore.critical_chance.desc": "增加暴击率",
   "enchantment.hamstercore.critical_damage.desc": "增加暴击伤害倍率",
-  "enchantment.hamstercore.trigger_chance.desc": "增加元素触发率"
+  "enchantment.hamstercore.trigger_chance.desc": "增加元素触发率",
+  
+  "attribute.name.hamstercore.base_armor": "基础护甲",
+  "attribute.name.hamstercore.armor": "护甲",
+  "attribute.name.hamstercore.max_shield": "最大护盾",
+  "attribute.name.hamstercore.regen_rate": "护盾恢复速率",
+  "attribute.name.hamstercore.regen_delay": "护盾恢复延迟"
 }

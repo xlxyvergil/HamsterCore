@@ -125,5 +125,11 @@
   "enchantment.hamstercore.murmur.desc": "Increases damage against Murmur faction",
   "enchantment.hamstercore.critical_chance.desc": "Increases critical chance",
   "enchantment.hamstercore.critical_damage.desc": "Increases critical damage multiplier",
-  "enchantment.hamstercore.trigger_chance.desc": "Increases elemental trigger chance"
+  "enchantment.hamstercore.trigger_chance.desc": "Increases elemental trigger chance",
+  
+  "attribute.name.hamstercore.base_armor": "Base Armor",
+  "attribute.name.hamstercore.armor": "Armor",
+  "attribute.name.hamstercore.max_shield": "Max Shield",
+  "attribute.name.hamstercore.regen_rate": "Shield Regen Rate",
+  "attribute.name.hamstercore.regen_delay": "Shield Regen Delay"
 }
