@@ -9,6 +9,9 @@ import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.events.PlayerLevelEvents;
+import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
@@ -55,6 +58,12 @@ public class HamsterCore {
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
         
+        // 注册玩家等级相关事件
+        MinecraftForge.EVENT_BUS.register(PlayerLevelEvents.class);
+        
+        // 注册玩家能力相关事件
+        MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
+        
         // 加载客户端配置
         ClientConfig.load();
         
@@ -63,7 +72,6 @@ public class HamsterCore {
             WeaponAttributeRenderer.registerEvents();
         }
     }
-    
     
     
     
@@ -132,5 +140,6 @@ public class HamsterCore {
         event.register(EntityFactionCapabilityProvider.class);
         event.register(EntityLevelCapabilityProvider.class);
         event.register(EntityArmorCapabilityProvider.class);
+        event.register(PlayerLevelCapabilityProvider.class);
     }
 }

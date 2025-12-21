@@ -33,19 +33,12 @@ public class AffixCommand {
             .requires(source -> source.hasPermission(2)) // 需要权限等级2，管理员级别
             .then(Commands.literal("add")
                 .then(Commands.argument("player", EntityArgument.player())
-                    .then(Commands.argument("elementType", StringArgumentType.string())
-                        .suggests((context, builder) -> {
-                            // 提供所有元素类型的建议
-                            for (ElementType type : ElementType.getAllTypes()) {
-                                builder.suggest(type.getName());
-                            }
-                            return builder.buildFuture();
-                        })
+                    .then(Commands.argument("affix", StringArgumentType.string())
                         .then(Commands.argument("amount", DoubleArgumentType.doubleArg())
                             .executes(context -> addAffix(
                                     context.getSource(),
                                     EntityArgument.getPlayer(context, "player"),
-                                    StringArgumentType.getString(context, "elementType"),
+                                    StringArgumentType.getString(context, "affix"),
                                     DoubleArgumentType.getDouble(context, "amount")
                             ))
                         )
@@ -54,31 +47,21 @@ public class AffixCommand {
             )
             .then(Commands.literal("remove")
                 .then(Commands.argument("player", EntityArgument.player())
-                    .then(Commands.argument("elementType", StringArgumentType.string())
-                        .suggests((context, builder) -> {
-                            // 提供玩家主手物品上已有词缀的元素类型建议
-                            try {
-                                ServerPlayer player = EntityArgument.getPlayer(context, "player");
-                                ItemStack stack = player.getMainHandItem();
-                                if (!stack.isEmpty()) {
-                                    WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-                                    if (weaponData != null) {
-                                        weaponData.getInitialModifiers().forEach(entry -> {
-                                            builder.suggest(entry.getElementType());
-                                        });
-                                    }
-                                }
-                            } catch (CommandSyntaxException e) {
-                                // 忽略异常
-                            }
-                            return builder.buildFuture();
-                        })
+                    .then(Commands.argument("affix", StringArgumentType.string())
                         .executes(context -> removeAffix(
                                 context.getSource(),
                                 EntityArgument.getPlayer(context, "player"),
-                                StringArgumentType.getString(context, "elementType")
+                                StringArgumentType.getString(context, "affix")
                         ))
                     )
+                )
+            )
+            .then(Commands.literal("clear")
+                .then(Commands.argument("player", EntityArgument.player())
+                    .executes(context -> clearAffixes(
+                            context.getSource(),
+                            EntityArgument.getPlayer(context, "player")
+                    ))
                 )
             )
             .then(Commands.literal("list")
@@ -89,7 +72,7 @@ public class AffixCommand {
                     ))
                 )
             )
-            .then(Commands.literal("reinitshield")
+            .then(Commands.literal("reinit")
                 .then(Commands.argument("player", EntityArgument.player())
                     .executes(context -> reinitializeShield(
                             context.getSource(),
@@ -103,26 +86,30 @@ public class AffixCommand {
     /**
      * 添加词缀命令
      */
-    private static int addAffix(CommandSourceStack source, ServerPlayer player, String elementType, double amount) {
+    private static int addAffix(CommandSourceStack source, ServerPlayer player, String affixName, double amount) throws CommandSyntaxException {
         ItemStack stack = player.getMainHandItem();
-        
         if (stack.isEmpty()) {
-            source.sendFailure(Component.literal("玩家主手上没有物品"));
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手没有物品"));
             return 0;
         }
         
-        ElementType type = ElementType.byName(elementType);
-        if (type == null) {
-            source.sendFailure(Component.literal("未知的元素类型: " + elementType));
+        ElementType elementType = ElementType.byName(affixName);
+        if (elementType == null) {
+            source.sendFailure(Component.literal("未知的词缀类型: " + affixName));
             return 0;
         }
+        
+        // 获取物品的武器数据
+        WeaponData weaponData = WeaponDataManager.getOrCreateWeaponData(stack);
         
         // 添加词缀
-        UUID uuid = UUID.randomUUID();
-        AffixManager.addAffix(stack, "命令添加", elementType, amount, "ADDITION", uuid, "user");
+        weaponData.addInitialModifier(elementType, amount, "command");
         
-        source.sendSuccess(() -> Component.literal("成功为 " + player.getName().getString() + " 的主手物品添加了 " + 
-                amount + " 点 " + type.getDisplayName() + " 词缀"), true);
+        // 保存更新后的数据
+        WeaponDataManager.saveWeaponData(stack, weaponData);
+        
+        source.sendSuccess(() -> Component.literal("成功为 " + player.getName().getString() + " 的主手物品添加词缀: " + 
+                elementType.getDisplayName() + " (" + amount + ")"), true);
         
         return 1;
     }
@@ -130,39 +117,67 @@ public class AffixCommand {
     /**
      * 删除词缀命令
      */
-    private static int removeAffix(CommandSourceStack source, ServerPlayer player, String elementType) {
+    private static int removeAffix(CommandSourceStack source, ServerPlayer player, String affixName) throws CommandSyntaxException {
         ItemStack stack = player.getMainHandItem();
-        
         if (stack.isEmpty()) {
-            source.sendFailure(Component.literal("玩家主手上没有物品"));
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手没有物品"));
             return 0;
         }
         
+        ElementType elementType = ElementType.byName(affixName);
+        if (elementType == null) {
+            source.sendFailure(Component.literal("未知的词缀类型: " + affixName));
+            return 0;
+        }
+        
+        // 获取物品的武器数据
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         if (weaponData == null) {
-            source.sendFailure(Component.literal("物品没有词缀数据"));
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手物品没有词缀数据"));
             return 0;
         }
         
-        // 查找并删除指定类型的第一个词缀
-        boolean found = false;
-        for (var entry : weaponData.getInitialModifiers()) {
-            if (entry.getElementType().equals(elementType)) {
-                AffixManager.removeAffix(stack, entry.getUuid());
-                found = true;
-                break;
-            }
-        }
-        
-        if (found) {
-            ElementType type = ElementType.byName(elementType);
-            String typeName = type != null ? type.getDisplayName() : elementType;
-            source.sendSuccess(() -> Component.literal("成功从 " + player.getName().getString() + " 的主手物品移除了 " + 
-                    typeName + " 词缀"), true);
-        } else {
-            source.sendFailure(Component.literal("物品上没有找到 " + elementType + " 类型的词缀"));
+        // 删除词缀
+        boolean removed = weaponData.removeInitialModifier(elementType, "command");
+        if (!removed) {
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手物品没有指定的词缀: " + 
+                    elementType.getDisplayName()));
             return 0;
         }
+        
+        // 保存更新后的数据
+        WeaponDataManager.saveWeaponData(stack, weaponData);
+        
+        source.sendSuccess(() -> Component.literal("成功为 " + player.getName().getString() + " 的主手物品删除词缀: " + 
+                elementType.getDisplayName()), true);
+        
+        return 1;
+    }
+    
+    /**
+     * 清空词缀命令
+     */
+    private static int clearAffixes(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
+        ItemStack stack = player.getMainHandItem();
+        if (stack.isEmpty()) {
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手没有物品"));
+            return 0;
+        }
+        
+        // 获取物品的武器数据
+        WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
+        if (weaponData == null) {
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手物品没有词缀数据"));
+            return 0;
+        }
+        
+        // 清空词缀
+        weaponData.clearInitialModifiers();
+        
+        // 保存更新后的数据
+        WeaponDataManager.saveWeaponData(stack, weaponData);
+        
+        source.sendSuccess(() -> Component.literal("成功清空 " + player.getName().getString() + " 的主手物品的所有词缀"), true);
         
         return 1;
     }
@@ -170,11 +185,10 @@ public class AffixCommand {
     /**
      * 列出词缀命令
      */
-    private static int listAffixes(CommandSourceStack source, ServerPlayer player) {
+    private static int listAffixes(CommandSourceStack source, ServerPlayer player) throws CommandSyntaxException {
         ItemStack stack = player.getMainHandItem();
-        
         if (stack.isEmpty()) {
-            source.sendFailure(Component.literal("玩家主手上没有物品"));
+            source.sendFailure(Component.literal(player.getName().getString() + " 的主手没有物品"));
             return 0;
         }
         
@@ -203,10 +217,11 @@ public class AffixCommand {
      */
     private static int reinitializeShield(CommandSourceStack source, ServerPlayer player) {
         // 重新初始化玩家的护盾能力
-        PlayerCapabilityAttacher.initializePlayerCapabilities(player);
-        
-        // 同步到客户端
-        PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
+        // 注意：这里我们需要获取玩家的等级来调用正确的方法
+        player.getCapability(com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider.CAPABILITY)
+            .ifPresent(levelCap -> {
+                PlayerCapabilityAttacher.initializePlayerCapabilities(player, levelCap.getPlayerLevel());
+            });
         
         source.sendSuccess(() -> Component.literal("成功为 " + player.getName().getString() + " 重新初始化了护盾能力"), true);
         
