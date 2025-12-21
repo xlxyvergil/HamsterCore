@@ -1,5 +1,6 @@
 package com.xlxyvergil.hamstercore;
 
+import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
 import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
 import com.xlxyvergil.hamstercore.config.ClientConfig;
@@ -42,6 +43,9 @@ public class HamsterCore {
         
         // 注册附魔
         ModEnchantments.register(modEventBus);
+        
+        // 注册属性
+        EntityAttributeRegistry.ATTRIBUTES.register(modEventBus);
                 
         // 初始化网络包
         PacketHandler.init();

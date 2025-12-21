@@ -1,48 +1,43 @@
 package com.xlxyvergil.hamstercore.content.capability.entity;
 
-import com.xlxyvergil.hamstercore.HamsterCore;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-@Mod.EventBusSubscriber(modid = HamsterCore.MODID)
-public class EntityShieldCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
-    public static final ResourceLocation ID = new ResourceLocation(HamsterCore.MODID, "entity_shield");
-    
-    private final EntityShieldCapability shieldCapability = new EntityShieldCapability();
-    private final LazyOptional<EntityShieldCapability> optional = LazyOptional.of(() -> shieldCapability);
+public class EntityShieldCapabilityProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+    public static final Capability<EntityShieldCapability> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+
+    private final LazyOptional<EntityShieldCapability> lazyCapability = LazyOptional.of(EntityShieldCapability::new);
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == EntityShieldCapabilityProvider.CAPABILITY) {
-            return optional.cast();
+        if (cap == CAPABILITY) {
+            return lazyCapability.cast();
         }
         return LazyOptional.empty();
     }
 
     @Override
     public CompoundTag serializeNBT() {
-        return shieldCapability.serializeNBT();
+        return lazyCapability.map(EntityShieldCapability::serializeNBT).orElse(new CompoundTag());
     }
 
     @Override
     public void deserializeNBT(CompoundTag nbt) {
-        shieldCapability.deserializeNBT(nbt);
+        lazyCapability.ifPresent(cap -> cap.deserializeNBT(nbt));
     }
     
-    public EntityShieldCapability getCapability() {
-        return shieldCapability;
+    public void setEntityType(EntityType<?> entityType) {
+        lazyCapability.ifPresent(cap -> cap.setEntityType(entityType));
     }
-    
-    public static final Capability<EntityShieldCapability> CAPABILITY = null; // 这将在主类中注册
 }

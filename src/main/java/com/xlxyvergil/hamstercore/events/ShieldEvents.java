@@ -64,13 +64,13 @@ public class ShieldEvents {
         if (!entity.level().isClientSide()) {
             // 立即同步所有护盾变化，包括减少的情况
             PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY.with(() -> entity),
+                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
             );
         }
         
         // 检查是否需要触发护盾保险机制（仅限玩家）
-        if (entity instanceof Player player && shieldCap.getCurrentShield() <= 0 && !shieldCap.isGatingActive()) {
+        if (entity instanceof Player player && shieldCap.getCurrentShield() <= 0 && !shieldCap.isGatingActive() && shieldCap.isInsuranceAvailable()) {
             int immunityTime = shieldCap.getImmunityTime();
             if (immunityTime > 0) {
                 // 应用无敌效果
@@ -79,6 +79,9 @@ public class ShieldEvents {
                 // 设置护盾保险激活状态
                 shieldCap.setGatingActive(true);
                 shieldCap.setGatingDuration(immunityTime);
+                
+                // 设置护盾保险不可用，直到护盾恢复满
+                shieldCap.setInsuranceAvailable(false);
                 
                 // 立即同步护盾保险状态到客户端
                 PacketHandler.NETWORK.send(
@@ -163,6 +166,9 @@ public class ShieldEvents {
         // 确定使用的恢复延迟
         int regenDelay = shieldCap.getCurrentShield() <= 0 ? shieldCap.getRegenDelayDepleted() : shieldCap.getRegenDelay();
         
+        // 记录恢复前的护盾值
+        float oldShield = shieldCap.getCurrentShield();
+        
         // 如果距离上次受伤超过了恢复延迟时间且护盾未满，则开始恢复
         if (timeSinceLastHurt >= regenDelay && shieldCap.getCurrentShield() < shieldCap.getMaxShield()) {
             // 每tick恢复的护盾值
@@ -171,7 +177,12 @@ public class ShieldEvents {
             // 恢复护盾
             float newShield = Math.min(shieldCap.getMaxShield(), shieldCap.getCurrentShield() + tickRegen);
             shieldCap.setCurrentShield(newShield);
-        }
+            
+            // 如果护盾已经完全恢复，重新启用护盾保险
+            if (newShield >= shieldCap.getMaxShield()) {
+                shieldCap.setInsuranceAvailable(true);
+            }       
+         }
     }
     
     /**

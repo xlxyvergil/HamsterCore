@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.xlxyvergil.hamstercore.content.capability.PlayerCapabilityAttacher;
 import com.xlxyvergil.hamstercore.element.AffixManager;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.WeaponData;
@@ -83,6 +84,14 @@ public class AffixCommand {
             .then(Commands.literal("list")
                 .then(Commands.argument("player", EntityArgument.player())
                     .executes(context -> listAffixes(
+                            context.getSource(),
+                            EntityArgument.getPlayer(context, "player")
+                    ))
+                )
+            )
+            .then(Commands.literal("reinitshield")
+                .then(Commands.argument("player", EntityArgument.player())
+                    .executes(context -> reinitializeShield(
                             context.getSource(),
                             EntityArgument.getPlayer(context, "player")
                     ))
@@ -185,6 +194,21 @@ public class AffixCommand {
                     " (来源: " + entry.getSource() + ")");
             source.sendSuccess(() -> affixInfo, true);
         }
+        
+        return 1;
+    }
+    
+    /**
+     * 重新初始化护盾命令
+     */
+    private static int reinitializeShield(CommandSourceStack source, ServerPlayer player) {
+        // 重新初始化玩家的护盾能力
+        PlayerCapabilityAttacher.initializePlayerCapabilities(player);
+        
+        // 同步到客户端
+        PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
+        
+        source.sendSuccess(() -> Component.literal("成功为 " + player.getName().getString() + " 重新初始化了护盾能力"), true);
         
         return 1;
     }

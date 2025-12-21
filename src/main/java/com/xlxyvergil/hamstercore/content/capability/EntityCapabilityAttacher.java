@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.content.capability;
 
-import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.config.ShieldConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.*;
 import com.xlxyvergil.hamstercore.faction.Faction;
@@ -10,160 +9,13 @@ import com.xlxyvergil.hamstercore.network.EntityFactionSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityHealthModifierSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityLevelSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityShieldSyncToClient;
-import com.xlxyvergil.hamstercore.network.PacketHandler;
-import net.minecraft.server.level.ServerLevel;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.living.MobSpawnEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
-
-@Mod.EventBusSubscriber(modid = HamsterCore.MODID)
 public class EntityCapabilityAttacher {
-    
-    @SubscribeEvent
-    public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof LivingEntity livingEntity) {
-            // 附加实体等级能力
-            event.addCapability(EntityLevelCapability.ID, new EntityLevelCapabilityProvider());
-            
-            // 附加实体护甲能力
-            EntityArmorCapabilityProvider armorProvider = new EntityArmorCapabilityProvider();
-            armorProvider.setEntityType(livingEntity.getType());
-            event.addCapability(EntityArmorCapability.ID, armorProvider);
-            
-            // 附加实体派系能力
-            EntityFactionCapabilityProvider factionProvider = new EntityFactionCapabilityProvider();
-            factionProvider.setEntityType(livingEntity.getType());
-            event.addCapability(EntityFactionCapability.ID, factionProvider);
-            
-            // 附加实体生命值修饰符能力
-            event.addCapability(EntityHealthModifierCapability.ID, new EntityHealthModifierCapabilityProvider());
-            
-            // 检查实体是否应该拥有护盾能力
-            if (shouldHaveShieldCapability(livingEntity)) {
-                // 附加实体护盾能力
-                event.addCapability(EntityShieldCapability.ID, new EntityShieldCapabilityProvider());
-            }
-        }
-    }
-    
-    /**
-     * 检查实体是否应该拥有护盾能力
-     * 注意：这个方法在AttachCapabilitiesEvent阶段调用，此时派系能力可能还未完全初始化
-     * 因此这里只检查明确配置的实体，派系相关的检查延迟到initializeShieldCapability方法中
-     * @param entity 实体
-     * @return 如果实体应该拥有护盾能力则返回true，否则返回false
-     */
-    private static boolean shouldHaveShieldCapability(LivingEntity entity) {
-        // 玩家总是拥有护盾能力
-        if (entity instanceof Player) {
-            return true;
-        }
-        
-        // 加载护盾配置
-        ShieldConfig shieldConfig = ShieldConfig.load();
-        
-        // 检查实体是否在entityBaseShields中明确配置
-        float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());
-        if (baseShield >= 0) { // 找到了明确配置
-            return baseShield > 0; // 护盾值大于0才赋予护盾能力
-        }
-        
-        // 对于派系相关的实体，我们也在这里附加护盾能力
-        // 因为在能力附加阶段还无法获取派系信息，所以我们需要先附加护盾能力
-        // 然后在初始化阶段根据派系信息来决定是否设置护盾值
-        return true; // 暂时为所有实体附加护盾能力，后续初始化时会过滤
-    }
-    
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
-        // 只处理服务端
-        if (!(event.getLevel() instanceof ServerLevel)) return;
-        
-        // 获取实体
-        LivingEntity entity = event.getEntity();
-        
-        initializeEntityCapabilities(entity);
-        
-        // 立即同步到客户端，确保客户端能获取到正确的数据
-        syncEntityCapabilitiesToClients(entity);
-    }
-    
-    @SubscribeEvent
-    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity() instanceof LivingEntity livingEntity) {
-            if (!event.getLevel().isClientSide()) {
-                // 服务端：初始化实体能力
-                initializeEntityCapabilities(livingEntity);
-                
-                // 立即同步到客户端，确保客户端能获取到正确的数据
-                syncEntityCapabilitiesToClients(livingEntity);
-            } else {
-                // 客户端：如果实体是玩家，不需要做任何事
-                // 如果是非玩家实体，等待服务端同步数据
-            }
-        }
-    }
-    
-    // 当玩家开始跟踪实体时，同步实体数据到该玩家
-    @SubscribeEvent
-    public static void onStartTracking(PlayerEvent.StartTracking event) {
-        if (event.getTarget() instanceof LivingEntity entity && event.getEntity() instanceof ServerPlayer player) {
-            // 同步等级
-            entity.getCapability(EntityLevelCapabilityProvider.CAPABILITY).ifPresent(levelCap -> {
-                PacketHandler.NETWORK.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new EntityLevelSyncToClient(entity.getId(), levelCap.getLevel())
-                );
-            });
-            
-            // 同步派系
-            entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY).ifPresent(factionCap -> {
-                PacketHandler.NETWORK.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new EntityFactionSyncToClient(entity.getId(), factionCap.getFaction())
-                );
-            });
-            
-            // 同步护甲
-            entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(armorCap -> {
-                PacketHandler.NETWORK.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new EntityArmorSyncToClient(entity.getId(), armorCap.getArmor())
-                );
-            });
-            
-            // 同步生命值修饰符
-            entity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(healthCap -> {
-                PacketHandler.NETWORK.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new EntityHealthModifierSyncToClient(entity.getId(), healthCap.getHealthModifier(), healthCap.isInitialized())
-                );
-            });
-            
-            // 同步护盾（仅当实体拥有护盾能力时）
-            entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
-                // 检查护盾值是否有效
-                if (shieldCap.getMaxShield() >= 0) {
-                    PacketHandler.NETWORK.send(
-                        PacketDistributor.PLAYER.with(() -> player),
-                        new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield())
-                    );
-                }
-            });
-        }
-    }
-    
     /**
      * 按照正确的顺序初始化实体的所有能力：
      * 1. 派系
@@ -197,16 +49,18 @@ public class EntityCapabilityAttacher {
                         .map(levelCap -> levelCap.getLevel())
                         .orElse(20); // 默认等级20
                     
-                    // 初始化实体能力，传入基础等级20和当前等级
-                    // 对于玩家，护甲与等级无关；对于怪物，护甲与等级有关
-                    if (entity instanceof Player) {
-                        // 玩家护甲与等级无关，设置默认护甲值为200点
-                        armorCap.setBaseArmor(200.0);
-                        armorCap.setArmor(200.0);
-                    } else {
-                        // 怪物护甲与等级有关
-                        armorCap.initializeEntityCapabilities(20, level);
-                    }
+                    // 怪物护甲与等级有关
+                    armorCap.initializeEntityCapabilities(20, level);
+                    
+                    // 应用实体属性计算最终护甲值
+                    double baseArmorAttribute = AttributeHelper.getBaseArmor(entity);
+                    double armorAttribute = AttributeHelper.getArmor(entity);
+                    double currentBaseArmor = armorCap.getBaseArmor();
+                    double currentArmor = armorCap.getArmor();
+                    double finalBaseArmor = currentBaseArmor * baseArmorAttribute;
+                    double finalArmor = currentArmor * armorAttribute;
+                    armorCap.setBaseArmor(finalBaseArmor);
+                    armorCap.setArmor(finalArmor);
                 });
         
         // 4. 初始化生命值修饰符（基于等级）
@@ -230,38 +84,6 @@ public class EntityCapabilityAttacher {
                         .map(levelCap -> levelCap.getLevel())
                         .orElse(20); // 默认等级20
                     
-                    // 检查是否为玩家
-                    boolean isPlayer = entity instanceof Player;
-                    
-                    // 玩家特殊处理
-                    if (isPlayer) {
-                        // 加载护盾配置
-                        ShieldConfig shieldConfig = ShieldConfig.load();
-                        
-                        // 获取玩家基础护盾值（玩家护盾与等级无关）
-                        float baseShield = shieldConfig.getPlayerBaseShield();
-                        
-                        // 设置最大护盾和当前护盾（不乘以等级系数）
-                        float maxShield = baseShield;
-                        shieldCap.setMaxShield(maxShield);
-                        shieldCap.setCurrentShield(maxShield);
-                        
-                        // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
-                        float regenRate = 15.0f + 0.05f * maxShield;
-                        shieldCap.setRegenRate(regenRate);
-                        
-                        // 计算并设置护盾恢复延迟
-                        int regenDelayNormal = 2 * 20; // 玩家护盾恢复延迟：2秒
-                        int regenDelayDepleted = 6 * 20; // 玩家护盾耗尽时恢复延迟：6秒
-                        shieldCap.setRegenDelay(regenDelayNormal);
-                        shieldCap.setRegenDelayDepleted(regenDelayDepleted);
-                        
-                        // 计算并设置护盾保险时间
-                        int immunityTime = calculateImmunityTime(maxShield);
-                        shieldCap.setImmunityTime(immunityTime);
-                        return;
-                    }
-                    
                     // 加载护盾配置
                     ShieldConfig shieldConfig = ShieldConfig.load();
                     
@@ -271,21 +93,25 @@ public class EntityCapabilityAttacher {
                     
                     // 只有在entityBaseShields中明确配置了护盾值的实体才初始化护盾能力
                     if (hasExplicitConfig && baseShield > 0) {
-                        // 计算护盾系数（怪物护盾与等级有关）
-                        float shieldCoefficient = 1 + 0.02f * (float) Math.pow(level - 20, 1.76);
-                        float maxShield = baseShield * shieldCoefficient;
+                        // 使用EntityShieldCapability中的方法初始化护盾能力（不含属性应用）
+                        shieldCap.initializeEntityCapabilities(baseShield, level, false);
                         
-                        // 设置最大护盾和当前护盾
+                        // 应用实体属性：baseShield = baseShield * MAX_SHIELD属性值
+                        double maxShieldAttribute = AttributeHelper.getMaxShield(entity);
+                        float maxShield = shieldCap.getMaxShield() * (float)maxShieldAttribute;
                         shieldCap.setMaxShield(maxShield);
-                        shieldCap.setCurrentShield(maxShield);
+                        shieldCap.setCurrentShield(maxShield); // 实体生成时应初始化为满护盾
                         
-                        // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
-                        float regenRate = 15.0f + 0.05f * maxShield;
+                        // 应用实体属性：regenRate = (15.0f + 0.05f * maxShield) * REGEN_RATE属性值
+                        double regenRateAttribute = AttributeHelper.getRegenRate(entity);
+                        float regenRate = shieldCap.getRegenRate() * (float)regenRateAttribute;
                         shieldCap.setRegenRate(regenRate);
                         
-                        // 计算并设置护盾恢复延迟
-                        int regenDelayNormal = 3 * 20; // 怪物（mobs）护盾恢复延迟：3秒
-                        int regenDelayDepleted = 3 * 20; // 怪物护盾耗尽时恢复延迟：3秒
+                        // 应用实体属性：regenDelayNormal = (3 * 20) / REGEN_DELAY属性值
+                        // 应用实体属性：regenDelayDepleted = (3 * 20) / REGEN_DELAY属性值
+                        double regenDelayAttribute = AttributeHelper.getRegenDelay(entity);
+                        int regenDelayNormal = (int)((3 * 20) / regenDelayAttribute);
+                        int regenDelayDepleted = (int)((3 * 20) / regenDelayAttribute);
                         shieldCap.setRegenDelay(regenDelayNormal);
                         shieldCap.setRegenDelayDepleted(regenDelayDepleted);
                         return; // 处理完明确配置的实体后直接返回
@@ -312,21 +138,25 @@ public class EntityCapabilityAttacher {
                                     .getOrDefault(faction.name(), 0.0f);
                             
                             if (factionBaseShield > 0) {
-                                // 计算护盾系数（怪物护盾与等级有关）
-                                float shieldCoefficient = 1 + 0.02f * (float) Math.pow(level - 20, 1.76);
-                                float maxShield = factionBaseShield * shieldCoefficient;
+                                // 使用EntityShieldCapability中的方法初始化护盾能力（不含属性应用）
+                                shieldCap.initializeEntityCapabilities(factionBaseShield, level, false);
                                 
-                                // 设置最大护盾和当前护盾
+                                // 应用实体属性：baseShield = baseShield * MAX_SHIELD属性值
+                                double maxShieldAttribute = AttributeHelper.getMaxShield(entity);
+                                float maxShield = shieldCap.getMaxShield() * (float)maxShieldAttribute;
                                 shieldCap.setMaxShield(maxShield);
-                                shieldCap.setCurrentShield(maxShield);
+                                shieldCap.setCurrentShield(maxShield); // 实体生成时应初始化为满护盾
                                 
-                                // 计算并设置护盾恢复速率（每秒护盾回复 = 15 + 0.05 × 护盾容量）
-                                float regenRate = 15.0f + 0.05f * maxShield;
+                                // 应用实体属性：regenRate = (15.0f + 0.05f * maxShield) * REGEN_RATE属性
+                                double regenRateAttribute = AttributeHelper.getRegenRate(entity);
+                                float regenRate = shieldCap.getRegenRate() * (float)regenRateAttribute;
                                 shieldCap.setRegenRate(regenRate);
                                 
-                                // 计算并设置护盾恢复延迟
-                                int regenDelayNormal = 3 * 20; // 怪物（mobs）护盾恢复延迟：3秒
-                                int regenDelayDepleted = 3 * 20; // 怪物护盾耗尽时恢复延迟：3秒
+                                // 应用实体属性：regenDelayNormal = (3 * 20) / REGEN_DELAY属性
+                                // 应用实体属性：regenDelayDepleted = (3 * 20) / REGEN_DELAY属性
+                                double regenDelayAttribute = AttributeHelper.getRegenDelay(entity);
+                                int regenDelayNormal = (int)((3 * 20) / regenDelayAttribute);
+                                int regenDelayDepleted = (int)((3 * 20) / regenDelayAttribute);
                                 shieldCap.setRegenDelay(regenDelayNormal);
                                 shieldCap.setRegenDelayDepleted(regenDelayDepleted);
                                 return; // 处理完派系相关实体后直接返回
@@ -339,22 +169,6 @@ public class EntityCapabilityAttacher {
                     shieldCap.setMaxShield(-1);
                     shieldCap.setCurrentShield(-1);
                 });
-    }
-    
-    /**
-     * 计算护盾保险机制的免疫时间
-     */
-    private static int calculateImmunityTime(float shield) {
-        if (shield < 53) {
-            // 低护盾值情况：免疫时间 = 护盾量/180 + 1/3 秒
-            return (int) ((shield / 180.0 + 1.0/3.0) * 20);
-        } else if (shield < 1150) {
-            // 中等护盾值情况：免疫时间 = (护盾量/350)^0.65 + 1/3 秒
-            return (int) ((Math.pow(shield / 350.0, 0.65) + 1.0/3.0) * 20);
-        } else {
-            // 高护盾值情况：免疫时间 = 2.5 秒
-            return (int) (2.5 * 20);
-        }
     }
     
     /**
