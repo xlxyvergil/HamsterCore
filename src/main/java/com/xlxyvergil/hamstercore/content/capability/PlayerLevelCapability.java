@@ -13,8 +13,9 @@ public class PlayerLevelCapability implements INBTSerializable<CompoundTag> {
     public int getExperience() { return experience; }
     public void setExperience(int experience) { this.experience = experience; }
     
-    // 计算升级到下一级所需的经验值
+    // 计算升级到下一级所需的经验值（相对于当前等级）
     public int getNextLevelExperience() {
+        if (playerlevel >= 30) return 0; // 已达到最高等级
         return 1000 * (2 * playerlevel + 1); // 1000 × (2 × 玩家等级 + 1)
     }
     
@@ -36,7 +37,7 @@ public class PlayerLevelCapability implements INBTSerializable<CompoundTag> {
     // 计算当前等级升级所需的经验值
     public int getExperienceToNextLevel() {
         if (playerlevel >= 30) return 0; // 已达到最高等级
-        return getNextLevelExperience() - getCurrentLevelExperience();
+        return getNextLevelExperience();
     }
     
     // INBTSerializable实现

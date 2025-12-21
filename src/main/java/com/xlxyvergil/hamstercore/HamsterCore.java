@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
+import com.xlxyvergil.hamstercore.client.PlayerLevelHUDRenderer;
 import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
 import com.xlxyvergil.hamstercore.config.ClientConfig;
@@ -58,19 +59,12 @@ public class HamsterCore {
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
         
-        // 注册玩家等级相关事件
-        MinecraftForge.EVENT_BUS.register(PlayerLevelEvents.class);
-        
         // 注册玩家能力相关事件
         MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
         
         // 加载客户端配置
         ClientConfig.load();
-        
-        // 注册客户端事件（仅在客户端）
-        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
-            WeaponAttributeRenderer.registerEvents();
-        }
+
     }
     
     

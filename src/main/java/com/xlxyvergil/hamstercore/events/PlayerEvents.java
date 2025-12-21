@@ -2,7 +2,10 @@ package com.xlxyvergil.hamstercore.events;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.content.capability.PlayerCapabilityAttacher;
+import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapability;
+import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.*;
+import com.xlxyvergil.hamstercore.level.PlayerLevelUpEvent;
 import com.xlxyvergil.hamstercore.network.EntityArmorSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityFactionSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityHealthModifierSyncToClient;
@@ -29,8 +32,11 @@ public class PlayerEvents {
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player player) {
-            // 附加玩家等级能力
-            event.addCapability(EntityLevelCapability.ID, new EntityLevelCapabilityProvider());
+            // 附加玩家等级能力（我们的玩家等级系统）
+            event.addCapability(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("hamstercore", "player_level"),
+                new PlayerLevelCapabilityProvider()
+            );
             
             // 附加玩家护甲能力
             EntityArmorCapabilityProvider armorProvider = new EntityArmorCapabilityProvider();
@@ -50,6 +56,15 @@ public class PlayerEvents {
         }
     }
     
+    @SubscribeEvent
+    public static void onPlayerLevelUp(PlayerLevelUpEvent event) {
+        Player player = event.getPlayer();
+        int playerLevel = event.getPlayerLevel();
+        
+        // 根据玩家等级重新初始化玩家能力数据
+        PlayerCapabilityAttacher.initializePlayerCapabilities(player, playerLevel);
+    }
+    
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onFinalizeSpawn(MobSpawnEvent.FinalizeSpawn event) {
         // 只处理服务端
@@ -60,7 +75,12 @@ public class PlayerEvents {
         
         // 只处理玩家
         if (entity instanceof Player player) {
-            PlayerCapabilityAttacher.initializePlayerCapabilities(player);
+            // 获取玩家等级
+            int playerLevel = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY)
+                .map(PlayerLevelCapability::getPlayerLevel)
+                .orElse(0);
+                
+            PlayerCapabilityAttacher.initializePlayerCapabilities(player, playerLevel);
             
             // 立即同步到客户端，确保客户端能获取到正确的数据
             PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
@@ -71,8 +91,13 @@ public class PlayerEvents {
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof Player player) {
             if (!event.getLevel().isClientSide()) {
+                // 获取玩家等级
+                int playerLevel = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY)
+                    .map(PlayerLevelCapability::getPlayerLevel)
+                    .orElse(0);
+                    
                 // 服务端：初始化玩家能力
-                PlayerCapabilityAttacher.initializePlayerCapabilities(player);
+                PlayerCapabilityAttacher.initializePlayerCapabilities(player, playerLevel);
                 
                 // 立即同步到客户端，确保客户端能获取到正确的数据
                 PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
@@ -139,8 +164,13 @@ public class PlayerEvents {
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (!event.getEntity().level().isClientSide()) {
             Player player = event.getEntity();
+            // 获取玩家等级
+            int playerLevel = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY)
+                .map(PlayerLevelCapability::getPlayerLevel)
+                .orElse(0);
+                
             // 初始化玩家能力
-            PlayerCapabilityAttacher.initializePlayerCapabilities(player);
+            PlayerCapabilityAttacher.initializePlayerCapabilities(player, playerLevel);
             // 同步到客户端
             PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
         }
@@ -154,8 +184,13 @@ public class PlayerEvents {
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!event.getEntity().level().isClientSide()) {
             Player player = event.getEntity();
+            // 获取玩家等级
+            int playerLevel = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY)
+                .map(PlayerLevelCapability::getPlayerLevel)
+                .orElse(0);
+                
             // 重新初始化玩家能力
-            PlayerCapabilityAttacher.initializePlayerCapabilities(player);
+            PlayerCapabilityAttacher.initializePlayerCapabilities(player, playerLevel);
             // 同步到客户端
             PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
         }

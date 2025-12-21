@@ -37,5 +37,9 @@ public class PacketHandler {
             EntityShieldSyncToClient::toBytes,
             EntityShieldSyncToClient::new,
             EntityShieldSyncToClient::handle);
+        NETWORK.registerMessage(id++, PlayerLevelSyncToClient.class,
+            PlayerLevelSyncToClient::toBytes,
+            PlayerLevelSyncToClient::new,
+            PlayerLevelSyncToClient::handle);
     }
 }

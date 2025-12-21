@@ -3,9 +3,9 @@ package com.xlxyvergil.hamstercore.client.renderer.item;
 import java.util.List;
 import java.util.Map;
 
+import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -15,20 +15,18 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 /**
  * 武器属性渲染器
  * 负责在物品栏界面显示武器的各种属性
  */
 @OnlyIn(Dist.CLIENT)
+@Mod.EventBusSubscriber(value = Dist.CLIENT, modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class WeaponAttributeRenderer {
-    
-    public static void registerEvents() {
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(new WeaponAttributeRenderer());
-    }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onItemTooltip(ItemTooltipEvent event) {
+    public static void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         
         // 获取缓存数据
@@ -62,7 +60,7 @@ public class WeaponAttributeRenderer {
     /**
      * 显示物理元素
      */
-    private void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+    private static void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
         Map<String, Double> physicalElements = cacheData.getPhysicalElements();
         if (physicalElements.isEmpty()) {
             return;
@@ -89,7 +87,7 @@ public class WeaponAttributeRenderer {
     /**
      * 显示基础元素和复合元素
      */
-    private void addBasicAndComplexElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+    private static void addBasicAndComplexElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
         Map<String, Double> combinedElements = cacheData.getCombinedElements();
         if (combinedElements.isEmpty()) {
             return;
@@ -133,7 +131,7 @@ public class WeaponAttributeRenderer {
     /**
      * 显示特殊元素属性（暴击率、暴击伤害、触发率等）
      */
-    private void addSpecialAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+    private static void addSpecialAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
         Map<String, Double> criticalStats = cacheData.getCriticalStats();
         if (criticalStats.isEmpty()) {
             return;
@@ -176,7 +174,7 @@ public class WeaponAttributeRenderer {
     /**
      * 显示派系元素
      */
-    private void addFactionAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
+    private static void addFactionAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
         Map<String, Double> factionElements = cacheData.getFactionElements();
         if (factionElements.isEmpty()) {
             return;

@@ -13,6 +13,7 @@ import com.xlxyvergil.hamstercore.network.EntityHealthModifierSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityLevelSyncToClient;
 import com.xlxyvergil.hamstercore.network.EntityShieldSyncToClient;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
+import com.xlxyvergil.hamstercore.network.PlayerLevelSyncToClient;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -114,7 +116,7 @@ public class PlayerCapabilityAttacher {
      * 应用生命值修饰符
      */
     private static void applyHealthModifier(Player player, int bonus) {
-        AttributeInstance healthAttribute = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        AttributeInstance healthAttribute = player.getAttribute(Attributes.MAX_HEALTH);
         if (healthAttribute != null) {
             // 移除旧的修饰符
             AttributeModifier oldModifier = healthAttribute.getModifier(HEALTH_MODIFIER_UUID);
@@ -158,17 +160,8 @@ public class PlayerCapabilityAttacher {
         
         // 同步护盾到客户端
         EntityShieldSyncToClient.sync(player);
-    }
-    
-    /**
-     * 监听玩家等级升级事件
-     */
-    @SubscribeEvent
-    public static void onPlayerLevelUp(PlayerLevelUpEvent event) {
-        Player player = event.getPlayer();
-        int playerLevel = event.getPlayerLevel();
         
-        // 根据玩家等级重新初始化玩家能力数据
-        initializePlayerCapabilities(player, playerLevel);
+        // 同步玩家等级和经验数据到客户端
+        PlayerLevelSyncToClient.sync(player);
     }
 }

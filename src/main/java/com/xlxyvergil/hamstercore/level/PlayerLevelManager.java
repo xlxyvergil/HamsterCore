@@ -1,6 +1,8 @@
 package com.xlxyvergil.hamstercore.level;
 
 import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapability;
+import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.network.PlayerLevelSyncToClient;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -8,12 +10,15 @@ public class PlayerLevelManager {
     
     // 添加经验值
     public static void addExperience(Player player, int amount) {
-        player.getCapability(PlayerLevelCapability.CAPABILITY).ifPresent(cap -> {
+        player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
             int newExperience = cap.getExperience() + amount;
             cap.setExperience(newExperience);
             
             // 检查是否升级
             checkLevelUp(player, cap);
+            
+            // 同步玩家等级数据到客户端
+            PlayerLevelSyncToClient.sync(player);
         });
     }
     
