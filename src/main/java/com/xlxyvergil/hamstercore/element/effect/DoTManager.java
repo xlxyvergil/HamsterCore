@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.element.effect;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -136,9 +137,16 @@ public class DoTManager {
         // 直接使用每tick伤害值，不需要额外计算
         float damage = entry.getDamagePerTick();
         
-        // 使用原始伤害源进行DoT伤害
-        // 这样DoT伤害会继承原始伤害的所有属性（如攻击者、伤害类型等）
-        entity.hurt(entry.getDamageSource(), damage);
+        // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
+        ElementTriggerHandler.setProcessingDotDamage(true);
+        try {
+            // 使用原始伤害源进行DoT伤害
+            // 这样DoT伤害会继承原始伤害的所有属性（如攻击者、伤害类型等）
+            entity.hurt(entry.getDamageSource(), damage);
+        } finally {
+            // 确保在伤害处理完成后重置标志
+            ElementTriggerHandler.setProcessingDotDamage(false);
+        }
     }
     
     /**

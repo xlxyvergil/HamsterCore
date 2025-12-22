@@ -19,6 +19,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -147,14 +149,21 @@ public class AffixCommand {
             return 0;
         }
         
-        // 查找并删除指定类型的第一个词缀
+        // 查找并删除指定类型的所有词缀
         boolean found = false;
+        List<UUID> uuidsToRemove = new ArrayList<>();
+        
+        // 收集所有匹配类型的词缀UUID
         for (var entry : weaponData.getInitialModifiers()) {
             if (entry.getElementType().equals(elementType)) {
-                AffixManager.removeAffix(stack, entry.getUuid());
+                uuidsToRemove.add(entry.getUuid());
                 found = true;
-                break;
             }
+        }
+        
+        // 删除所有匹配类型的词缀
+        for (UUID uuid : uuidsToRemove) {
+            AffixManager.removeAffix(stack, uuid);
         }
         
         if (found) {

@@ -1,8 +1,11 @@
 package com.xlxyvergil.hamstercore.element;
 
 
+import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class AffixManager {
@@ -19,6 +22,15 @@ public class AffixManager {
      */
     private static void removeFromBasicLayer(WeaponData weaponData, String elementType) {
         weaponData.getBasicElements().remove(elementType);
+    }
+    
+    /**
+     * 检查是否需要从Basic层移除指定类型的元素
+     * 如果该类型元素在InitialModifiers中完全不存在，则需要从Basic层移除
+     */
+    private static boolean shouldRemoveFromBasicLayer(WeaponData weaponData, String elementType) {
+        boolean stillExists = hasElementTypeInInitialModifiers(weaponData, elementType);
+        return !stillExists;
     }
     
     /**
@@ -46,10 +58,11 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
+        // 失效全局缓存和AffixManager的临时缓存
+        AffixCacheManager.invalidateCache(stack);
+        AffixManagerCache.invalidateCache(stack);
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
-        // 失效AffixManager的临时缓存
-        AffixManagerCache.invalidateCache(stack);
     }
     
     /**
@@ -80,10 +93,11 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
+        // 失效全局缓存和AffixManager的临时缓存
+        AffixCacheManager.invalidateCache(stack);
+        AffixManagerCache.invalidateCache(stack);
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
-        // 失效AffixManager的临时缓存
-        AffixManagerCache.invalidateCache(stack);
     }
     
     /**
@@ -101,16 +115,25 @@ public class AffixManager {
             }
         }
         
+        // 记录删除前的元素类型状态
+        Map<String, Boolean> elementTypesBeforeRemoval = new HashMap<>();
+        if (removedElementType != null) {
+            elementTypesBeforeRemoval.put(removedElementType, hasElementTypeInInitialModifiers(weaponData, removedElementType));
+        }
+        
         // 删除词缀
         weaponData.getInitialModifiers().removeIf(entry -> entry.getUuid().equals(uuid));
         
         // 检查是否需要从Basic层移除（只有当该类型的元素完全不存在时才移除）
         if (removedElementType != null) {
-            boolean stillExists = hasElementTypeInInitialModifiers(weaponData, removedElementType);
-            if (!stillExists) {
+            boolean shouldRemove = shouldRemoveFromBasicLayer(weaponData, removedElementType);
+            if (shouldRemove) {
                 ElementType type = ElementType.byName(removedElementType);
                 if (type != null && (type.isBasic() || type.isComplex())) {
                     removeFromBasicLayer(weaponData, removedElementType);
+                    
+                    // 额外的日志记录，用于调试
+                    System.out.println("从Basic层移除了元素: " + removedElementType);
                 }
             }
         }
@@ -118,10 +141,11 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
+        // 失效全局缓存和AffixManager的临时缓存
+        AffixCacheManager.invalidateCache(stack);
+        AffixManagerCache.invalidateCache(stack);
         // 计算并缓存元素值
         ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
-        // 失效AffixManager的临时缓存
-        AffixManagerCache.invalidateCache(stack);
     }
 
 

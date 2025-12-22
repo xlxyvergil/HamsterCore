@@ -1,8 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 
 /**
  * 毒气元素效果
@@ -22,14 +24,27 @@ public class GasEffect extends ElementEffect {
     
     @Override
     public boolean isDurationEffectTick(int duration, int amplifier) {
-        // 每20 ticks（1秒）触发一次效果
+        // 每20 ticks（1秒）触发一次效果（参考Apotheosis的BleedingEffect实现）
         return duration % 20 == 0;
     }
     
     @Override
     public void applyEffectTick(LivingEntity entity, int amplifier) {
-        // 实现毒气DoT效果，每1秒造成一次伤害
-        // 完全按照Apotheosis的方式实现，但使用我们计算后的amplifier值
-        entity.hurt(entity.level().damageSources().source(net.minecraft.core.registries.Registries.DAMAGE_TYPE.location(), entity.getLastAttacker()), 1.0F + amplifier);
+        // 实现毒气DoT效果，每秒造成一次伤害
+        // 获取ElementEffectInstance以访问原始伤害值
+        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
+        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
+        
+        // 计算DoT伤害：基础伤害 * 25% * (1 + 等级/10)
+        float dotDamage = baseDamage * 0.25F * (1.0F + amplifier * 0.1F);
+        
+        // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
+        ElementTriggerHandler.setProcessingDotDamage(true);
+        try {
+            entity.hurt(entity.level().damageSources().mobAttack(entity.getLastAttacker()), dotDamage);
+        } finally {
+            // 确保在伤害处理完成后重置标志
+            ElementTriggerHandler.setProcessingDotDamage(false);
+        }
     }
 }

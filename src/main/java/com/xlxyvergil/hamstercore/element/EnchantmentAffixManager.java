@@ -11,7 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import com.xlxyvergil.hamstercore.enchantment.ElementEnchantment;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import net.minecraft.core.registries.BuiltInRegistries;
-
+import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import java.util.*;
 
 /**
@@ -60,11 +60,15 @@ public class EnchantmentAffixManager {
     /**
      * 从物品上移除指定的附魔词缀关联
      */
-    public static void removeEnchantmentAffixAssociation(ItemStack stack, EnchantmentAffixData data) {
-        List<EnchantmentAffixData> associations = getEnchantmentAffixAssociations(stack);
-        associations.removeIf(d -> d.getEnchantmentId().equals(data.getEnchantmentId()) && d.getEnchantmentLevel() == data.getEnchantmentLevel());
-        saveEnchantmentAffixAssociations(stack, associations);
-    }
+        public static void removeEnchantmentAffixAssociation(ItemStack stack, EnchantmentAffixData data) {
+            List<EnchantmentAffixData> associations = getEnchantmentAffixAssociations(stack);
+            associations.removeIf(d -> d.getEnchantmentId().equals(data.getEnchantmentId()) && d.getEnchantmentLevel() == data.getEnchantmentLevel());
+            saveEnchantmentAffixAssociations(stack, associations);
+                
+            // 清除缓存，确保下次计算时使用最新的数据
+            AffixCacheManager.invalidateCache(stack);
+        }
+    
 
     /**
      * 更新物品上所有附魔对应的词缀

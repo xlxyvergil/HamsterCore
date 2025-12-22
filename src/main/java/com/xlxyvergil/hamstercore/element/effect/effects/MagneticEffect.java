@@ -3,9 +3,13 @@ package com.xlxyvergil.hamstercore.element.effect.effects;
 import java.util.UUID;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
+import com.xlxyvergil.hamstercore.content.capability.EntityCapabilityAttacher;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -36,6 +40,9 @@ public class MagneticEffect extends ElementEffect {
         super.addAttributeModifiers(entity, attributeMap, amplifier);
         // 应用护盾再生延迟修饰符
         applyShieldRegenDelayModifiers(entity, amplifier);
+        
+        // 安全地刷新Capability数据，保持当前护盾值和血量不变
+        refreshCapabilityData(entity);
     }
     
     @Override
@@ -43,6 +50,9 @@ public class MagneticEffect extends ElementEffect {
         super.removeAttributeModifiers(entity, attributeMap, amplifier);
         // 移除护盾再生延迟修饰符
         removeShieldRegenDelayModifiers(entity);
+        
+        // 安全地刷新Capability数据，保持当前护盾值和血量不变
+        refreshCapabilityData(entity);
     }
     
     /**
@@ -157,5 +167,37 @@ public class MagneticEffect extends ElementEffect {
             return entity.getEffect(magneticEffect).getAmplifier();
         }
         return -1;
+    }
+    
+    /**
+     * 安全地更新实体的Capability数据，保持当前护盾值和血量不变
+     * @param entity 实体
+     */
+    public static void refreshCapabilityData(LivingEntity entity) {
+        // 仅更新Attribute相关的Capability，保持当前值不变
+        entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(armorCap -> {
+            armorCap.setArmor(AttributeHelper.getArmor(entity));
+        });
+        
+        // 先获取当前护盾值
+        float currentShieldValue = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
+            .map(shieldCap -> shieldCap.getCurrentShield())
+            .orElse(0.0f);
+        
+        // 然后更新护盾相关参数，同时保持当前护盾值
+        entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
+            // 只更新不涉及当前护盾值的参数
+            shieldCap.setMaxShield((float) AttributeHelper.getShield(entity));
+            shieldCap.setRegenRate((float) AttributeHelper.getRegenRate(entity));
+            shieldCap.setRegenDelay((int) AttributeHelper.getRegenDelay(entity));
+            shieldCap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(entity));
+            shieldCap.setImmunityTime((int) AttributeHelper.getImmunityTime(entity));
+            
+            // 恢复之前的当前护盾值，防止实体回血
+            shieldCap.setCurrentShield(currentShieldValue);
+        });
+        
+        // 同步更新到客户端
+        EntityCapabilityAttacher.syncEntityCapabilitiesToClients(entity);
     }
 }

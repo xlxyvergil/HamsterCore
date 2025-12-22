@@ -6,16 +6,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
-
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.effects.GasEffect;
 
 /**
@@ -35,7 +30,6 @@ public class GasManager {
         private final UUID cloudId;
         private final LivingEntity sourceEntity; // 原始目标实体（可能已死亡）
         private final double centerX, centerY, centerZ;
-        private final float finalDamage;
         private final int amplifier;
         private final DamageSource damageSource;
         private final double baseRadius; // 基础半径（3米）
@@ -44,13 +38,12 @@ public class GasManager {
         private int ticksRemaining; // 剩余时间（6秒 = 120 ticks）
         private int tickCounter; // 计数器
         
-        public GasCloud(LivingEntity target, float finalDamage, int amplifier, DamageSource damageSource) {
+        public GasCloud(LivingEntity target, int amplifier, DamageSource damageSource) {
             this.cloudId = UUID.randomUUID();
             this.sourceEntity = target;
             this.centerX = target.getX();
             this.centerY = target.getY();
             this.centerZ = target.getZ();
-            this.finalDamage = finalDamage;
             this.amplifier = amplifier;
             this.damageSource = damageSource;
             this.baseRadius = 3.0; // 基础3米
@@ -73,13 +66,8 @@ public class GasManager {
             ticksRemaining--;
             tickCounter++;
             
-            // 施加瞬间和施加后5秒内（第0~5秒）赋予毒气效果
-            if (tickCounter <= 100) { // 100 ticks = 5秒
-                applyGasEffect();
-            }
-            
-            // 生成粒子效果
-            spawnParticles();
+            // 每tick都赋予毒气效果，持续6秒
+            applyGasEffect();
         }
         
         public boolean isExpired() {
@@ -117,57 +105,26 @@ public class GasManager {
                 // 检查是否在范围内
                 if (distance <= totalRadius) {
                     // 给实体添加GasEffect状态效果，持续120 ticks（6秒）
-                    // 这里直接使用GasEffect实例，确保与元素系统一致
-                    // 等级为amplifier，持续时间为120 ticks
-                    
-                    // 计算DoT伤害：最终伤害的50% * 效果等级
-                    float dotDamage = finalDamage * 0.5f * (amplifier + 1);
-                    
-                    // 创建一个新的伤害源，标记为毒云伤害，防止再次触发毒气效果
-                    DamageSource gasDamageSource = damageSource.getEntity() != null ? 
-                        DamageSource.indirectMagic(livingEntity, damageSource.getEntity()) : 
-                        DamageSource.MAGIC;
-                    
-                    // 通过DoTManager添加DoT效果，使用GasEffect状态效果
-                    DoTManager.addDoT(livingEntity, ElementType.GAS, dotDamage, 120, amplifier, gasDamageSource);
+                    // 等级为amplifier
+                    net.minecraft.world.effect.MobEffectInstance effectInstance = 
+                        new net.minecraft.world.effect.MobEffectInstance(
+                            new GasEffect(), 120, amplifier);
+                    livingEntity.addEffect(effectInstance);
                 }
             }
         }
         
-        /**
-         * 生成毒气粒子效果
-         */
-        private void spawnParticles() {
-            // 降低粒子生成频率，每5个tick生成一次
-            if (tickCounter % 5 != 0) {
-                return;
-            }
-            
-            Level level = sourceEntity.level();
-            if (level instanceof ServerLevel serverLevel) {
-                // 使用原版喷溅药水粒子效果
-                serverLevel.sendParticles(
-                    ParticleTypes.ENTITY_EFFECT,
-                    centerX,
-                    centerY,
-                    centerZ,
-                    1,
-                    0.5, 0.5, 0.5,
-                    0.01
-                );
-            }
-        }
+
     }
     
     /**
      * 为实体创建毒气云
      * @param target 目标实体
-     * @param finalDamage 最终伤害值
      * @param amplifier 效果等级
      * @param damageSource 伤害源
      */
-    public static void addGasCloud(LivingEntity target, float finalDamage, int amplifier, DamageSource damageSource) {
-        GasCloud cloud = new GasCloud(target, finalDamage, amplifier, damageSource);
+    public static void addGasCloud(LivingEntity target, int amplifier, DamageSource damageSource) {
+        GasCloud cloud = new GasCloud(target, amplifier, damageSource);
         gasClouds.put(cloud.getCloudId(), cloud);
         
     }

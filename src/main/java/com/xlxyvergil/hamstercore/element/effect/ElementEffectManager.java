@@ -27,31 +27,11 @@ public class ElementEffectManager {
      * @param damageSource 伤害源
      */
     public static void applyEffect(LivingEntity entity, ElementType elementType, ElementEffect effect, int maxAmplifier, int duration, float finalDamage, net.minecraft.world.damagesource.DamageSource damageSource) {
-        // 检查实体是否已经有这个效果（使用内部跟踪映射）
-        Map<ElementType, ElementEffectInstance> entityEffectMap = entityEffects.computeIfAbsent(entity, k -> new HashMap<>());
-        ElementEffectInstance existingEffect = entityEffectMap.get(elementType);
-        
-        int newAmplifier;
-        if (existingEffect != null) {
-            // 如果已有效果且未达到最大等级，等级+1
-            if (existingEffect.getAmplifier() < maxAmplifier) {
-                newAmplifier = existingEffect.getAmplifier() + 1;
-            } else {
-                // 已达到最大等级，保持等级不变
-                newAmplifier = existingEffect.getAmplifier();
-            }
-            // 更新现有效果的持续时间
-            existingEffect.update(new ElementEffectInstance(effect, duration, newAmplifier, finalDamage));
-        } else {
-            // 无现有效果，从1级开始（注意：Minecraft的Amplifier从0开始，所以1级对应Amplifier=0）
-            newAmplifier = 0;
-            // 应用新效果，使用新的持续时间和伤害值
-            ElementEffectInstance effectInstance = new ElementEffectInstance(effect, duration, newAmplifier, finalDamage);
-            entity.addEffect(effectInstance);
-            
-            // 更新内部跟踪映射
-            entityEffectMap.put(elementType, effectInstance);
-        }
+        // 直接应用效果到实体，不进行等级管理
+        // 等级提升逻辑在ElementTriggerHandler中处理
+        // 持续时间固定为6秒（120 ticks）
+        ElementEffectInstance effectInstance = new ElementEffectInstance(effect, 120, 0, finalDamage);
+        entity.addEffect(effectInstance);
     }
     
     /**

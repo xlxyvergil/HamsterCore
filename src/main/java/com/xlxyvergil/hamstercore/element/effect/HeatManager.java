@@ -1,6 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
+import com.xlxyvergil.hamstercore.content.capability.EntityCapabilityAttacher;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
@@ -78,6 +82,9 @@ public class HeatManager {
         // 存储效果数据
         entityHeats.put(entity, new HeatEffectData(modifierUUID, duration));
         
+        // 安全地刷新Capability数据，保持当前护盾值和血量不变
+        refreshCapabilityData(entity);
+        
         return modifierUUID;
     }
     
@@ -109,6 +116,9 @@ public class HeatManager {
                 entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(data.getModifierUUID());
             }
         }
+        
+        // 安全地刷新Capability数据，保持当前护盾值和血量不变
+        refreshCapabilityData(entity);
     }
     
     /**
@@ -136,5 +146,37 @@ public class HeatManager {
     public static int getHeatEffectTicksRemaining(LivingEntity entity) {
         HeatEffectData data = entityHeats.get(entity);
         return data != null ? data.getTicksRemaining() : 0;
+    }
+    
+    /**
+     * 安全地更新实体的Capability数据，保持当前护盾值和血量不变
+     * @param entity 实体
+     */
+    public static void refreshCapabilityData(LivingEntity entity) {
+        // 仅更新Attribute相关的Capability，保持当前值不变
+        entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(armorCap -> {
+            armorCap.setArmor(AttributeHelper.getArmor(entity));
+        });
+        
+        // 先获取当前护盾值
+        float currentShieldValue = entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
+            .map(shieldCap -> shieldCap.getCurrentShield())
+            .orElse(0.0f);
+        
+        // 然后更新护盾相关参数，同时保持当前护盾值
+        entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(shieldCap -> {
+            // 只更新不涉及当前护盾值的参数
+            shieldCap.setMaxShield((float) AttributeHelper.getShield(entity));
+            shieldCap.setRegenRate((float) AttributeHelper.getRegenRate(entity));
+            shieldCap.setRegenDelay((int) AttributeHelper.getRegenDelay(entity));
+            shieldCap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(entity));
+            shieldCap.setImmunityTime((int) AttributeHelper.getImmunityTime(entity));
+            
+            // 恢复之前的当前护盾值，防止实体回血
+            shieldCap.setCurrentShield(currentShieldValue);
+        });
+        
+        // 同步更新到客户端
+        EntityCapabilityAttacher.syncEntityCapabilitiesToClients(entity);
     }
 }

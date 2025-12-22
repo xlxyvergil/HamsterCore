@@ -1,11 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.damagesource.DamageSource;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 
 /**
  * 毒素元素效果
@@ -20,17 +19,29 @@ public class ToxinEffect extends ElementEffect {
         super(MobEffectCategory.HARMFUL, 0x00FF00); // 绿色
     }
     
-    /**
-     * 应用毒素效果，实现可绕过护盾的毒素DoT效果
-     * @param entity 实体
-     * @param amplifier 效果等级
-     * @param finalDamage 最终伤害值
-     * @param damageSource 原始伤害源
-     */
-    public void applyEffect(LivingEntity entity, int amplifier, float finalDamage, DamageSource damageSource) {
-        // 实现毒素DoT效果，持续6秒(120ticks)，每秒造成一次伤害
-        // 伤害数值为最终伤害的50%乘以当前触发等级
-        float dotDamage = finalDamage * 0.5f * (amplifier + 1);
-        DoTManager.addDoT(entity, ElementType.TOXIN, dotDamage, 120, amplifier, damageSource);
+    @Override
+    public boolean isDurationEffectTick(int duration, int amplifier) {
+        // 每40 ticks（2秒）触发一次效果（参考Apotheosis的BleedingEffect实现）
+        return duration % 40 == 0;
+    }
+    
+    @Override
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
+        // 实现毒素DoT效果，每2秒造成一次伤害
+        // 获取ElementEffectInstance以访问原始伤害值
+        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
+        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
+        
+        // 计算DoT伤害：基础伤害 * 30% * (1 + 等级/10)
+        float dotDamage = baseDamage * 0.30F * (1.0F + amplifier * 0.1F);
+        
+        // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
+        ElementTriggerHandler.setProcessingDotDamage(true);
+        try {
+            entity.hurt(entity.level().damageSources().mobAttack(entity.getLastAttacker()), dotDamage);
+        } finally {
+            // 确保在伤害处理完成后重置标志
+            ElementTriggerHandler.setProcessingDotDamage(false);
+        }
     }
 }

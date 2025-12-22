@@ -209,4 +209,26 @@ public class ShieldEvents {
             }
         }
     }
+    
+    /**
+     * 处理磁力效果的破盾电击伤害
+     * 当护盾被击破时，如果目标具有磁力效果，则对攻击者造成电击伤害
+     */
+    private static void handleMagneticShieldBreak(LivingEntity entity, LivingHurtEvent event) {
+        // 检查目标是否具有磁力效果
+        if (entity.hasEffect(com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.MAGNETIC.get())) {
+            net.minecraft.world.effect.MobEffectInstance magneticEffect = entity.getEffect(com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.MAGNETIC.get());
+            if (magneticEffect != null) {
+                int amplifier = magneticEffect.getAmplifier();
+                
+                // 计算破盾后电击伤害
+                float electricDamage = com.xlxyvergil.hamstercore.element.effect.effects.MagneticEffect.calculateShieldBreakElectricDamage(entity, amplifier);
+                
+                // 对攻击者造成电击伤害
+                if (electricDamage > 0 && event.getSource().getEntity() != null) {
+                    event.getSource().getEntity().hurt(event.getSource().getEntity().damageSources().magic(), electricDamage);
+                }
+            }
+        }
+    }
 }

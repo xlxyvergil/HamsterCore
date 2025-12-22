@@ -44,14 +44,5 @@ public class ElementEffectInstance extends MobEffectInstance {
         this.finalDamage = finalDamage;
     }
     
-    public void update(ElementEffectInstance newInstance) {
-        this.duration = newInstance.duration;
-        this.amplifier = newInstance.amplifier;
-        this.ambient = newInstance.ambient;
-        this.visible = newInstance.visible;
-        this.showIcon = newInstance.showIcon;
-        this.finalDamage = newInstance.finalDamage;
-    }
-    
     // 管理效果的具体参数和状态的方法可以在这里添加
 }
