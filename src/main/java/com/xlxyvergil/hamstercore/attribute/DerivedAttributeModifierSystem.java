@@ -79,17 +79,17 @@ public class DerivedAttributeModifierSystem {
             double maxShield = shieldAttr.getValue();
             double immunityTime = 0;
             
-            // 计算护盾保险机制的免疫时间
+            // 计算护盾保险机制的免疫时间（毫秒）
             // 护盾保险机制的计算必须基于实体的最大护盾值（maxShield），而非当前护盾值（currentShield）
             if (maxShield < 53) {
-                // 低护盾值情况：免疫时间 = 护盾量/180 + 1/3 秒
-                immunityTime = (maxShield / 180.0 + 1.0/3.0) * 20;
+                // 低护盾值情况：免疫时间 = (护盾量/180 + 1/3) 秒，转换为毫秒
+                immunityTime = (maxShield / 180.0 + 1.0/3.0) * 1000;
             } else if (maxShield < 1150) {
-                // 中等护盾值情况：免疫时间 = (护盾量/350)^0.65 + 1/3 秒
-                immunityTime = (Math.pow(maxShield / 350.0, 0.65) + 1.0/3.0) * 20;
+                // 中等护盾值情况：免疫时间 = (护盾量/350)^0.65 + 1/3 秒，转换为毫秒
+                immunityTime = (Math.pow(maxShield / 350.0, 0.65) + 1.0/3.0) * 1000;
             } else {
-                // 高护盾值情况：免疫时间 = 2.5 秒
-                immunityTime = 2.5 * 20;
+                // 高护盾值情况：免疫时间 = 2.5 秒，转换为毫秒
+                immunityTime = 2.5 * 1000;
             }
             
             // 添加免疫时间修饰符

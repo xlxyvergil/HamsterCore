@@ -9,13 +9,14 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityHealthModifierCapabilityProvider;
-import com.xlxyvergil.hamstercore.content.level.PlayerLevelManager;
+import com.xlxyvergil.hamstercore.level.PlayerLevelManager;
 import com.xlxyvergil.hamstercore.network.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class PlayerCapabilityAttacher {
      */
     public static void initializePlayerCapabilities(Player player, int playerLevel) {
         // 1. 应用基础属性修饰符
-        BaseAttributeModifierSystem.applyBasicModifiers(player);
+        BaseAttributeModifierSystem.applyBaseAttributeModifiers(player);
         
         // 2. 应用基于玩家等级的属性修饰符
         PlayerLevelAttributeModifierSystem.applyPlayerLevelModifiers(player, playerLevel);
@@ -38,42 +39,19 @@ public class PlayerCapabilityAttacher {
         player.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
                 .ifPresent(armorCap -> {
                     // 从Attribute系统获取最终护甲值
-                    AttributeInstance armorAttr = player.getAttribute(EntityAttributeRegistry.ARMOR.get());
-                    if (armorAttr != null) {
-                        armorCap.setArmor(armorAttr.getValue());
-                    }
+                    armorCap.setArmor(AttributeHelper.getArmor(player));
                 });
         
         // 5. 初始化护盾
         player.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
                 .ifPresent(shieldCap -> {
                     // 从Attribute系统获取最终护盾相关值
-                    AttributeInstance shieldAttr = player.getAttribute(EntityAttributeRegistry.SHIELD.get());
-                    AttributeInstance regenRateAttr = player.getAttribute(EntityAttributeRegistry.REGEN_RATE.get());
-                    AttributeInstance regenDelayAttr = player.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get());
-                    AttributeInstance depletedRegenDelayAttr = player.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get());
-                    AttributeInstance immunityTimeAttr = player.getAttribute(EntityAttributeRegistry.IMMUNITY_TIME.get());
-                    
-                    if (shieldAttr != null) {
-                        shieldCap.setMaxShield((float) shieldAttr.getValue());
-                        shieldCap.setCurrentShield((float) shieldAttr.getValue()); // 实体生成时应初始化为满护盾
-                    }
-                    
-                    if (regenRateAttr != null) {
-                        shieldCap.setRegenRate((float) regenRateAttr.getValue());
-                    }
-                    
-                    if (regenDelayAttr != null) {
-                        shieldCap.setRegenDelay((int) regenDelayAttr.getValue());
-                    }
-                    
-                    if (depletedRegenDelayAttr != null) {
-                        shieldCap.setRegenDelayDepleted((int) depletedRegenDelayAttr.getValue());
-                    }
-                    
-                    if (immunityTimeAttr != null) {
-                        shieldCap.setImmunityTime((int) immunityTimeAttr.getValue());
-                    }
+                    shieldCap.setMaxShield((float) AttributeHelper.getShield(player));
+                    shieldCap.setCurrentShield((float) AttributeHelper.getShield(player)); // 实体生成时应初始化为满护盾
+                    shieldCap.setRegenRate((float) AttributeHelper.getRegenRate(player));
+                    shieldCap.setRegenDelay((int) AttributeHelper.getRegenDelay(player));
+                    shieldCap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(player));
+                    shieldCap.setImmunityTime((int) AttributeHelper.getImmunityTime(player));
                     
                     // 设置玩家特有的默认值
                     shieldCap.setInsuranceAvailable(true);
@@ -96,5 +74,8 @@ public class PlayerCapabilityAttacher {
         
         // 同步生命值修饰符数据
         EntityHealthModifierSyncToClient.sync(player);
+        
+        // 同步玩家等级和经验数据到客户端
+        PlayerLevelSyncToClient.sync(player);
     }
 }

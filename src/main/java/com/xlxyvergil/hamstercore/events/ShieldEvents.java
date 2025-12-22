@@ -73,12 +73,13 @@ public class ShieldEvents {
         if (entity instanceof Player player && shieldCap.getCurrentShield() <= 0 && !shieldCap.isGatingActive() && shieldCap.isInsuranceAvailable()) {
             int immunityTime = shieldCap.getImmunityTime();
             if (immunityTime > 0) {
-                // 应用无敌效果
-                player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, immunityTime, 10, false, false, false));
+                // 应用无敌效果，将毫秒转换为ticks（1秒=20 ticks）
+                int immunityTicks = immunityTime / 50; // 1000ms = 20 ticks, 所以 1ms = 1/50 ticks
+                player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, immunityTicks, 10, false, false, false));
                 
                 // 设置护盾保险激活状态
                 shieldCap.setGatingActive(true);
-                shieldCap.setGatingDuration(immunityTime);
+                shieldCap.setGatingDuration(immunityTicks);
                 
                 // 设置护盾保险不可用，直到护盾恢复满
                 shieldCap.setInsuranceAvailable(false);

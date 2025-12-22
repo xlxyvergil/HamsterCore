@@ -74,7 +74,7 @@ public class PlayerLevelAttributeModifierSystem {
         
         // 根据玩家等级计算护甲加成
         // 这里使用一个简单的线性增长公式，你可以根据需要调整
-        double levelArmorBonus = PlayerLevelManager.getArmorBonus(playerLevel);
+        double levelArmorBonus = PlayerLevelManager.getBaseArmorBonus(playerLevel);
         
         // 添加基于等级的护甲修饰符
         if (levelArmorBonus > 0) {

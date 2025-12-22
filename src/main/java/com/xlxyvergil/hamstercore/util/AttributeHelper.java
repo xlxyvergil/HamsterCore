@@ -9,13 +9,15 @@ import net.minecraft.world.entity.LivingEntity;
  */
 public class AttributeHelper {
     
+
+    
     /**
-     * 获取实体的基础护甲值
+     * 获取实体的护盾值
      * @param entity 实体
-     * @return 基础护甲值
+     * @return 护盾值
      */
-    public static double getBaseArmor(LivingEntity entity) {
-        return entity.getAttribute(EntityAttributeRegistry.BASE_ARMOR.get()).getValue();
+    public static double getShield(LivingEntity entity) {
+        return entity.getAttribute(EntityAttributeRegistry.SHIELD.get()).getValue();
     }
     
     /**
@@ -27,14 +29,7 @@ public class AttributeHelper {
         return entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).getValue();
     }
     
-    /**
-     * 获取实体的最大护盾值
-     * @param entity 实体
-     * @return 最大护盾值
-     */
-    public static double getMaxShield(LivingEntity entity) {
-        return entity.getAttribute(EntityAttributeRegistry.MAX_SHIELD.get()).getValue();
-    }
+
     
     /**
      * 获取实体的护盾恢复速率
@@ -52,5 +47,23 @@ public class AttributeHelper {
      */
     public static double getRegenDelay(LivingEntity entity) {
         return entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()).getValue();
+    }
+    
+    /**
+     * 获取实体的护盾耗尽恢复延迟
+     * @param entity 实体
+     * @return 护盾耗尽恢复延迟（tick数）
+     */
+    public static double getDepletedRegenDelay(LivingEntity entity) {
+        return entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get()).getValue();
+    }
+    
+    /**
+     * 获取实体的护盾保险时间
+     * @param entity 实体
+     * @return 护盾保险时间
+     */
+    public static double getImmunityTime(LivingEntity entity) {
+        return entity.getAttribute(EntityAttributeRegistry.IMMUNITY_TIME.get()).getValue();
     }
 }

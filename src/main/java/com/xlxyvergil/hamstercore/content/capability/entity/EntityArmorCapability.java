@@ -29,6 +29,10 @@ public class EntityArmorCapability implements INBTSerializable<CompoundTag> {
         this.entityType = entityType;
     }
     
+    public void initializeEntityCapabilities(int baseLevel, int level) {
+        // 不再需要内部计算逻辑，仅作为数据容器
+    }
+    
     // 移除所有内部计算逻辑
     
     @Override

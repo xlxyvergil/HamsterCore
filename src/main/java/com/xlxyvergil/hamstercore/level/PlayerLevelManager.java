@@ -11,14 +11,17 @@ public class PlayerLevelManager {
     // 添加经验值
     public static void addExperience(Player player, int amount) {
         player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            int newExperience = cap.getExperience() + amount;
-            cap.setExperience(newExperience);
-            
-            // 检查是否升级
-            checkLevelUp(player, cap);
-            
-            // 同步玩家等级数据到客户端
-            PlayerLevelSyncToClient.sync(player);
+            // 当玩家达到最高等级时，不再增加经验
+            if (cap.getPlayerLevel() < 30) {
+                int newExperience = cap.getExperience() + amount;
+                cap.setExperience(newExperience);
+                
+                // 检查是否升级
+                checkLevelUp(player, cap);
+                
+                // 同步玩家等级数据到客户端
+                PlayerLevelSyncToClient.sync(player);
+            }
         });
     }
     

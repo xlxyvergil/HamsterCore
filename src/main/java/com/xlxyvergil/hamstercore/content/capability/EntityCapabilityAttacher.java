@@ -9,6 +9,7 @@ import com.xlxyvergil.hamstercore.network.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
@@ -37,7 +38,8 @@ public class EntityCapabilityAttacher {
                 });
 
         // 3. 应用基础属性修饰符
-        BaseAttributeModifierSystem.applyBasicModifiers(entity);
+        BaseAttributeModifierSystem.applyBaseAttributeModifiers(entity);
+        BaseAttributeModifierSystem.applyCoefficientAttributeModifiers(entity);
 
         // 4. 应用衍生属性修饰符
         DerivedAttributeModifierSystem.applyDerivedModifiers(entity);
@@ -46,10 +48,7 @@ public class EntityCapabilityAttacher {
         entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY)
                 .ifPresent(armorCap -> {
                     // 从Attribute系统获取最终护甲值
-                    AttributeInstance armorAttr = entity.getAttribute(EntityAttributeRegistry.ARMOR.get());
-                    if (armorAttr != null) {
-                        armorCap.setArmor(armorAttr.getValue());
-                    }
+                    armorCap.setArmor(AttributeHelper.getArmor(entity));
                 });
 
         // 6. 初始化生命值修饰符（基于等级）
@@ -59,32 +58,12 @@ public class EntityCapabilityAttacher {
         entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY)
                 .ifPresent(shieldCap -> {
                     // 从Attribute系统获取最终护盾相关值
-                    AttributeInstance shieldAttr = entity.getAttribute(EntityAttributeRegistry.SHIELD.get());
-                    AttributeInstance regenRateAttr = entity.getAttribute(EntityAttributeRegistry.REGEN_RATE.get());
-                    AttributeInstance regenDelayAttr = entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get());
-                    AttributeInstance depletedRegenDelayAttr = entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get());
-                    AttributeInstance immunityTimeAttr = entity.getAttribute(EntityAttributeRegistry.IMMUNITY_TIME.get());
-
-                    if (shieldAttr != null) {
-                        shieldCap.setMaxShield((float) shieldAttr.getValue());
-                        shieldCap.setCurrentShield((float) shieldAttr.getValue()); // 实体生成时应初始化为满护盾
-                    }
-
-                    if (regenRateAttr != null) {
-                        shieldCap.setRegenRate((float) regenRateAttr.getValue());
-                    }
-
-                    if (regenDelayAttr != null) {
-                        shieldCap.setRegenDelay((int) regenDelayAttr.getValue());
-                    }
-                    
-                    if (depletedRegenDelayAttr != null) {
-                        shieldCap.setRegenDelayDepleted((int) depletedRegenDelayAttr.getValue());
-                    }
-
-                    if (immunityTimeAttr != null) {
-                        shieldCap.setImmunityTime((int) immunityTimeAttr.getValue());
-                    }
+                    shieldCap.setMaxShield((float) AttributeHelper.getShield(entity));
+                    shieldCap.setCurrentShield((float) AttributeHelper.getShield(entity)); // 实体生成时应初始化为满护盾
+                    shieldCap.setRegenRate((float) AttributeHelper.getRegenRate(entity));
+                    shieldCap.setRegenDelay((int) AttributeHelper.getRegenDelay(entity));
+                    shieldCap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(entity));
+                    shieldCap.setImmunityTime((int) AttributeHelper.getImmunityTime(entity));
                     
                     // 设置其他默认值
                     shieldCap.setInsuranceAvailable(true);
@@ -101,7 +80,8 @@ public class EntityCapabilityAttacher {
      */
     public static void initializeCapabilities(LivingEntity entity) {
         // 应用基础属性修饰符
-        BaseAttributeModifierSystem.applyBasicModifiers(entity);
+        BaseAttributeModifierSystem.applyBaseAttributeModifiers(entity);
+        BaseAttributeModifierSystem.applyCoefficientAttributeModifiers(entity);
 
         // 应用衍生属性修饰符
         DerivedAttributeModifierSystem.applyDerivedModifiers(entity);
@@ -149,31 +129,11 @@ public class EntityCapabilityAttacher {
     }
 
     private static void updateShieldCapabilityFromAttributes(LivingEntity entity, EntityShieldCapability cap) {
-        AttributeInstance shieldAttr = entity.getAttribute(EntityAttributeRegistry.SHIELD.get());
-        AttributeInstance regenRateAttr = entity.getAttribute(EntityAttributeRegistry.REGEN_RATE.get());
-        AttributeInstance regenDelayAttr = entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get());
-        AttributeInstance depletedRegenDelayAttr = entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get());
-        AttributeInstance immunityTimeAttr = entity.getAttribute(EntityAttributeRegistry.IMMUNITY_TIME.get());
-
-        if (shieldAttr != null) {
-            cap.setMaxShield((float) shieldAttr.getValue());
-        }
-
-        if (regenRateAttr != null) {
-            cap.setRegenRate((float) regenRateAttr.getValue());
-        }
-
-        if (regenDelayAttr != null) {
-            cap.setRegenDelay((int) regenDelayAttr.getValue());
-        }
-        
-        if (depletedRegenDelayAttr != null) {
-            cap.setRegenDelayDepleted((int) depletedRegenDelayAttr.getValue());
-        }
-
-        if (immunityTimeAttr != null) {
-            cap.setImmunityTime((int) immunityTimeAttr.getValue());
-        }
+        cap.setMaxShield((float) AttributeHelper.getShield(entity));
+        cap.setRegenRate((float) AttributeHelper.getRegenRate(entity));
+        cap.setRegenDelay((int) AttributeHelper.getRegenDelay(entity));
+        cap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(entity));
+        cap.setImmunityTime((int) AttributeHelper.getImmunityTime(entity));
     }
 
     private static void updateArmorCapabilityFromAttributes(LivingEntity entity) {
@@ -183,11 +143,7 @@ public class EntityCapabilityAttacher {
     }
 
     private static void updateArmorCapabilityFromAttributes(LivingEntity entity, EntityArmorCapability cap) {
-        AttributeInstance armorAttr = entity.getAttribute(EntityAttributeRegistry.ARMOR.get());
-
-        if (armorAttr != null) {
-            cap.setArmor(armorAttr.getValue());
-        }
+        cap.setArmor(AttributeHelper.getArmor(entity));
     }
 
     public static void syncEntityCapabilitiesToClients(LivingEntity entity) {

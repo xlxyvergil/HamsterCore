@@ -26,6 +26,10 @@ public class EntityLevelCapability implements INBTSerializable<CompoundTag> {
         this.initialized = true;
     }
     
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+    
     public void initializeLevel(LivingEntity entity) {
         int level = LevelSystem.calculateEntityLevel(entity);
         setLevel(level);

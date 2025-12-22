@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.content.capability.entity;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
@@ -22,6 +23,14 @@ public class EntityHealthModifierCapability implements INBTSerializable<Compound
     public void setHealthModifier(double healthModifier) {
         this.healthModifier = healthModifier;
         this.initialized = true;
+    }
+    
+    public void removeModifier() {
+        this.healthModifier = 0.0;
+    }
+    
+    public void setModifier(AttributeModifier modifier) {
+        this.healthModifier = modifier.getAmount();
     }
 
     public boolean isInitialized() {

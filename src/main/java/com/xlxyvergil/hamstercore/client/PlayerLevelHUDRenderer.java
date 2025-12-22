@@ -50,7 +50,7 @@ public class PlayerLevelHUDRenderer {
         
         // 设置渲染位置（快捷道具栏左侧，底边与道具栏底边平行）
         int x = width / 2 - 91 - 1 - 5; // 91是快捷道具栏左侧到屏幕中心的距离，再减去经验条宽度和间距
-        int y = height - 22; // 底边与道具栏底边平行（22是经验条高度）
+        int y = height - 22 - 1; // 底边与道具栏底边平行并向上升1像素（22是经验条高度）
         
         Font font = Minecraft.getInstance().font;
         
@@ -61,13 +61,16 @@ public class PlayerLevelHUDRenderer {
         guiGraphics.drawString(font, Component.literal(levelText), textX, textY, 0xFFFFFF, false);
         
         // 渲染剩余经验文本（在等级文本下方）
-        int expToNext = cap.getExperienceToNextLevel();
-        int currentExp = cap.getCurrentLevelExperience();
-        int remainingExp = expToNext - currentExp;
-        String remainingExpText = formatNumber(remainingExp);
-        int remainingTextX = x - font.width(remainingExpText) - 2;
-        int remainingTextY = textY + font.lineHeight + 1; // 在等级文本下方
-        guiGraphics.drawString(font, Component.literal(remainingExpText), remainingTextX, remainingTextY, 0xFFFF00, false);
+        // 当玩家达到最高等级时，不显示剩余经验
+        if (playerLevel < 30) {
+            int expToNext = cap.getExperienceToNextLevel();
+            int currentExp = cap.getCurrentLevelExperience();
+            int remainingExp = expToNext - currentExp;
+            String remainingExpText = formatNumber(remainingExp);
+            int remainingTextX = x - font.width(remainingExpText) - 2;
+            int remainingTextY = textY + font.lineHeight + 1; // 在等级文本下方
+            guiGraphics.drawString(font, Component.literal(remainingExpText), remainingTextX, remainingTextY, 0xFFFF00, false);
+        }
         
         // 渲染经验进度条（竖直）
         renderExperienceBar(guiGraphics, cap, x, y);
@@ -79,7 +82,8 @@ public class PlayerLevelHUDRenderer {
         int expToNext = cap.getExperienceToNextLevel();
         
         // 计算经验条的填充比例
-        float fillRatio = expToNext > 0 ? (float) currentExp / expToNext : 0;
+        // 当玩家达到最高等级时，经验条应显示为满
+        float fillRatio = expToNext > 0 ? (float) currentExp / expToNext : 1.0f;
         
         // 经验条背景框架（竖直放置，5x22像素）
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

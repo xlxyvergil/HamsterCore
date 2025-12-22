@@ -127,9 +127,10 @@
   "enchantment.hamstercore.critical_damage.desc": "Increases critical damage multiplier",
   "enchantment.hamstercore.trigger_chance.desc": "Increases elemental trigger chance",
   
-  "attribute.name.hamstercore.base_armor": "Base Armor",
-  "attribute.name.hamstercore.armor": "Armor",
-  "attribute.name.hamstercore.max_shield": "Max Shield",
+  "attribute.name.hamstercore.armor": "HCArmor",
+  "attribute.name.hamstercore.shield": "Shield",
   "attribute.name.hamstercore.regen_rate": "Shield Regen Rate",
-  "attribute.name.hamstercore.regen_delay": "Shield Regen Delay"
+  "attribute.name.hamstercore.regen_delay": "Shield Regen Delay",
+  "attribute.name.hamstercore.depleted_regen_delay": "Shield Depleted Regen Delay",
+  "attribute.name.hamstercore.immunity_time": "Shield Immunity Time（ms）"
 }
