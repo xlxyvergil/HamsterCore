@@ -7,10 +7,9 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabil
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -30,12 +29,9 @@ public class RadiationEffect extends ElementEffect {
         super(MobEffectCategory.HARMFUL, 0x7CFC00); // 草坪绿
     }
     
-    /**
-     * 应用辐射效果
-     * @param entity 实体
-     * @param amplifier 效果等级
-     */
-    public void applyEffect(LivingEntity entity, int amplifier) {
+    @Override
+    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        super.addAttributeModifiers(entity, attributeMap, amplifier);
         // 辐射效果主要通过事件监听器实现优先攻击友军的逻辑
         // 这里可以添加任何即时生效的效果（如果需要的话）
         
@@ -129,7 +125,7 @@ public class RadiationEffect extends ElementEffect {
      * 服务器tick事件监听器，为受辐射的Mob实体设置目标
      */
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    public static void onLivingTick(LivingTickEvent event) {
         LivingEntity entity = event.getEntity();
         
         // 只在服务端处理，且只对Mob实体有效

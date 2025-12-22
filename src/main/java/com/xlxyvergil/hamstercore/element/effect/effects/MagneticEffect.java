@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabili
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -30,17 +31,18 @@ public class MagneticEffect extends ElementEffect {
         super(MobEffectCategory.HARMFUL, 0x0000FF); // 蓝色
     }
     
-    /**
-     * 应用磁力效果
-     * @param entity 实体
-     * @param amplifier 效果等级 (0-9，对应1-10级)
-     */
-    public void applyEffect(LivingEntity entity, int amplifier) {
-        // 1. 应用护盾再生延迟修饰符
+    @Override
+    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        super.addAttributeModifiers(entity, attributeMap, amplifier);
+        // 应用护盾再生延迟修饰符
         applyShieldRegenDelayModifiers(entity, amplifier);
-        
-        // 2. 记录磁力效果等级，用于后续计算护盾伤害增幅和破盾电击
-        // 这部分通过EntityEffect系统管理，无需额外处理
+    }
+    
+    @Override
+    public void removeAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        super.removeAttributeModifiers(entity, attributeMap, amplifier);
+        // 移除护盾再生延迟修饰符
+        removeShieldRegenDelayModifiers(entity);
     }
     
     /**
@@ -62,6 +64,11 @@ public class MagneticEffect extends ElementEffect {
                 regenDelayMultiplier,
                 AttributeModifier.Operation.ADDITION
             );
+            // 先检查并移除已存在的修饰符
+            AttributeModifier existingModifier = entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()).getModifier(REGEN_DELAY_MODIFIER_UUID);
+            if (existingModifier != null) {
+                entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()).removeModifier(existingModifier);
+            }
             entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()).addPermanentModifier(regenDelayModifier);
         }
         
@@ -73,15 +80,20 @@ public class MagneticEffect extends ElementEffect {
                 depletedDelayMultiplier,
                 AttributeModifier.Operation.ADDITION
             );
+            // 先检查并移除已存在的修饰符
+            AttributeModifier existingDepletedModifier = entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get()).getModifier(DEPLETED_REGEN_DELAY_MODIFIER_UUID);
+            if (existingDepletedModifier != null) {
+                entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get()).removeModifier(existingDepletedModifier);
+            }
             entity.getAttribute(EntityAttributeRegistry.DEPLETED_REGEN_DELAY.get()).addPermanentModifier(depletedDelayModifier);
         }
     }
     
     /**
-     * 移除磁力效果时恢复护盾再生延迟
+     * 移除护盾再生延迟修饰符
      * @param entity 实体
      */
-    public void removeEffect(LivingEntity entity) {
+    private void removeShieldRegenDelayModifiers(LivingEntity entity) {
         // 移除护盾再生延迟修饰符
         if (entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()) != null) {
             entity.getAttribute(EntityAttributeRegistry.REGEN_DELAY.get()).removeModifier(REGEN_DELAY_MODIFIER_UUID);
@@ -127,7 +139,7 @@ public class MagneticEffect extends ElementEffect {
      * @param magneticEffect 磁力效果实例（MobEffect类型）
      * @return 磁力效果等级，如果没有则返回-1
      */
-    public static int getMagneticEffectLevel(LivingEntity entity, net.minecraft.world.effect.MobEffect magneticEffect) {
+    public static int getMagneticEffectLevel(LivingEntity entity, MobEffect magneticEffect) {
         if (entity.hasEffect(magneticEffect)) {
             return entity.getEffect(magneticEffect).getAmplifier();
         }
@@ -146,7 +158,4 @@ public class MagneticEffect extends ElementEffect {
         }
         return -1;
     }
-    
-    // 移除了错误的重写方法，因为父类 MobEffect 中没有 onEffectRemoved(LivingEntity, int) 方法
-    // 效果移除时的清理应该通过 ElementEffectManager 或其他机制来处理
 }

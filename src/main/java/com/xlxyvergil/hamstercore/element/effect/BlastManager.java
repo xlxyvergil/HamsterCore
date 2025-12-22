@@ -1,17 +1,15 @@
 package com.xlxyvergil.hamstercore.element.effect;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.xlxyvergil.hamstercore.element.effect.effects.BlastEffect;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +23,7 @@ import net.minecraft.world.phys.AABB;
 public class BlastManager {
     
     // 存储实体身上的爆炸效果
-    private static final Map<LivingEntity, List<BlastEntry>> entityBlasts = new HashMap<>();
+    private static final Map<LivingEntity, List<BlastEntry>> entityBlasts = new ConcurrentHashMap<>();
     
     /**
      * 爆炸效果条目类
@@ -99,33 +97,35 @@ public class BlastManager {
     public static void updateBlasts(LivingEntity entity) {
         List<BlastEntry> blasts = entityBlasts.get(entity);
         if (blasts != null) {
-            Iterator<BlastEntry> iterator = blasts.iterator();
+            // 创建一个副本以避免并发修改
+            List<BlastEntry> blastsCopy = new ArrayList<>(blasts);
             List<BlastEntry> readyToExplode = new ArrayList<>();
+            List<BlastEntry> toRemove = new ArrayList<>();
             int totalAmplifier = 0;
             
             // 检查是否达到最大叠加层数（10级）
             boolean maxStackReached = blasts.size() >= BlastEffect.MAX_LEVEL;
             
-            while (iterator.hasNext()) {
-                BlastEntry entry = iterator.next();
+            for (BlastEntry entry : blastsCopy) {
                 entry.tick();
                 totalAmplifier += entry.getAmplifier();
                 
                 // 检查是否应该爆炸
                 if (entry.shouldExplode()) {
                     readyToExplode.add(entry);
-                    iterator.remove();
+                    toRemove.add(entry);
                 } else if (entry.isExpired()) {
-                    iterator.remove();
+                    toRemove.add(entry);
                 }
             }
+            
+            // 从原始列表中移除需要移除的条目
+            blasts.removeAll(toRemove);
             
             // 如果达到最大叠加层数或在1.5秒内累积了多层数，立即结算所有伤害
             if (maxStackReached || (readyToExplode.size() > 1 && totalAmplifier >= BlastEffect.MAX_LEVEL)) {
                 // 立即结算所有待爆炸的效果
-                for (BlastEntry entry : blasts) {
-                    readyToExplode.add(entry);
-                }
+                readyToExplode.addAll(blasts);
                 blasts.clear();
                 
                 // 使用5米范围进行结算
@@ -179,9 +179,6 @@ public class BlastManager {
                 center.getX(), center.getY(), center.getZ(), 
                 10, 0.5, 0.5, 0.5, 0.1);
             
-            // 播放爆炸声音
-            level.playSound(null, center.getX(), center.getY(), center.getZ(),
-                SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
     }
     

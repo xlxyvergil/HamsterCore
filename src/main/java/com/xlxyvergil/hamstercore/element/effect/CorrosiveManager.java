@@ -6,6 +6,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import com.xlxyvergil.hamstercore.element.effect.effects.CorrosiveEffect;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 腐蚀效果管理器
@@ -14,7 +15,7 @@ import java.util.*;
 public class CorrosiveManager {
     
     // 存储实体身上的腐蚀效果
-    private static final Map<LivingEntity, List<CorrosiveEntry>> entityCorrosives = new HashMap<>();
+    private static final Map<LivingEntity, List<CorrosiveEntry>> entityCorrosives = new ConcurrentHashMap<>();
     
     /**
      * 腐蚀效果条目类
@@ -110,10 +111,11 @@ public class CorrosiveManager {
     public static void updateCorrosives(LivingEntity entity) {
         List<CorrosiveEntry> corrosives = entityCorrosives.get(entity);
         if (corrosives != null) {
-            Iterator<CorrosiveEntry> iterator = corrosives.iterator();
+            // 创建一个副本以避免并发修改
+            List<CorrosiveEntry> corrosivesCopy = new ArrayList<>(corrosives);
+            List<CorrosiveEntry> toRemove = new ArrayList<>();
             
-            while (iterator.hasNext()) {
-                CorrosiveEntry entry = iterator.next();
+            for (CorrosiveEntry entry : corrosivesCopy) {
                 entry.decrementTicks();
                 
                 // 如果效果结束，移除它
@@ -122,9 +124,12 @@ public class CorrosiveManager {
                     if (entity.getAttribute(Attributes.ARMOR) != null) {
                         entity.getAttribute(Attributes.ARMOR).removeModifier(entry.getModifierUUID());
                     }
-                    iterator.remove();
+                    toRemove.add(entry);
                 }
             }
+            
+            // 从原始列表中移除需要移除的条目
+            corrosives.removeAll(toRemove);
             
             // 如果该实体没有任何腐蚀效果了，清理map
             if (corrosives.isEmpty()) {

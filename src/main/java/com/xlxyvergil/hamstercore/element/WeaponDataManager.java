@@ -29,12 +29,13 @@ public class WeaponDataManager {
     /**
      * 获取物品堆的武器数据
      * 优先从NBT读取，如果NBT中不存在则从配置文件获取
+     * 如果都不存在则返回一个新的空WeaponData实例
      * @param stack 物品堆
      * @return 武器数据
      */
     public static WeaponData getWeaponData(ItemStack stack) {
         if (stack.isEmpty()) {
-            return null;
+            return new WeaponData();
         }
         
         // 首先尝试从NBT中读取
@@ -48,6 +49,9 @@ public class WeaponDataManager {
         if (weaponData != null) {
             // 将配置文件中的数据写入NBT
             saveElementData(stack, weaponData);
+        } else {
+            // 如果配置文件中也不存在，则创建一个新的空实例
+            weaponData = new WeaponData();
         }
         
         return weaponData;
@@ -60,7 +64,7 @@ public class WeaponDataManager {
      */
     public static WeaponData loadElementData(ItemStack stack) {
         if (stack.isEmpty()) {
-            return null;
+            return new WeaponData();
         }
         
         // 从NBT中读取武器数据
@@ -76,7 +80,8 @@ public class WeaponDataManager {
             return weaponData;
         }
         
-        return null;
+        // 如果配置文件中也不存在，则创建一个新的空实例
+        return new WeaponData();
     }
     
     /**

@@ -8,6 +8,9 @@ import net.minecraft.world.effect.MobEffectInstance;
  */
 public class ElementEffectInstance extends MobEffectInstance {
     
+    // 存储最终伤害值，用于DoT效果计算
+    private float finalDamage = 0.0f;
+    
     public ElementEffectInstance(ElementEffect effect) {
         super(effect);
     }
@@ -26,6 +29,28 @@ public class ElementEffectInstance extends MobEffectInstance {
     
     public ElementEffectInstance(ElementEffect effect, int duration, int amplifier, boolean ambient, boolean showParticles, boolean showIcon) {
         super(effect, duration, amplifier, ambient, showParticles, showIcon);
+    }
+    
+    public ElementEffectInstance(ElementEffect effect, int duration, int amplifier, float finalDamage) {
+        super(effect, duration, amplifier);
+        this.finalDamage = finalDamage;
+    }
+    
+    public float getFinalDamage() {
+        return finalDamage;
+    }
+    
+    public void setFinalDamage(float finalDamage) {
+        this.finalDamage = finalDamage;
+    }
+    
+    public void update(ElementEffectInstance newInstance) {
+        this.duration = newInstance.duration;
+        this.amplifier = newInstance.amplifier;
+        this.ambient = newInstance.ambient;
+        this.visible = newInstance.visible;
+        this.showIcon = newInstance.showIcon;
+        this.finalDamage = newInstance.finalDamage;
     }
     
     // 管理效果的具体参数和状态的方法可以在这里添加

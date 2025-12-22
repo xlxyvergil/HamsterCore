@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.element.effect;
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.damagesource.DamageSource;
 
 import java.util.*;
 
@@ -14,7 +13,7 @@ import java.util.*;
 public class HeatManager {
     
     // 存储实体身上的火焰效果及其护甲修饰符UUID
-    private static final Map<LivingEntity, HeatEffectData> entityHeats = new HashMap<>();
+    private static final Map<LivingEntity, HeatEffectData> entityHeats = Collections.synchronizedMap(new HashMap<>());
     
     /**
      * 火焰效果数据类
@@ -68,6 +67,11 @@ public class HeatManager {
         
         // 添加修饰符到实体的护甲属性上
         if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+            // 先检查并移除已存在的修饰符
+            AttributeModifier existingModifier = entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).getModifier(modifierUUID);
+            if (existingModifier != null) {
+                entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(existingModifier);
+            }
             entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).addPermanentModifier(armorModifier);
         }
         

@@ -78,16 +78,10 @@ public class FactionDamageHandler {
             
             // 检查攻击者是否具有穿刺效果，如果有则降低其造成的伤害
             float finalDamage = damageData.getFinalDamage();
-            ElementEffectInstance punctureEffect = ElementEffectManager.getEffect(livingAttacker, ElementType.PUNCTURE);
-            if (punctureEffect != null) {
-                // 根据穿刺效果等级降低伤害
-                // 第1级减少40%，后续每级减少10%，满级时总共减少80%
-                int amplifier = punctureEffect.getAmplifier();
-                double damageReduction = Math.min(0.4 + amplifier * 0.1, 0.8);
-                finalDamage = (float) (finalDamage * (1.0f - damageReduction));
-            }
+            // 穿刺效果现在通过PunctureEffect的addAttributeModifiers方法处理，不再在这里处理
             
             // 检查目标是否具有病毒效果，如果有则增加对目标的伤害
+            // 病毒效果没有对应的原版属性，因此需要手动处理
             ElementEffectInstance viralEffect = ElementEffectManager.getEffect(target, ElementType.VIRAL);
             if (viralEffect != null) {
                 // 计算病毒伤害增幅：第1级+100%，后续每级+25%，最大+325%

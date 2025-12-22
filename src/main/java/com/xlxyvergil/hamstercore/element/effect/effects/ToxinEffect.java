@@ -1,5 +1,6 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
+import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -30,6 +31,6 @@ public class ToxinEffect extends ElementEffect {
         // 实现毒素DoT效果，持续6秒(120ticks)，每秒造成一次伤害
         // 伤害数值为最终伤害的50%乘以当前触发等级
         float dotDamage = finalDamage * 0.5f * (amplifier + 1);
-        DoTManager.addDoT(entity, com.xlxyvergil.hamstercore.element.ElementType.TOXIN, dotDamage, 120, amplifier, damageSource);
+        DoTManager.addDoT(entity, ElementType.TOXIN, dotDamage, 120, amplifier, damageSource);
     }
 }

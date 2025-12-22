@@ -2,7 +2,7 @@ package com.xlxyvergil.hamstercore.element.effect;
 
 import net.minecraft.world.entity.LivingEntity;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.effect.effects.MagneticEffect;
+import com.xlxyvergil.hamstercore.element.effect.effects.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,50 +40,17 @@ public class ElementEffectManager {
                 // 已达到最大等级，保持等级不变
                 newAmplifier = existingEffect.getAmplifier();
             }
+            // 更新现有效果的持续时间
+            existingEffect.update(new ElementEffectInstance(effect, duration, newAmplifier, finalDamage));
         } else {
             // 无现有效果，从1级开始（注意：Minecraft的Amplifier从0开始，所以1级对应Amplifier=0）
             newAmplifier = 0;
-        }
-        
-        // 移除现有效果
-        if (existingEffect != null) {
-            entity.removeEffect(effect);
-        }
-        
-        // 应用新效果，使用新的持续时间
-        ElementEffectInstance effectInstance = new ElementEffectInstance(effect, duration, newAmplifier);
-        entity.addEffect(effectInstance);
-        
-        // 更新内部跟踪映射
-        entityEffectMap.put(elementType, effectInstance);
-        
-        // 根据效果类型调用对应的特殊效果管理器
-        try {
-            if (effect instanceof com.xlxyvergil.hamstercore.element.effect.effects.HeatEffect heatEffect) {
-                // 处理火焰效果的护甲削减
-                com.xlxyvergil.hamstercore.element.effect.HeatManager.addHeatArmorReduction(entity, duration);
-                // 如果有伤害源，启动火焰DoT效果
-                if (damageSource != null) {
-                    heatEffect.applyEffect(entity, newAmplifier, finalDamage, damageSource);
-                }
-            } else if (effect instanceof com.xlxyvergil.hamstercore.element.effect.effects.BlastEffect blastEffect) {
-                // 处理爆炸效果
-                if (damageSource != null) {
-                    com.xlxyvergil.hamstercore.element.effect.BlastManager.addBlast(entity, finalDamage, newAmplifier + 1, damageSource);
-                }
-            } else if (effect instanceof com.xlxyvergil.hamstercore.element.effect.effects.CorrosiveEffect corrosiveEffect) {
-                // 处理腐蚀效果
-                com.xlxyvergil.hamstercore.element.effect.CorrosiveManager.addCorrosive(entity, newAmplifier + 1);
-            } else if (effect instanceof com.xlxyvergil.hamstercore.element.effect.effects.GasEffect gasEffect) {
-                // 处理毒气效果
-                if (damageSource != null) {
-                    com.xlxyvergil.hamstercore.element.effect.GasManager.addGasCloud(entity, finalDamage, newAmplifier + 1, damageSource);
-                }
-            }
-        } catch (Exception e) {
-            // 记录错误但不影响主流程
-            System.err.println("Error applying additional element effect: " + e.getMessage());
-            e.printStackTrace();
+            // 应用新效果，使用新的持续时间和伤害值
+            ElementEffectInstance effectInstance = new ElementEffectInstance(effect, duration, newAmplifier, finalDamage);
+            entity.addEffect(effectInstance);
+            
+            // 更新内部跟踪映射
+            entityEffectMap.put(elementType, effectInstance);
         }
     }
     
@@ -124,13 +91,8 @@ public class ElementEffectManager {
         if (effects != null) {
             ElementEffectInstance instance = effects.remove(elementType);
             if (instance != null) {
-                // 如果效果类有自定义的清理逻辑，调用它
-                ElementEffect effect = (ElementEffect) instance.getEffect();
-                if (effect instanceof MagneticEffect magneticEffect) {
-                    magneticEffect.removeEffect(entity);
-                }
                 // 从实体移除效果
-                entity.removeEffect(effect);
+                entity.removeEffect(instance.getEffect());
             }
             
             // 如果该实体没有任何效果了，清理map
@@ -160,12 +122,7 @@ public class ElementEffectManager {
         if (effects != null) {
             // 移除所有效果
             for (ElementEffectInstance instance : effects.values()) {
-                // 如果效果类有自定义的清理逻辑，调用它
-                ElementEffect effect = (ElementEffect) instance.getEffect();
-                if (effect instanceof MagneticEffect magneticEffect) {
-                    magneticEffect.removeEffect(entity);
-                }
-                entity.removeEffect(effect);
+                entity.removeEffect(instance.getEffect());
             }
             effects.clear();
             entityEffects.remove(entity);

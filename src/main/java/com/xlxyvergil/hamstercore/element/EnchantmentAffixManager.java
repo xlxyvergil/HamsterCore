@@ -71,15 +71,7 @@ public class EnchantmentAffixManager {
      * 这是动态更新的核心方法，会检查所有当前附魔并确保其对应的词缀都已应用
      */
     public static void updateEnchantmentAffixes(ItemStack stack) {
-        // 检查物品是否为已配置的武器，如果不是则不处理
-        if (!isConfiguredWeapon(stack)) {
-            return;
-        }
-        
-        // 检查物品是否含有我们的数据（武器数据），如果没有则不处理
-        if (WeaponDataManager.getWeaponData(stack) == null) {
-            return;
-        }
+        // 取消所有限制性检查，处理所有物品的附魔
         
         // 首先验证并清理现有关联
         verifyEnchantmentAffixes(stack);

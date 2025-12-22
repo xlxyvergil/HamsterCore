@@ -1,10 +1,8 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
-import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.damagesource.DamageSource;
 
 /**
  * 切割元素效果
@@ -19,19 +17,16 @@ public class SlashEffect extends ElementEffect {
         super(MobEffectCategory.HARMFUL, 0xFF0000); // 红色
     }
     
-
+    @Override
+    public boolean isDurationEffectTick(int duration, int amplifier) {
+        // 每40 ticks（2秒）触发一次效果（参考Apotheosis的BleedingEffect实现）
+        return duration % 40 == 0;
+    }
     
-    /**
-     * 应用切割效果，实现出血DoT效果
-     * @param entity 实体
-     * @param amplifier 效果等级
-     * @param finalDamage 最终伤害值
-     * @param damageSource 原始伤害源
-     */
-    public void applyEffect(LivingEntity entity, int amplifier, float finalDamage,DamageSource damageSource) {
-        // 实现出血DoT效果，持续6秒(120ticks)，每秒造成一次伤害
-        // 伤害数值为最终伤害的35%乘以效果等级
-        float dotDamage = finalDamage * 0.35f * (amplifier + 1);
-        DoTManager.addDoT(entity, com.xlxyvergil.hamstercore.element.ElementType.SLASH, dotDamage, 120, amplifier, damageSource);
+    @Override
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
+        // 实现出血DoT效果，每2秒造成一次伤害
+        // 完全按照Apotheosis的方式实现，但使用我们计算后的amplifier值
+        entity.hurt(entity.level().damageSources().source(net.minecraft.core.registries.Registries.DAMAGE_TYPE.location(), entity.getLastAttacker()), 1.0F + amplifier);
     }
 }

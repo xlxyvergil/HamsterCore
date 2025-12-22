@@ -1,15 +1,12 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
-import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 
 /**
  * 电击元素效果
@@ -36,21 +33,27 @@ public class ElectricityEffect extends ElementEffect {
         super(MobEffectCategory.HARMFUL, 0xFFFF00); // 黄色
     }
     
-    /**
-     * 应用电击效果，实现电击DoT和眩晕效果
-     * @param entity 实体
-     * @param amplifier 效果等级
-     * @param damageSource 原始伤害源
-     */
-    public void applyEffect(LivingEntity entity, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
+    @Override
+    public boolean isDurationEffectTick(int duration, int amplifier) {
+        // 每20 ticks（1秒）触发一次效果
+        return duration % 20 == 0;
+    }
+    
+    @Override
+    public void applyEffectTick(LivingEntity entity, int amplifier) {
+        // 实现电击DoT效果，每1秒造成一次伤害
+        // 完全按照Apotheosis的方式实现，但使用我们计算后的amplifier值
+        entity.hurt(entity.level().damageSources().source(net.minecraft.core.registries.Registries.DAMAGE_TYPE.location(), entity.getLastAttacker()), 1.0F + amplifier);
+    }
+    
+    @Override
+    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        super.addAttributeModifiers(entity, attributeMap, amplifier);
         // 对主目标应用眩晕效果3秒
         applyStun(entity);
         
-        // 启动电击DoT，每层独立计算
-        startShockDoT(entity, amplifier, damageSource);
-        
         // 对周围5米内的敌人也施加电击DoT
-        applyAoEShock(entity, amplifier, damageSource);
+        applyAoEShock(entity, amplifier);
     }
     
     /**
@@ -60,7 +63,7 @@ public class ElectricityEffect extends ElementEffect {
     private void applyStun(LivingEntity entity) {
         if (entity.level() instanceof ServerLevel) {
             // 应用移动减速效果实现眩晕
-            entity.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            entity.addEffect(new MobEffectInstance(
                 MobEffects.MOVEMENT_SLOWDOWN,
                 STUN_DURATION,
                 255, // 最高等级，完全禁止移动
@@ -70,7 +73,7 @@ public class ElectricityEffect extends ElementEffect {
             ));
             
             // 添加发光效果表示电击状态
-            entity.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            entity.addEffect(new MobEffectInstance(
                 MobEffects.GLOWING,
                 STUN_DURATION,
                 0,
@@ -93,37 +96,22 @@ public class ElectricityEffect extends ElementEffect {
     }
     
     /**
-     * 启动电击DoT效果
-     * @param target 目标实体
-     * @param amplifier 效果等级
-     */
-    private void startShockDoT(LivingEntity target, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
-        // 计算每秒伤害：基础伤害 * 50% * (amplifier + 1)
-        float damagePerSecond = BASE_DAMAGE_PER_SECOND * 0.5f * (amplifier + 1);
-        
-        // 添加DoT效果到目标
-        DoTManager.addDoT(target, ElementType.ELECTRICITY, damagePerSecond, SHOCK_DURATION, amplifier, damageSource);
-    }
-    
-    /**
      * 对范围内敌人施加电击效果
      * @param center 中心实体
      * @param amplifier 效果等级
-     * @param damageSource 原始伤害源
      */
-    private void applyAoEShock(LivingEntity center, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
+    private void applyAoEShock(LivingEntity center, int amplifier) {
         if (center.level() instanceof ServerLevel serverLevel) {
             // 获取周围5米内的所有生物（不包括中心实体）
-            AABB aabb = new AABB(center.getX() - AOE_RANGE, center.getY() - AOE_RANGE, center.getZ() - AOE_RANGE,
-                               center.getX() + AOE_RANGE, center.getY() + AOE_RANGE, center.getZ() + AOE_RANGE);
+            net.minecraft.world.phys.AABB aabb = new net.minecraft.world.phys.AABB(
+                center.getX() - AOE_RANGE, center.getY() - AOE_RANGE, center.getZ() - AOE_RANGE,
+                center.getX() + AOE_RANGE, center.getY() + AOE_RANGE, center.getZ() + AOE_RANGE);
             
             java.util.List<LivingEntity> nearbyEntities = serverLevel.getEntitiesOfClass(LivingEntity.class, aabb,
                 entity -> entity != center && entity.isAlive());
             
             // 对每个周围的敌人施加电击DoT（但不施加眩晕）
             for (LivingEntity entity : nearbyEntities) {
-                startShockDoT(entity, amplifier, damageSource);
-                
                 // 生成电击粒子效果
                 serverLevel.sendParticles(
                     ParticleTypes.ELECTRIC_SPARK,

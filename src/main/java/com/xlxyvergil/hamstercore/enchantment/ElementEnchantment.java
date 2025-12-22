@@ -40,15 +40,7 @@ public class ElementEnchantment extends Enchantment {
     
     @Override
     public boolean canEnchant(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        
-        // 获取物品的ResourceLocation
-        ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        
-        // 检查是否为已配置的武器
-        return WeaponItemIds.isConfiguredWeapon(itemKey);
+        return true;
     }
     
     @Override

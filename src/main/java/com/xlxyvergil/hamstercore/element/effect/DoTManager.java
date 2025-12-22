@@ -1,9 +1,11 @@
 package com.xlxyvergil.hamstercore.element.effect;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import com.xlxyvergil.hamstercore.element.ElementType;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 持续伤害管理系统
@@ -12,7 +14,7 @@ import java.util.*;
 public class DoTManager {
     
     // 存储实体身上的DoT效果
-    private static final Map<LivingEntity, List<DoTEntry>> entityDoTs = new HashMap<>();
+    private static final Map<LivingEntity, List<DoTEntry>> entityDoTs = new ConcurrentHashMap<>();
     
     /**
      * DoT效果条目类
@@ -24,9 +26,9 @@ public class DoTManager {
         private int ticksRemaining;
         private final int amplifier;
         private int tickCounter; // 计数器，用于控制伤害频率
-        private final net.minecraft.world.damagesource.DamageSource damageSource; // 原始伤害源
+        private final DamageSource damageSource; // 原始伤害源
         
-        public DoTEntry(ElementType elementType, float damagePerTick, int ticksRemaining, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
+        public DoTEntry(ElementType elementType, float damagePerTick, int ticksRemaining, int amplifier, DamageSource damageSource) {
             this.elementType = elementType;
             this.damagePerTick = damagePerTick;
             this.ticksRemaining = ticksRemaining;
@@ -67,7 +69,7 @@ public class DoTManager {
             this.tickCounter = 0;
         }
         
-        public net.minecraft.world.damagesource.DamageSource getDamageSource() {
+        public DamageSource getDamageSource() {
             return damageSource;
         }
     }
@@ -81,7 +83,7 @@ public class DoTManager {
      * @param amplifier 效果等级
      * @param damageSource 原始伤害源
      */
-    public static void addDoT(LivingEntity entity, ElementType elementType, float damagePerTick, int duration, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
+    public static void addDoT(LivingEntity entity, ElementType elementType, float damagePerTick, int duration, int amplifier, DamageSource damageSource) {
         DoTEntry entry = new DoTEntry(elementType, damagePerTick, duration, amplifier, damageSource);
         entityDoTs.computeIfAbsent(entity, k -> new ArrayList<>()).add(entry);
     }
@@ -93,9 +95,11 @@ public class DoTManager {
     public static void updateDoTs(LivingEntity entity) {
         List<DoTEntry> dots = entityDoTs.get(entity);
         if (dots != null) {
-            Iterator<DoTEntry> iterator = dots.iterator();
-            while (iterator.hasNext()) {
-                DoTEntry entry = iterator.next();
+            // 创建一个副本以避免并发修改
+            List<DoTEntry> dotsCopy = new ArrayList<>(dots);
+            List<DoTEntry> toRemove = new ArrayList<>();
+            
+            for (DoTEntry entry : dotsCopy) {
                 entry.decrementTicks();
                 entry.incrementTickCounter();
                 
@@ -109,9 +113,12 @@ public class DoTManager {
                 
                 // 如果效果结束，移除它
                 if (entry.getTicksRemaining() <= 0) {
-                    iterator.remove();
+                    toRemove.add(entry);
                 }
             }
+            
+            // 从原始列表中移除需要移除的条目
+            dots.removeAll(toRemove);
             
             // 如果该实体没有任何DoT效果了，清理map
             if (dots.isEmpty()) {

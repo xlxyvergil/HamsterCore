@@ -16,14 +16,4 @@ public class ViralEffect extends ElementEffect {
     public ViralEffect() {
         super(MobEffectCategory.HARMFUL, 0xFF1493); // 深粉色
     }
-    
-    /**
-     * 应用病毒效果，实现受到生命值伤害增伤效果
-     * @param entity 实体
-     * @param amplifier 效果等级
-     */
-    public void applyEffect(LivingEntity entity, int amplifier) {
-        // 实现受到生命值伤害增伤效果
-        // 可以通过AttributeModifier增加实体受到的伤害
-    }
 }
