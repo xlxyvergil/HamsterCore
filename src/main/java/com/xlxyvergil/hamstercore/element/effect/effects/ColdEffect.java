@@ -1,7 +1,9 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -18,13 +20,19 @@ public class ColdEffect extends ElementEffect {
     }
     
     /**
-     * 应用冰冻效果，实现减速和暴击伤害加成效果
+     * 应用冰冻效果，实现减速效果
      * @param entity 实体
      * @param amplifier 效果等级
      */
     public void applyEffect(LivingEntity entity, int amplifier) {
-        // 实现减速和暴击伤害加成效果
-        // 减速可以通过原版的缓慢效果实现
-        // 暴击伤害加成可以通过AttributeModifier实现
+        // 实现减速效果，使用原版的缓慢效果
+        // amplifier从0开始，所以等级1-6对应amplifier 0-5
+        entity.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            MobEffects.MOVEMENT_SLOWDOWN, 
+            120, // 6秒 = 120 ticks
+            amplifier, 
+            false, 
+            true, 
+            true));
     }
 }

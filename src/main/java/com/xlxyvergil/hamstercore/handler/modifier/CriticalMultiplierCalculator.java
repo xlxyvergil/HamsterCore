@@ -1,6 +1,11 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
+import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
+import com.xlxyvergil.hamstercore.element.effect.effects.ColdEffect;
 import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Map;
@@ -42,12 +47,13 @@ public class CriticalMultiplierCalculator {
     /**
      * 计算暴击倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
+     * @param target 被攻击者
      * @param weapon 武器物品堆
      * @param specialAndFactionValues 特殊元素
      * @param cacheData 缓存数据
      * @return 暴击计算结果
      */
-    public static CriticalResult calculateCriticalMultiplier(net.minecraft.world.entity.LivingEntity attacker, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
+    public static CriticalResult calculateCriticalMultiplier(LivingEntity attacker, LivingEntity target, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
         double criticalMultiplier = 1.0; // 默认暴击倍率
         
         // 首先尝试从缓存中获取暴击数据，如果没有则使用传统方法
@@ -62,6 +68,24 @@ public class CriticalMultiplierCalculator {
             // 回退到传统方法
             criticalChance = specialAndFactionValues.getOrDefault("critical_chance", 0.0);
             criticalDamage = specialAndFactionValues.getOrDefault("critical_damage", 0.0);
+        }
+        
+        // 检查被攻击者是否具有穿刺效果，如果有则增加暴击几率
+        ElementEffectInstance punctureEffect = ElementEffectManager.getEffect(target, ElementType.PUNCTURE);
+        if (punctureEffect != null) {
+            // 每级获得5%暴击几率，最大层数时总共增加25%
+            int amplifier = punctureEffect.getAmplifier();
+            double punctureCriticalBonus = amplifier * 0.05;
+            criticalChance += punctureCriticalBonus;
+        }
+        
+        // 检查被攻击者是否具有冰冻效果，如果有则增加暴击伤害
+        ElementEffectInstance coldEffect = ElementEffectManager.getEffect(target, ElementType.COLD);
+        if (coldEffect != null) {
+            // 每级获得20%暴击伤害，最大层数时总共增加120%
+            int amplifier = coldEffect.getAmplifier();
+            double coldCriticalDamageBonus = amplifier * 0.20;
+            criticalDamage += coldCriticalDamageBonus;
         }
         
         // 使用Random判断暴击等级

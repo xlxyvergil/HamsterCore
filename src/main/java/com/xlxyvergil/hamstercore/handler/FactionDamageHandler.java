@@ -6,7 +6,11 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabil
 import com.xlxyvergil.hamstercore.element.ElementCalculationCoordinator;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
+import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
+import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,7 +23,6 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = "hamstercore")
 public class FactionDamageHandler {
-    
     
     
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -73,10 +76,70 @@ public class FactionDamageHandler {
             ElementDamageManager.ElementDamageData damageData = 
                 ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
             
-            // 设置最终伤害
-            event.setAmount(damageData.getFinalDamage());
+            // 检查攻击者是否具有穿刺效果，如果有则降低其造成的伤害
+            float finalDamage = damageData.getFinalDamage();
+            ElementEffectInstance punctureEffect = ElementEffectManager.getEffect(livingAttacker, ElementType.PUNCTURE);
+            if (punctureEffect != null) {
+                // 根据穿刺效果等级降低伤害
+                // 第1级减少40%，后续每级减少10%，满级时总共减少80%
+                int amplifier = punctureEffect.getAmplifier();
+                double damageReduction = Math.min(0.4 + amplifier * 0.1, 0.8);
+                finalDamage = (float) (finalDamage * (1.0f - damageReduction));
+            }
             
-            // 处理元素触发效果，传递缓存数据和最终伤害
-            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData, damageData.getFinalDamage());        }
+            // 检查目标是否具有病毒效果，如果有则增加对目标的伤害
+            ElementEffectInstance viralEffect = ElementEffectManager.getEffect(target, ElementType.VIRAL);
+            if (viralEffect != null) {
+                // 计算病毒伤害增幅：第1级+100%，后续每级+25%，最大+325%
+                int amplifier = viralEffect.getAmplifier();
+                double viralDamageMultiplier = calculateViralDamageMultiplier(amplifier);
+                // 对总伤害进行增伤，直接修改finalDamage
+                finalDamage = finalDamage * (float)viralDamageMultiplier;
+            }
+            
+            // 检查目标是否具有磁力效果，如果有则对总伤害进行增伤
+            float damageWithMagneticBonus = finalDamage;
+            ElementEffectInstance magneticEffect = ElementEffectManager.getEffect(target, ElementType.MAGNETIC);
+            if (magneticEffect != null && hasShield(target)) {
+                // 计算伤害增幅：第1级+100%，后续每级+25%，最大+325%
+                int amplifier = magneticEffect.getAmplifier();
+                double damageMultiplier = com.xlxyvergil.hamstercore.element.effect.effects.MagneticEffect.calculateShieldDamageMultiplier(amplifier);
+                // 对总伤害进行增伤
+                damageWithMagneticBonus = finalDamage * (float)damageMultiplier;
+            }
+            
+            // 设置最终伤害（包含病毒和磁力增伤）
+            event.setAmount(damageWithMagneticBonus);
+            
+            // 处理元素触发效果，传递缓存数据、包含病毒增伤的最终伤害和原始伤害源
+            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData, finalDamage, event.getSource());        
+        }
     }
+    
+    /**
+     * 检查实体当前是否有护盾值
+     * @param entity 实体
+     * @return 是否有护盾值
+     */
+    private static boolean hasShield(LivingEntity entity) {
+        return entity.getCapability(com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider.CAPABILITY)
+                .map(shieldCap -> shieldCap.getCurrentShield() > 0)
+                .orElse(false);
+    }
+    
+    /**
+     * 计算病毒伤害增幅倍率
+     * @param amplifier 效果等级 (0-9，对应1-10级)
+     * @return 伤害增幅倍率
+     */
+    private static double calculateViralDamageMultiplier(int amplifier) {
+        // 第1层提高100%，后续每级提高25%
+        // 1级: 1.0 + 1.0 = 2.0 (100%增幅)
+        // 2级: 1.0 + 1.0 + 0.25 = 2.25 (125%增幅)
+        // ...
+        // 10级: 1.0 + 1.0 + 9*0.25 = 4.25 (325%增幅)
+        return 1.0 + 1.0 + (amplifier * 0.25);
+    }
+    
+
 }

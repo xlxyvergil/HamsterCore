@@ -1,8 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
+import com.xlxyvergil.hamstercore.element.effect.DoTManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.damagesource.DamageSource;
 
 /**
  * 毒素元素效果
@@ -21,9 +23,13 @@ public class ToxinEffect extends ElementEffect {
      * 应用毒素效果，实现可绕过护盾的毒素DoT效果
      * @param entity 实体
      * @param amplifier 效果等级
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    public void applyEffect(LivingEntity entity, int amplifier) {
-        // 实现可绕过护盾的毒素DoT效果
-        // 可以通过直接减少生命值而非伤害的方式来绕过护盾
+    public void applyEffect(LivingEntity entity, int amplifier, float finalDamage, DamageSource damageSource) {
+        // 实现毒素DoT效果，持续6秒(120ticks)，每秒造成一次伤害
+        // 伤害数值为最终伤害的50%乘以当前触发等级
+        float dotDamage = finalDamage * 0.5f * (amplifier + 1);
+        DoTManager.addDoT(entity, com.xlxyvergil.hamstercore.element.ElementType.TOXIN, dotDamage, 120, amplifier, damageSource);
     }
 }

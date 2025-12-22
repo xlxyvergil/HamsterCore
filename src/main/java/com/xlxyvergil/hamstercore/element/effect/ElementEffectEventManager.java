@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.element.effect;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -40,6 +41,18 @@ public class ElementEffectEventManager {
         
         // 更新实体身上的DoT效果
         DoTManager.updateDoTs(entity);
+        
+        // 更新实体身上的爆炸效果
+        BlastManager.updateBlasts(entity);
+        
+        // 更新实体身上的腐蚀效果
+        CorrosiveManager.updateCorrosives(entity);
+        
+        // 更新实体身上的火焰效果（护甲削减部分）
+        HeatManager.updateHeatEffects(entity);
+        
+        // 更新所有毒气云（全局更新，不依赖于特定实体）
+        GasManager.updateAllGasClouds();
     }
     
     /**
@@ -47,7 +60,7 @@ public class ElementEffectEventManager {
      * 在效果结束或被清除时执行清理操作
      */
     @SubscribeEvent
-    public static void onLivingDeath(LivingEvent.LivingDeathEvent event) {
+    public static void onLivingDeath(LivingDeathEvent event) {
         LivingEntity entity = event.getEntity();
         
         // 清理实体身上的所有元素效果
@@ -55,5 +68,16 @@ public class ElementEffectEventManager {
         
         // 清理实体身上的所有DoT效果
         DoTManager.clearDoTs(entity);
+        
+        // 清理实体身上的所有爆炸效果
+        BlastManager.clearBlasts(entity);
+        
+        // 清理实体身上的所有腐蚀效果
+        CorrosiveManager.clearCorrosives(entity);
+        
+        // 清理实体身上的所有火焰效果
+        HeatManager.clearHeatEffects(entity);
+        
+        // 注意：不清理毒气云，因为即使原始目标死亡，毒气云依然存在
     }
 }

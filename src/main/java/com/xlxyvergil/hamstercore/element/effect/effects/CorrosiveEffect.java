@@ -1,8 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
+import com.xlxyvergil.hamstercore.element.effect.CorrosiveManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.damagesource.DamageSource;
 
 /**
  * 腐蚀元素效果
@@ -21,9 +23,11 @@ public class CorrosiveEffect extends ElementEffect {
      * 应用腐蚀效果，实现护甲削减效果
      * @param entity 实体
      * @param amplifier 效果等级
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    public void applyEffect(LivingEntity entity, int amplifier) {
-        // 实现护甲削减效果
-        // 可以通过AttributeModifier减少实体的护甲值
+    public void applyEffect(LivingEntity entity, int amplifier, float finalDamage, DamageSource damageSource) {
+        // 添加腐蚀效果到管理器
+        CorrosiveManager.addCorrosive(entity, amplifier);
     }
 }

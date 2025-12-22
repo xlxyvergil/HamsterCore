@@ -1,15 +1,21 @@
 package com.xlxyvergil.hamstercore.handler;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.ElementType.*;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.element.effect.effects.*;
-import static com.xlxyvergil.hamstercore.element.ElementType.*;
-import com.xlxyvergil.hamstercore.handler.modifier.AffixCacheManager;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 
-import java.util.*;
+
+import net.minecraft.world.damagesource.DamageSource;
+
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * 元素触发效果处理器
@@ -22,14 +28,16 @@ public class ElementTriggerHandler {
     // 存储当前攻击会话中触发的元素信息（ThreadLocal确保线程安全）
     private static final ThreadLocal<List<ElementType>> triggeredElements = ThreadLocal.withInitial(ArrayList::new);
     
+
     /**
-     * 处理元素触发效果
+     * 处理元素触发效果（带伤害源）
      * @param attacker 攻击者
      * @param target 目标实体
      * @param cacheData 缓存的元素数据
      * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData, float finalDamage) {
+    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData, float finalDamage, DamageSource damageSource) {
         // 只处理玩家攻击的情况
         if (!(attacker instanceof Player)) {
             return;
@@ -137,7 +145,7 @@ public class ElementTriggerHandler {
         
         // 根据触发等级和概率触发效果
         for (int i = 0; i < triggerLevel; i++) {
-            triggerRandomElementEffect(elementProbabilities, attacker, target, finalDamage);
+            triggerRandomElementEffect(elementProbabilities, attacker, target, finalDamage, damageSource);
         }
     }
     
@@ -146,9 +154,11 @@ public class ElementTriggerHandler {
      * @param elementProbabilities 元素概率映射
      * @param attacker 攻击者
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
     private static void triggerRandomElementEffect(Map<ElementType, Double> elementProbabilities, 
-                                              LivingEntity attacker, LivingEntity target) {
+                                              LivingEntity attacker, LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 根据概率随机选择一个元素
         double random = RANDOM.nextDouble();
         double cumulative = 0.0;
@@ -168,7 +178,7 @@ public class ElementTriggerHandler {
         }
         
         if (selectedElement != null) {
-            applyElementEffect(selectedElement, attacker, target);
+            applyElementEffect(selectedElement, attacker, target, finalDamage, damageSource);
         }
     }
     
@@ -177,8 +187,10 @@ public class ElementTriggerHandler {
      * @param elementType 元素类型
      * @param attacker 攻击者
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target) {
+    private static void applyElementEffect(ElementType elementType, LivingEntity attacker, LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 记录触发的元素
         triggeredElements.get().add(elementType);
         
@@ -191,28 +203,28 @@ public class ElementTriggerHandler {
             applyPunctureEffect(target);
         } else if (elementType == SLASH) {
             // 切割效果：出血DoT
-            applyBleedingEffect(target);
+            applyBleedingEffect(target, finalDamage, damageSource);
         } else if (elementType == COLD) {
             // 冰冻效果：减速和暴击伤害加成
             applyFreezeEffect(target);
         } else if (elementType == ELECTRICITY) {
             // 电击效果：电击DoT和眩晕
-            applyShockEffect(target);
+            applyShockEffect(target, damageSource);
         } else if (elementType == HEAT) {
             // 火焰效果：护甲减少和火焰DoT
-            applyFireEffect(target);
+            applyFireEffect(target, finalDamage, damageSource);
         } else if (elementType == TOXIN) {
             // 毒素效果：可绕过护盾的毒素DoT
-            applyToxinEffect(target);
+            applyToxinEffect(target, finalDamage, damageSource);
         } else if (elementType == BLAST) {
             // 爆炸效果：延迟范围伤害
-            applyExplosionEffect(target);
+            applyExplosionEffect(target, finalDamage, damageSource);
         } else if (elementType == CORROSIVE) {
             // 腐蚀效果：护甲削减
-            applyCorrosionEffect(target);
+            applyCorrosionEffect(target, finalDamage, damageSource);
         } else if (elementType == GAS) {
             // 毒气效果：AoE毒气DoT
-            applyGasEffect(target);
+            applyGasEffect(target, finalDamage, damageSource);
         } else if (elementType == MAGNETIC) {
             // 磁力效果：护盾伤害和护盾再生失效
             applyMagneticEffect(target);
@@ -240,16 +252,24 @@ public class ElementTriggerHandler {
      */
     private static void applyPunctureEffect(LivingEntity target) {
         // 应用穿刺效果，最大等级5
-        ElementEffectManager.applyEffect(target, PUNCTURE, (ElementEffect) ElementEffectRegistry.PUNCTURE.get(), 5, 120);
+        PunctureEffect effect = (PunctureEffect) ElementEffectRegistry.PUNCTURE.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level);
     }
     
     /**
      * 应用切割效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyBleedingEffect(LivingEntity target) {
+    private static void applyBleedingEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用切割效果，最大等级10
-        ElementEffectManager.applyEffect(target, SLASH, (ElementEffect) ElementEffectRegistry.SLASH.get(), 10, 120);
+        SlashEffect effect = (SlashEffect) ElementEffectRegistry.SLASH.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
@@ -264,55 +284,84 @@ public class ElementTriggerHandler {
     /**
      * 应用电击效果
      * @param target 目标实体
+     * @param damageSource 原始伤害源
      */
-    private static void applyShockEffect(LivingEntity target) {
+    private static void applyShockEffect(LivingEntity target, DamageSource damageSource) {
         // 应用电击效果，最大等级10
-        ElementEffectManager.applyEffect(target, ELECTRICITY, (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 10, 120);
+        ElectricityEffect effect = (ElectricityEffect) ElementEffectRegistry.ELECTRICITY.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, damageSource);
     }
     
     /**
      * 应用火焰效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyFireEffect(LivingEntity target) {
+    private static void applyFireEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用火焰效果，最大等级10
-        ElementEffectManager.applyEffect(target, HEAT, (ElementEffect) ElementEffectRegistry.HEAT.get(), 10, 120);
+        HeatEffect effect = (HeatEffect) ElementEffectRegistry.HEAT.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
      * 应用毒素效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyToxinEffect(LivingEntity target) {
+    private static void applyToxinEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用毒素效果，最大等级10
-        ElementEffectManager.applyEffect(target, TOXIN, (ElementEffect) ElementEffectRegistry.TOXIN.get(), 10, 120);
+        ToxinEffect effect = (ToxinEffect) ElementEffectRegistry.TOXIN.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
      * 应用爆炸效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyExplosionEffect(LivingEntity target) {
+    private static void applyExplosionEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用爆炸效果，最大等级10
-        ElementEffectManager.applyEffect(target, BLAST, (ElementEffect) ElementEffectRegistry.BLAST.get(), 10, 120);
+        BlastEffect effect = (BlastEffect) ElementEffectRegistry.BLAST.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
      * 应用腐蚀效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyCorrosionEffect(LivingEntity target) {
+    private static void applyCorrosionEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用腐蚀效果，最大等级10
-        ElementEffectManager.applyEffect(target, CORROSIVE, (ElementEffect) ElementEffectRegistry.CORROSIVE.get(), 10, 160);
+        CorrosiveEffect effect = (CorrosiveEffect) ElementEffectRegistry.CORROSIVE.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
      * 应用毒气效果
      * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
      */
-    private static void applyGasEffect(LivingEntity target) {
+    private static void applyGasEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用毒气效果，最大等级10
-        ElementEffectManager.applyEffect(target, GAS, (ElementEffect) ElementEffectRegistry.GAS.get(), 10, 120);
+        GasEffect effect = (GasEffect) ElementEffectRegistry.GAS.get();
+        // 获取触发等级，这里简化处理，实际应根据触发逻辑确定等级
+        int level = 1;
+        effect.applyEffect(target, level, finalDamage, damageSource);
     }
     
     /**
@@ -320,8 +369,23 @@ public class ElementTriggerHandler {
      * @param target 目标实体
      */
     private static void applyMagneticEffect(LivingEntity target) {
-        // 应用磁力效果，最大等级10
+        // 应用磁力效果，最大等级10，持续6秒（120 ticks）
+        // 从现有效果获取等级，如果没有则从1级开始
+        int currentLevel = 1;
+        if (target.hasEffect(ElementEffectRegistry.MAGNETIC.get())) {
+            currentLevel = Math.min(target.getEffect(ElementEffectRegistry.MAGNETIC.get()).getAmplifier() + 1, 10);
+        }
+        
         ElementEffectManager.applyEffect(target, MAGNETIC, (ElementEffect) ElementEffectRegistry.MAGNETIC.get(), 10, 120);
+        
+        // 立即触发磁力效果的护盾再生失效
+        // 直接调用静态方法，无需类型转换
+        if (target.hasEffect(ElementEffectRegistry.MAGNETIC.get())) {
+            int amplifier = target.getEffect(ElementEffectRegistry.MAGNETIC.get()).getAmplifier();
+            // 创建一个临时MagneticEffect实例来应用效果
+            MagneticEffect tempEffect = new MagneticEffect();
+            tempEffect.applyEffect(target, amplifier);
+        }
     }
     
     /**
@@ -329,8 +393,23 @@ public class ElementTriggerHandler {
      * @param target 目标实体
      */
     private static void applyRadiationEffect(LivingEntity target) {
+        // 检查是否已有辐射效果
+        int currentLevel = 0;
+        if (target.hasEffect((ElementEffect) ElementEffectRegistry.RADIATION.get())) {
+            currentLevel = target.getEffect((ElementEffect) ElementEffectRegistry.RADIATION.get()).getAmplifier();
+        }
+        
+        // 基础12秒，每级+1秒
+        int durationTicks = 240 + (currentLevel * 20); // 20tick = 1秒
+        
         // 应用辐射效果，最大等级10
-        ElementEffectManager.applyEffect(target, RADIATION, (ElementEffect) ElementEffectRegistry.RADIATION.get(), 10, 240);
+        ElementEffectManager.applyEffect(target, RADIATION, (ElementEffect) ElementEffectRegistry.RADIATION.get(), 10, durationTicks);
+        
+        // 立即触发辐射效果的即时效果
+        RadiationEffect radiationEffect = (RadiationEffect) ElementEffectRegistry.RADIATION.get();
+        if (radiationEffect != null) {
+            radiationEffect.applyEffect(target, currentLevel);
+        }
     }
     
     /**

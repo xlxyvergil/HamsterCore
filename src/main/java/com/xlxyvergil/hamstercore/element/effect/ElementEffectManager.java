@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.element.effect;
 import net.minecraft.world.entity.LivingEntity;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import net.minecraft.world.effect.MobEffectInstance;
+import com.xlxyvergil.hamstercore.element.effect.effects.MagneticEffect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,8 +85,13 @@ public class ElementEffectManager {
         if (effects != null) {
             ElementEffectInstance instance = effects.remove(elementType);
             if (instance != null) {
+                // 如果效果类有自定义的清理逻辑，调用它
+                ElementEffect effect = (ElementEffect) instance.getEffect();
+                if (effect instanceof MagneticEffect magneticEffect) {
+                    magneticEffect.removeEffect(entity);
+                }
                 // 从实体移除效果
-                entity.removeEffect(instance.getEffect());
+                entity.removeEffect(effect);
             }
             
             // 如果该实体没有任何效果了，清理map
@@ -115,7 +121,12 @@ public class ElementEffectManager {
         if (effects != null) {
             // 移除所有效果
             for (ElementEffectInstance instance : effects.values()) {
-                entity.removeEffect(instance.getEffect());
+                // 如果效果类有自定义的清理逻辑，调用它
+                ElementEffect effect = (ElementEffect) instance.getEffect();
+                if (effect instanceof MagneticEffect magneticEffect) {
+                    magneticEffect.removeEffect(entity);
+                }
+                entity.removeEffect(effect);
             }
             effects.clear();
             entityEffects.remove(entity);

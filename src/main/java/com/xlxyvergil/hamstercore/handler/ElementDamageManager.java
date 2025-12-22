@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-
 /**
  * 元素伤害管理器
  * 负责管理武器元素数据的计算
@@ -82,7 +81,7 @@ public class ElementDamageManager {
         modifierResults.setPhysicalElementBreakdown(physicalResult.getBreakdown());
         
         // 计算暴击倍率和暴击信息
-        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, weapon, null, cacheData);
+        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, target, weapon, null, cacheData);
         damageData.criticalMultiplier = criticalResult.getMultiplier();
         damageData.setCriticalInfo(criticalResult.getLevel(), criticalResult.getDamage());
         modifierResults.setCriticalMultiplier(criticalResult.getMultiplier());

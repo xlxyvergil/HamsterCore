@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -23,7 +24,7 @@ public class PunctureEffect extends ElementEffect {
      * @param amplifier 效果等级
      */
     public void applyEffect(LivingEntity entity, int amplifier) {
-        // 实现伤害输出减少效果
-        // 这里可以添加具体的伤害减少逻辑
+
+        // 实际的伤害减少逻辑将在FactionDamageHandler中实现
     }
 }

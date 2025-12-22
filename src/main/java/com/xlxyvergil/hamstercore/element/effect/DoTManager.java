@@ -23,12 +23,16 @@ public class DoTManager {
         private final float damagePerTick;
         private int ticksRemaining;
         private final int amplifier;
+        private int tickCounter; // 计数器，用于控制伤害频率
+        private final net.minecraft.world.damagesource.DamageSource damageSource; // 原始伤害源
         
-        public DoTEntry(ElementType elementType, float damagePerTick, int ticksRemaining, int amplifier) {
+        public DoTEntry(ElementType elementType, float damagePerTick, int ticksRemaining, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
             this.elementType = elementType;
             this.damagePerTick = damagePerTick;
             this.ticksRemaining = ticksRemaining;
             this.amplifier = amplifier;
+            this.tickCounter = 0;
+            this.damageSource = damageSource;
         }
         
         public ElementType getElementType() {
@@ -50,6 +54,22 @@ public class DoTManager {
         public int getAmplifier() {
             return amplifier;
         }
+        
+        public int getTickCounter() {
+            return tickCounter;
+        }
+        
+        public void incrementTickCounter() {
+            this.tickCounter++;
+        }
+        
+        public void resetTickCounter() {
+            this.tickCounter = 0;
+        }
+        
+        public net.minecraft.world.damagesource.DamageSource getDamageSource() {
+            return damageSource;
+        }
     }
     
     /**
@@ -59,9 +79,10 @@ public class DoTManager {
      * @param damagePerTick 每tick伤害
      * @param duration 持续时间（tick）
      * @param amplifier 效果等级
+     * @param damageSource 原始伤害源
      */
-    public static void addDoT(LivingEntity entity, ElementType elementType, float damagePerTick, int duration, int amplifier) {
-        DoTEntry entry = new DoTEntry(elementType, damagePerTick, duration, amplifier);
+    public static void addDoT(LivingEntity entity, ElementType elementType, float damagePerTick, int duration, int amplifier, net.minecraft.world.damagesource.DamageSource damageSource) {
+        DoTEntry entry = new DoTEntry(elementType, damagePerTick, duration, amplifier, damageSource);
         entityDoTs.computeIfAbsent(entity, k -> new ArrayList<>()).add(entry);
     }
     
@@ -76,9 +97,15 @@ public class DoTManager {
             while (iterator.hasNext()) {
                 DoTEntry entry = iterator.next();
                 entry.decrementTicks();
+                entry.incrementTickCounter();
                 
-                // 应用伤害
-                applyDotDamage(entity, entry);
+                // 每20 ticks（1秒）应用一次伤害
+                if (entry.getTickCounter() >= 20) {
+                    // 应用伤害
+                    applyDotDamage(entity, entry);
+                    // 重置计数器
+                    entry.resetTickCounter();
+                }
                 
                 // 如果效果结束，移除它
                 if (entry.getTicksRemaining() <= 0) {
@@ -99,21 +126,12 @@ public class DoTManager {
      * @param entry DoT条目
      */
     private static void applyDotDamage(LivingEntity entity, DoTEntry entry) {
-        // 这里应用自定义公式计算伤害
-        float damage = calculateDotDamage(entry);
-        // 应用伤害到实体
-        entity.hurt(entity.damageSources().magic(), damage);
-    }
-    
-    /**
-     * 计算DoT伤害
-     * @param entry DoT条目
-     * @return 计算后的伤害值
-     */
-    private static float calculateDotDamage(DoTEntry entry) {
-        // 使用自定义公式计算伤害
-        // 这里只是一个示例，实际公式可能会更复杂
-        return entry.getDamagePerTick() * (1.0f + entry.getAmplifier() * 0.1f);
+        // 直接使用每tick伤害值，不需要额外计算
+        float damage = entry.getDamagePerTick();
+        
+        // 使用原始伤害源进行DoT伤害
+        // 这样DoT伤害会继承原始伤害的所有属性（如攻击者、伤害类型等）
+        entity.hurt(entry.getDamageSource(), damage);
     }
     
     /**

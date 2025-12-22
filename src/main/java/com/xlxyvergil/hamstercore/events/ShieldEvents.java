@@ -5,8 +5,13 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabili
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.network.EntityShieldSyncToClient;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.effects.MagneticEffect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -55,6 +60,9 @@ public class ShieldEvents {
             event.setCanceled(true);
         }
         
+        // 检查护盾是否被击破（从有护盾变为无护盾）
+        boolean shieldBroken = oldShield > 0 && shieldCap.getCurrentShield() <= 0;
+        
         // 确保护盾变化时同步（包括归零的情况）
         if (oldShield != shieldCap.getCurrentShield()) {
             // 同步逻辑将在下面的通用同步代码中处理
@@ -67,6 +75,11 @@ public class ShieldEvents {
                 PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
                 new EntityShieldSyncToClient(entity.getId(), shieldCap.getCurrentShield(), shieldCap.getMaxShield(), shieldCap.isGatingActive())
             );
+        }
+        
+        // 处理磁力效果的破盾电击伤害
+        if (shieldBroken) {
+            handleMagneticShieldBreak(entity, event);
         }
         
         // 检查是否需要触发护盾保险机制（仅限玩家）
@@ -204,5 +217,44 @@ public class ShieldEvents {
                 );
             }
         }
+    }
+    
+    /**
+     * 处理磁力效果的破盾电击伤害
+     * @param entity 实体
+     * @param event 受伤事件
+     */
+    private static void handleMagneticShieldBreak(LivingEntity entity, LivingHurtEvent event) {
+        // 检查实体是否有磁力效果
+        int magneticLevel = getMagneticEffectLevel(entity);
+        if (magneticLevel < 0) {
+            return; // 没有磁力效果
+        }
+        
+        // 计算电击伤害
+        float electricDamage = MagneticEffect.calculateShieldBreakElectricDamage(entity, magneticLevel);
+        if (electricDamage <= 0) {
+            return;
+        }
+        
+        // 创建电击伤害源
+        DamageSource electricDamageSource = new DamageSource(
+            entity.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                .getHolderOrThrow(DamageTypes.MAGIC),
+            event.getSource().getEntity(),
+            event.getSource().getDirectEntity()
+        );
+        
+        // 造成电击伤害
+        entity.hurt(electricDamageSource, electricDamage);
+    }
+    
+    /**
+     * 获取实体的磁力效果等级
+     * @param entity 实体
+     * @return 磁力效果等级，如果没有则返回-1
+     */
+    private static int getMagneticEffectLevel(LivingEntity entity) {
+        return MagneticEffect.getMagneticEffectLevel(entity, ElementEffectRegistry.MAGNETIC.get());
     }
 }
