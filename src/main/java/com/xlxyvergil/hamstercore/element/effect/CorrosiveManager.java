@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
 import com.xlxyvergil.hamstercore.element.effect.effects.CorrosiveEffect;
 
 import java.util.*;
@@ -43,7 +44,7 @@ public class CorrosiveManager {
             this.modifier = new AttributeModifier(
                 modifierUUID,
                 "Corrosive Armor Reduction",
-                reductionPercentage,
+                -reductionPercentage, // 使用负值来减少护甲
                 AttributeModifier.Operation.MULTIPLY_BASE
             );
         }
@@ -59,7 +60,7 @@ public class CorrosiveManager {
             this.modifier = new AttributeModifier(
                 modifierUUID,
                 "Corrosive Armor Reduction",
-                reductionPercentage,
+                -reductionPercentage,
                 AttributeModifier.Operation.MULTIPLY_BASE
             );
         }
@@ -70,7 +71,7 @@ public class CorrosiveManager {
          */
         private double calculateReductionPercentage(int level) {
             if (level <= 0) return 0.0;
-            double reduction = 1 - (0.26 + (level - 1) * 0.06);
+            double reduction = 0.26 + (level - 1) * 0.06;
             return Math.min(reduction, 0.80); // 最大80%
         }
         
@@ -119,16 +120,16 @@ public class CorrosiveManager {
             int newAmplifier = Math.min(9, existingEntry.getAmplifier() + 1); // amplifier从0开始，对应等级1-10
             
             // 移除旧的属性修饰符
-            if (entity.getAttribute(Attributes.ARMOR) != null) {
-                entity.getAttribute(Attributes.ARMOR).removeModifier(existingEntry.getModifierUUID());
+            if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+                entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(existingEntry.getModifierUUID());
             }
             
             // 更新效果等级
             existingEntry.updateAmplifier(newAmplifier);
             
             // 应用新的属性修饰符
-            if (entity.getAttribute(Attributes.ARMOR) != null) {
-                entity.getAttribute(Attributes.ARMOR).addPermanentModifier(existingEntry.getModifier());
+            if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+                entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).addPermanentModifier(existingEntry.getModifier());
             }
         } else {
             // 如果没有现有效果，则创建新的
@@ -136,8 +137,8 @@ public class CorrosiveManager {
             corrosives.add(entry);
             
             // 应用属性修饰符
-            if (entity.getAttribute(Attributes.ARMOR) != null) {
-                entity.getAttribute(Attributes.ARMOR).addPermanentModifier(entry.getModifier());
+            if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+                entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).addPermanentModifier(entry.getModifier());
             }
         }
         
@@ -162,8 +163,8 @@ public class CorrosiveManager {
                 // 如果效果结束，移除它
                 if (entry.isExpired()) {
                     // 移除属性修饰符
-                    if (entity.getAttribute(Attributes.ARMOR) != null) {
-                        entity.getAttribute(Attributes.ARMOR).removeModifier(entry.getModifierUUID());
+                    if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+                        entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(entry.getModifierUUID());
                     }
                     toRemove.add(entry);
                 }
@@ -191,8 +192,8 @@ public class CorrosiveManager {
         if (corrosives != null) {
             // 移除所有属性修饰符
             for (CorrosiveEntry entry : corrosives) {
-                if (entity.getAttribute(Attributes.ARMOR) != null) {
-                    entity.getAttribute(Attributes.ARMOR).removeModifier(entry.getModifierUUID());
+                if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
+                    entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(entry.getModifierUUID());
                 }
             }
             corrosives.clear();

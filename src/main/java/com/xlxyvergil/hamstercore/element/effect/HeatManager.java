@@ -55,8 +55,15 @@ public class HeatManager {
      * @return 护甲修饰符UUID
      */
     public static UUID addHeatArmorReduction(LivingEntity entity, int duration) {
-        // 清理现有的火焰效果（覆盖机制）
-        removeHeatArmorReduction(entity);
+        // 检查是否已有火焰效果，如果有则更新其持续时间而不是创建新的
+        HeatEffectData existingData = entityHeats.get(entity);
+        if (existingData != null) {
+            // 更新现有效果的持续时间，确保不缩短已有的持续时间
+            if (duration > existingData.ticksRemaining) {
+                existingData.ticksRemaining = duration;
+            }
+            return existingData.getModifierUUID();
+        }
         
         // 生成新的UUID
         UUID modifierUUID = UUID.randomUUID();
@@ -65,17 +72,12 @@ public class HeatManager {
         AttributeModifier armorModifier = new AttributeModifier(
             modifierUUID,
             "Heat Armor Reduction",
-            0.5, // 50%减少
-            AttributeModifier.Operation.MULTIPLY_BASE
+            -0.5, // 50%减少
+            AttributeModifier.Operation.MULTIPLY_TOTAL
         );
         
         // 添加修饰符到实体的护甲属性上
         if (entity.getAttribute(EntityAttributeRegistry.ARMOR.get()) != null) {
-            // 先检查并移除已存在的修饰符
-            AttributeModifier existingModifier = entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).getModifier(modifierUUID);
-            if (existingModifier != null) {
-                entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).removeModifier(existingModifier);
-            }
             entity.getAttribute(EntityAttributeRegistry.ARMOR.get()).addPermanentModifier(armorModifier);
         }
         

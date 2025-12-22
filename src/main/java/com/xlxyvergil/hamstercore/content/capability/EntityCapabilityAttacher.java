@@ -39,7 +39,6 @@ public class EntityCapabilityAttacher {
 
         // 3. 应用基础属性修饰符
         BaseAttributeModifierSystem.applyBaseAttributeModifiers(entity);
-        BaseAttributeModifierSystem.applyCoefficientAttributeModifiers(entity);
 
         // 4. 应用衍生属性修饰符
         DerivedAttributeModifierSystem.applyDerivedModifiers(entity);
@@ -81,7 +80,6 @@ public class EntityCapabilityAttacher {
     public static void initializeCapabilities(LivingEntity entity) {
         // 应用基础属性修饰符
         BaseAttributeModifierSystem.applyBaseAttributeModifiers(entity);
-        BaseAttributeModifierSystem.applyCoefficientAttributeModifiers(entity);
 
         // 应用衍生属性修饰符
         DerivedAttributeModifierSystem.applyDerivedModifiers(entity);
