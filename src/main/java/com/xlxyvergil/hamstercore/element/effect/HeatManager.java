@@ -65,7 +65,7 @@ public class HeatManager {
         AttributeModifier armorModifier = new AttributeModifier(
             modifierUUID,
             "Heat Armor Reduction",
-            -0.5, // 50%减少
+            0.5, // 50%减少
             AttributeModifier.Operation.MULTIPLY_BASE
         );
         

@@ -21,11 +21,18 @@ public class ImpactEffect extends ElementEffect {
     @Override
     public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
         super.addAttributeModifiers(entity, attributeMap, amplifier);
-        // 实现击退效果，直接向后击退一格
-        // 获取实体当前朝向的反方向
-        Vec3 lookVec = entity.getLookAngle();
-        // 向后击退一格，忽略Y轴，增加一点垂直动量
-        entity.push(-lookVec.x, 0.1, -lookVec.z);
-        entity.hurtMarked = true;
+    }
+    
+    /**
+     * 对实体施加击退效果
+     * @param target 被击退的目标实体
+     * @param attacker 攻击者实体
+     */
+    public void applyKnockback(LivingEntity target, LivingEntity attacker) {
+        // 使用攻击者的面向方向来击退目标
+        Vec3 lookVec = attacker.getLookAngle();
+        // 将目标向攻击者面向的方向击退，增加一点垂直动量
+        target.push(lookVec.x, 0.1, lookVec.z);
+        target.hurtMarked = true;
     }
 }

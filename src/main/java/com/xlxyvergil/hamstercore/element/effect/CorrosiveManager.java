@@ -43,7 +43,7 @@ public class CorrosiveManager {
             this.modifier = new AttributeModifier(
                 modifierUUID,
                 "Corrosive Armor Reduction",
-                -reductionPercentage,
+                reductionPercentage,
                 AttributeModifier.Operation.MULTIPLY_BASE
             );
         }
@@ -59,7 +59,7 @@ public class CorrosiveManager {
             this.modifier = new AttributeModifier(
                 modifierUUID,
                 "Corrosive Armor Reduction",
-                -reductionPercentage,
+                reductionPercentage,
                 AttributeModifier.Operation.MULTIPLY_BASE
             );
         }
@@ -70,7 +70,7 @@ public class CorrosiveManager {
          */
         private double calculateReductionPercentage(int level) {
             if (level <= 0) return 0.0;
-            double reduction = 0.26 + (level - 1) * 0.06;
+            double reduction = 1 - (0.26 + (level - 1) * 0.06);
             return Math.min(reduction, 0.80); // 最大80%
         }
         

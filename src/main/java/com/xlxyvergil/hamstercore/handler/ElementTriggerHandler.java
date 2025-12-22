@@ -290,6 +290,14 @@ public class ElementTriggerHandler {
      */
     private static void applyImpactEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 应用冲击效果，最大等级1，持续6秒（120 ticks）
+        // 由于需要攻击者方向，我们直接应用击退效果而不是通过状态效果
+        // 获取攻击者（从damageSource获取）
+        LivingEntity attacker = (LivingEntity) damageSource.getEntity();
+        if (attacker != null) {
+            // 直接应用击退效果
+            ((ImpactEffect) ElementEffectRegistry.IMPACT.get()).applyKnockback(target, attacker);
+        }
+        // 同时仍然应用状态效果以保持一致性
         ElementEffectManager.applyEffect(target, ElementType.IMPACT, (ElementEffect) ElementEffectRegistry.IMPACT.get(), 0, 120, finalDamage, damageSource);
     }    
     
