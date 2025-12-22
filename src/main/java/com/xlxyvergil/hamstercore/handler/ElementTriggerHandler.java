@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.element.ElementType.*;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
@@ -14,8 +13,8 @@ import com.xlxyvergil.hamstercore.element.effect.effects.*;
 
 
 import net.minecraft.world.damagesource.DamageSource;
-
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 /**
  * 元素触发效果处理器
@@ -195,43 +194,43 @@ public class ElementTriggerHandler {
         triggeredElements.get().add(elementType);
         
         // 根据元素类型应用不同的效果
-        if (elementType == IMPACT) {
+        if (elementType == ElementType.IMPACT) {
             // 冲击效果：击退效果
             applyImpactEffect(target);
-        } else if (elementType == PUNCTURE) {
+        } else if (elementType == ElementType.PUNCTURE) {
             // 穿刺效果：伤害输出减少
             applyPunctureEffect(target);
-        } else if (elementType == SLASH) {
+        } else if (elementType == ElementType.SLASH) {
             // 切割效果：出血DoT
             applyBleedingEffect(target, finalDamage, damageSource);
-        } else if (elementType == COLD) {
+        } else if (elementType == ElementType.COLD) {
             // 冰冻效果：减速和暴击伤害加成
             applyFreezeEffect(target);
-        } else if (elementType == ELECTRICITY) {
+        } else if (elementType == ElementType.ELECTRICITY) {
             // 电击效果：电击DoT和眩晕
             applyShockEffect(target, damageSource);
-        } else if (elementType == HEAT) {
+        } else if (elementType == ElementType.HEAT) {
             // 火焰效果：护甲减少和火焰DoT
             applyFireEffect(target, finalDamage, damageSource);
-        } else if (elementType == TOXIN) {
+        } else if (elementType == ElementType.TOXIN) {
             // 毒素效果：可绕过护盾的毒素DoT
             applyToxinEffect(target, finalDamage, damageSource);
-        } else if (elementType == BLAST) {
+        } else if (elementType == ElementType.BLAST) {
             // 爆炸效果：延迟范围伤害
             applyExplosionEffect(target, finalDamage, damageSource);
-        } else if (elementType == CORROSIVE) {
+        } else if (elementType == ElementType.CORROSIVE) {
             // 腐蚀效果：护甲削减
             applyCorrosionEffect(target, finalDamage, damageSource);
-        } else if (elementType == GAS) {
+        } else if (elementType == ElementType.GAS) {
             // 毒气效果：AoE毒气DoT
             applyGasEffect(target, finalDamage, damageSource);
-        } else if (elementType == MAGNETIC) {
+        } else if (elementType == ElementType.MAGNETIC) {
             // 磁力效果：护盾伤害和护盾再生失效
             applyMagneticEffect(target);
-        } else if (elementType == RADIATION) {
+        } else if (elementType == ElementType.RADIATION) {
             // 辐射效果：敌我不分攻击友军
             applyRadiationEffect(target);
-        } else if (elementType == VIRAL) {
+        } else if (elementType == ElementType.VIRAL) {
             // 病毒效果：受到生命值伤害增伤
             applyVirusEffect(target);
         }
@@ -278,7 +277,7 @@ public class ElementTriggerHandler {
      */
     private static void applyFreezeEffect(LivingEntity target) {
         // 应用冰冻效果，最大等级6
-        ElementEffectManager.applyEffect(target, COLD, (ElementEffect) ElementEffectRegistry.COLD.get(), 6, 120);
+        ElementEffectManager.applyEffect(target, ElementType.COLD, (ElementEffect) ElementEffectRegistry.COLD.get(), 6, 120);
     }
     
     /**
@@ -376,7 +375,7 @@ public class ElementTriggerHandler {
             currentLevel = Math.min(target.getEffect(ElementEffectRegistry.MAGNETIC.get()).getAmplifier() + 1, 10);
         }
         
-        ElementEffectManager.applyEffect(target, MAGNETIC, (ElementEffect) ElementEffectRegistry.MAGNETIC.get(), 10, 120);
+        ElementEffectManager.applyEffect(target, ElementType.MAGNETIC, (ElementEffect) ElementEffectRegistry.MAGNETIC.get(), 10, 120);
         
         // 立即触发磁力效果的护盾再生失效
         // 直接调用静态方法，无需类型转换
@@ -403,7 +402,7 @@ public class ElementTriggerHandler {
         int durationTicks = 240 + (currentLevel * 20); // 20tick = 1秒
         
         // 应用辐射效果，最大等级10
-        ElementEffectManager.applyEffect(target, RADIATION, (ElementEffect) ElementEffectRegistry.RADIATION.get(), 10, durationTicks);
+        ElementEffectManager.applyEffect(target, ElementType.RADIATION, (ElementEffect) ElementEffectRegistry.RADIATION.get(), 10, durationTicks);
         
         // 立即触发辐射效果的即时效果
         RadiationEffect radiationEffect = (RadiationEffect) ElementEffectRegistry.RADIATION.get();
@@ -418,7 +417,7 @@ public class ElementTriggerHandler {
      */
     private static void applyVirusEffect(LivingEntity target) {
         // 应用病毒效果，最大等级10
-        ElementEffectManager.applyEffect(target, VIRAL, (ElementEffect) ElementEffectRegistry.VIRAL.get(), 10, 120);
+        ElementEffectManager.applyEffect(target, ElementType.VIRAL, (ElementEffect) ElementEffectRegistry.VIRAL.get(), 10, 120);
     }
     
     /**

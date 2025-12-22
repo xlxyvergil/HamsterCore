@@ -3,7 +3,7 @@ package com.xlxyvergil.hamstercore.element.effect;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.effect.MobEffectInstance;
+import com.xlxyvergil.hamstercore.element.effect.effects.CorrosiveEffect;
 
 import java.util.*;
 
