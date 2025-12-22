@@ -23,25 +23,29 @@ public class EntityAttributeRegistry {
     
     // 注册护甲和护盾相关属性
     
-    /** 基础护甲属性 - 实体的基础护甲值 */
-    public static final RegistryObject<Attribute> BASE_ARMOR = ATTRIBUTES.register("base_armor", 
-        () -> new RangedAttribute("attribute.name.hamstercore.base_armor", 1.0D, 0.0D, 1024.0D).setSyncable(true));
-    
     /** 护甲属性 - 实体的总护甲值 */
     public static final RegistryObject<Attribute> ARMOR = ATTRIBUTES.register("armor", 
-        () -> new RangedAttribute("attribute.name.hamstercore.armor", 1.0D, 0.0D, 1024.0D).setSyncable(true));
+        () -> new RangedAttribute("attribute.name.hamstercore.armor", 0.0D, 0.0D, 10000.0D).setSyncable(true));
     
-    /** 最大护盾属性 - 实体的最大护盾值 */
-    public static final RegistryObject<Attribute> MAX_SHIELD = ATTRIBUTES.register("max_shield", 
-        () -> new RangedAttribute("attribute.name.hamstercore.max_shield", 1.0D, 0.0D, 1024.0D).setSyncable(true));
+    /** 护盾属性 - 实体的总护盾值 */
+    public static final RegistryObject<Attribute> SHIELD = ATTRIBUTES.register("shield", 
+        () -> new RangedAttribute("attribute.name.hamstercore.shield", 0.0D, 0.0D, 10000.0D).setSyncable(true));
     
     /** 护盾恢复速率属性 - 实体的护盾每秒恢复值 */
     public static final RegistryObject<Attribute> REGEN_RATE = ATTRIBUTES.register("regen_rate", 
-        () -> new RangedAttribute("attribute.name.hamstercore.regen_rate", 1.0D, 0.0D, 1024.0D).setSyncable(true));
+        () -> new RangedAttribute("attribute.name.hamstercore.regen_rate", 0.0D, 0.0D, 10000.0D).setSyncable(true));
     
     /** 护盾恢复延迟属性 - 实体受到伤害后护盾开始恢复的延迟时间 */
     public static final RegistryObject<Attribute> REGEN_DELAY = ATTRIBUTES.register("regen_delay", 
-        () -> new RangedAttribute("attribute.name.hamstercore.regen_delay", 1.0D, 0.0D, 1024.0D).setSyncable(true));
+        () -> new RangedAttribute("attribute.name.hamstercore.regen_delay", 0.0D, 0.0D, 10000.0D).setSyncable(true));
+    
+    /** 护盾耗尽恢复延迟属性 - 实体护盾耗尽后开始恢复的延迟时间 */
+    public static final RegistryObject<Attribute> DEPLETED_REGEN_DELAY = ATTRIBUTES.register("depleted_regen_delay", 
+        () -> new RangedAttribute("attribute.name.hamstercore.depleted_regen_delay", 0.0D, 0.0D, 10000.0D).setSyncable(true));
+    
+    /** 护盾保险时间属性 - 实体护盾保险的持续时间 */
+    public static final RegistryObject<Attribute> IMMUNITY_TIME = ATTRIBUTES.register("immunity_time", 
+        () -> new RangedAttribute("attribute.name.hamstercore.immunity_time", 0.0D, 0.0D, 10000.0D).setSyncable(true));
     
     /**
      * 将所有自定义属性绑定到实体上
@@ -51,11 +55,12 @@ public class EntityAttributeRegistry {
         // 按照TACZ的方式：直接对所有实体类型添加属性
         event.getTypes().forEach(type -> {
             // 添加所有护甲和护盾相关属性
-            event.add(type, BASE_ARMOR.get());
             event.add(type, ARMOR.get());
-            event.add(type, MAX_SHIELD.get());
+            event.add(type, SHIELD.get());
             event.add(type, REGEN_RATE.get());
             event.add(type, REGEN_DELAY.get());
+            event.add(type, DEPLETED_REGEN_DELAY.get());
+            event.add(type, IMMUNITY_TIME.get());
         });
     }
 }

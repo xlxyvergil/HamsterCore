@@ -87,6 +87,7 @@ public class EntityCapabilityEvents {
             return;
         }
         
+        // 使用新的Attribute修饰符系统初始化实体能力
         EntityCapabilityAttacher.initializeEntityCapabilities(entity);
         
         // 立即同步到客户端，确保客户端能获取到正确的数据
@@ -95,11 +96,15 @@ public class EntityCapabilityEvents {
     
     @SubscribeEvent
     public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
-        if (event.getEntity() instanceof LivingEntity livingEntity && !(livingEntity instanceof Player)) {
+        if (event.getEntity() instanceof LivingEntity livingEntity) {
+            // 排除玩家实体，玩家应该由PlayerCapabilityEvents处理
+            if (livingEntity instanceof Player) {
+                return;
+            }
+            
             if (!event.getLevel().isClientSide()) {
-                // 服务端：初始化实体能力
+                // 非玩家实体处理
                 EntityCapabilityAttacher.initializeEntityCapabilities(livingEntity);
-                
                 // 立即同步到客户端，确保客户端能获取到正确的数据
                 EntityCapabilityAttacher.syncEntityCapabilitiesToClients(livingEntity);
             } else {
@@ -107,7 +112,7 @@ public class EntityCapabilityEvents {
             }
         }
     }
-    
+
     // 当玩家开始跟踪实体时，同步实体数据到该玩家
     @SubscribeEvent
     public static void onStartTracking(PlayerEvent.StartTracking event) {

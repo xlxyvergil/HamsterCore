@@ -1,9 +1,11 @@
 package com.xlxyvergil.hamstercore.events;
 
+import com.xlxyvergil.hamstercore.content.capability.EntityCapabilityAttacher;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityHealthModifierCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.network.*;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -68,15 +70,29 @@ public class EntityConversionHandler {
             });
         });
         
-        // 复制护甲（包括基础护甲和实际护甲）
+        // 复制护甲
         originalEntity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(originalArmorCap -> {
             targetEntity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(targetArmorCap -> {
-                // 复制基础护甲值
-                targetArmorCap.setBaseArmor(originalArmorCap.getBaseArmor());
-                // 复制实际护甲值
+                // 复制实际护甲值（Capability中现在只存储最终计算后的护甲值）
                 targetArmorCap.setArmor(originalArmorCap.getArmor());
                 // 同步到客户端
                 EntityArmorSyncToClient.sync(targetEntity);
+            });
+        });
+        
+        // 复制护盾
+        originalEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(originalShieldCap -> {
+            targetEntity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(targetShieldCap -> {
+                // 复制护盾相关值
+                targetShieldCap.setMaxShield(originalShieldCap.getMaxShield());
+                targetShieldCap.setCurrentShield(originalShieldCap.getCurrentShield());
+                targetShieldCap.setRegenRate(originalShieldCap.getRegenRate());
+                targetShieldCap.setRegenDelay(originalShieldCap.getRegenDelay());
+                targetShieldCap.setRegenDelayDepleted(originalShieldCap.getRegenDelayDepleted());
+                targetShieldCap.setImmunityTime(originalShieldCap.getImmunityTime());
+                targetShieldCap.setInsuranceAvailable(originalShieldCap.isInsuranceAvailable());
+                // 同步到客户端
+                EntityShieldSyncToClient.sync(targetEntity);
             });
         });
         
@@ -88,5 +104,15 @@ public class EntityConversionHandler {
                 EntityHealthModifierSyncToClient.sync(targetEntity);
             });
         });
+        
+        // 使用新的Attribute修饰符系统重新初始化目标实体的能力
+        EntityCapabilityAttacher.initializeEntityCapabilities(targetEntity);
+        
+        // 重新同步所有能力到客户端
+        EntityArmorSyncToClient.sync(targetEntity);
+        EntityShieldSyncToClient.sync(targetEntity);
+        EntityLevelSyncToClient.sync(targetEntity);
+        EntityFactionSyncToClient.sync(targetEntity);
+        EntityHealthModifierSyncToClient.sync(targetEntity);
     }
 }
