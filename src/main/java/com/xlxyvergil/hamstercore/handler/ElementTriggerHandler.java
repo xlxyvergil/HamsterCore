@@ -1,10 +1,13 @@
 package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.effects.*;
+import static com.xlxyvergil.hamstercore.element.ElementType.*;
+import com.xlxyvergil.hamstercore.handler.modifier.AffixCacheManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-
-import static com.xlxyvergil.hamstercore.element.ElementType.*;
 
 import java.util.*;
 
@@ -24,8 +27,9 @@ public class ElementTriggerHandler {
      * @param attacker 攻击者
      * @param target 目标实体
      * @param cacheData 缓存的元素数据
+     * @param finalDamage 最终伤害值
      */
-    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData) {
+    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData, float finalDamage) {
         // 只处理玩家攻击的情况
         if (!(attacker instanceof Player)) {
             return;
@@ -133,7 +137,7 @@ public class ElementTriggerHandler {
         
         // 根据触发等级和概率触发效果
         for (int i = 0; i < triggerLevel; i++) {
-            triggerRandomElementEffect(elementProbabilities, attacker, target);
+            triggerRandomElementEffect(elementProbabilities, attacker, target, finalDamage);
         }
     }
     
@@ -180,32 +184,162 @@ public class ElementTriggerHandler {
         
         // 根据元素类型应用不同的效果
         if (elementType == IMPACT) {
-            // 冲击效果：待设计
+            // 冲击效果：击退效果
+            applyImpactEffect(target);
         } else if (elementType == PUNCTURE) {
-            // 穿刺效果：待设计
+            // 穿刺效果：伤害输出减少
+            applyPunctureEffect(target);
         } else if (elementType == SLASH) {
-            // 切割效果：待设计
+            // 切割效果：出血DoT
+            applyBleedingEffect(target);
         } else if (elementType == COLD) {
-            // 冰冻效果：待设计
+            // 冰冻效果：减速和暴击伤害加成
+            applyFreezeEffect(target);
         } else if (elementType == ELECTRICITY) {
-            // 电击效果：待设计
+            // 电击效果：电击DoT和眩晕
+            applyShockEffect(target);
         } else if (elementType == HEAT) {
-            // 火焰效果：待设计
+            // 火焰效果：护甲减少和火焰DoT
+            applyFireEffect(target);
         } else if (elementType == TOXIN) {
-            // 毒素效果：待设计
+            // 毒素效果：可绕过护盾的毒素DoT
+            applyToxinEffect(target);
         } else if (elementType == BLAST) {
-            // 爆炸效果：待设计
+            // 爆炸效果：延迟范围伤害
+            applyExplosionEffect(target);
         } else if (elementType == CORROSIVE) {
-            // 腐蚀效果：待设计
+            // 腐蚀效果：护甲削减
+            applyCorrosionEffect(target);
         } else if (elementType == GAS) {
-            // 毒气效果：待设计
+            // 毒气效果：AoE毒气DoT
+            applyGasEffect(target);
         } else if (elementType == MAGNETIC) {
-            // 磁力效果：待设计
+            // 磁力效果：护盾伤害和护盾再生失效
+            applyMagneticEffect(target);
         } else if (elementType == RADIATION) {
-            // 辐射效果：待设计
+            // 辐射效果：敌我不分攻击友军
+            applyRadiationEffect(target);
         } else if (elementType == VIRAL) {
-            // 病毒效果：待设计
+            // 病毒效果：受到生命值伤害增伤
+            applyVirusEffect(target);
         }
+    }
+    
+    /**
+     * 应用冲击效果
+     * @param target 目标实体
+     */
+    private static void applyImpactEffect(LivingEntity target) {
+        // 应用冲击效果，只有1级，直接向后击退一格
+        ImpactEffect effect = (ImpactEffect) ElementEffectRegistry.IMPACT.get();
+        effect.applyEffect(target, 0); // 只有1级效果
+    }    
+    /**
+     * 应用穿刺效果
+     * @param target 目标实体
+     */
+    private static void applyPunctureEffect(LivingEntity target) {
+        // 应用穿刺效果，最大等级5
+        ElementEffectManager.applyEffect(target, PUNCTURE, (ElementEffect) ElementEffectRegistry.PUNCTURE.get(), 5, 120);
+    }
+    
+    /**
+     * 应用切割效果
+     * @param target 目标实体
+     */
+    private static void applyBleedingEffect(LivingEntity target) {
+        // 应用切割效果，最大等级10
+        ElementEffectManager.applyEffect(target, SLASH, (ElementEffect) ElementEffectRegistry.SLASH.get(), 10, 120);
+    }
+    
+    /**
+     * 应用冰冻效果
+     * @param target 目标实体
+     */
+    private static void applyFreezeEffect(LivingEntity target) {
+        // 应用冰冻效果，最大等级6
+        ElementEffectManager.applyEffect(target, COLD, (ElementEffect) ElementEffectRegistry.COLD.get(), 6, 120);
+    }
+    
+    /**
+     * 应用电击效果
+     * @param target 目标实体
+     */
+    private static void applyShockEffect(LivingEntity target) {
+        // 应用电击效果，最大等级10
+        ElementEffectManager.applyEffect(target, ELECTRICITY, (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 10, 120);
+    }
+    
+    /**
+     * 应用火焰效果
+     * @param target 目标实体
+     */
+    private static void applyFireEffect(LivingEntity target) {
+        // 应用火焰效果，最大等级10
+        ElementEffectManager.applyEffect(target, HEAT, (ElementEffect) ElementEffectRegistry.HEAT.get(), 10, 120);
+    }
+    
+    /**
+     * 应用毒素效果
+     * @param target 目标实体
+     */
+    private static void applyToxinEffect(LivingEntity target) {
+        // 应用毒素效果，最大等级10
+        ElementEffectManager.applyEffect(target, TOXIN, (ElementEffect) ElementEffectRegistry.TOXIN.get(), 10, 120);
+    }
+    
+    /**
+     * 应用爆炸效果
+     * @param target 目标实体
+     */
+    private static void applyExplosionEffect(LivingEntity target) {
+        // 应用爆炸效果，最大等级10
+        ElementEffectManager.applyEffect(target, BLAST, (ElementEffect) ElementEffectRegistry.BLAST.get(), 10, 120);
+    }
+    
+    /**
+     * 应用腐蚀效果
+     * @param target 目标实体
+     */
+    private static void applyCorrosionEffect(LivingEntity target) {
+        // 应用腐蚀效果，最大等级10
+        ElementEffectManager.applyEffect(target, CORROSIVE, (ElementEffect) ElementEffectRegistry.CORROSIVE.get(), 10, 160);
+    }
+    
+    /**
+     * 应用毒气效果
+     * @param target 目标实体
+     */
+    private static void applyGasEffect(LivingEntity target) {
+        // 应用毒气效果，最大等级10
+        ElementEffectManager.applyEffect(target, GAS, (ElementEffect) ElementEffectRegistry.GAS.get(), 10, 120);
+    }
+    
+    /**
+     * 应用磁力效果
+     * @param target 目标实体
+     */
+    private static void applyMagneticEffect(LivingEntity target) {
+        // 应用磁力效果，最大等级10
+        ElementEffectManager.applyEffect(target, MAGNETIC, (ElementEffect) ElementEffectRegistry.MAGNETIC.get(), 10, 120);
+    }
+    
+    /**
+     * 应用辐射效果
+     * @param target 目标实体
+     */
+    private static void applyRadiationEffect(LivingEntity target) {
+        // 应用辐射效果，最大等级10
+        ElementEffectManager.applyEffect(target, RADIATION, (ElementEffect) ElementEffectRegistry.RADIATION.get(), 10, 240);
+    }
+    
+    /**
+     * 应用病毒效果
+     * @param target 目标实体
+     */
+    private static void applyVirusEffect(LivingEntity target) {
+        // 应用病毒效果，最大等级10
+        ElementEffectManager.applyEffect(target, VIRAL, (ElementEffect) ElementEffectRegistry.VIRAL.get(), 10, 120);
     }
     
     /**

@@ -11,6 +11,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.events.PlayerLevelEvents;
 import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
@@ -50,6 +51,9 @@ public class HamsterCore {
         
         // 注册属性
         EntityAttributeRegistry.ATTRIBUTES.register(modEventBus);
+        
+        // 注册元素效果
+        ElementEffectRegistry.register();
                 
         // 初始化网络包
         PacketHandler.init();
@@ -70,7 +74,7 @@ public class HamsterCore {
     
     
     
-
+    
     /**
      * 服务器启动完成事件处理
      * 在这个阶段，所有模组的物品都已完成注册和初始化，可以安全获取

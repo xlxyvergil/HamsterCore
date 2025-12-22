@@ -76,8 +76,7 @@ public class FactionDamageHandler {
             // 设置最终伤害
             event.setAmount(damageData.getFinalDamage());
             
-            // 处理元素触发效果，传递缓存数据
-            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData);
-        }
+            // 处理元素触发效果，传递缓存数据和最终伤害
+            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData, damageData.getFinalDamage());        }
     }
 }
