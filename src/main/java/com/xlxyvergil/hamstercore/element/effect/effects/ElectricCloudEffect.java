@@ -1,9 +1,11 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -58,32 +60,78 @@ public class ElectricCloudEffect extends ElementEffect {
         List<LivingEntity> entities = new ArrayList<>(serverLevel.getEntitiesOfClass(LivingEntity.class, boundingBox));
         
         // 从当前云效果获取原始伤害值
-        com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance electricityEffectInstance = 
+        ElementEffectInstance electricityEffectInstance = 
             getElementEffectInstance(entity);
         float baseDamage = electricityEffectInstance != null ? electricityEffectInstance.getFinalDamage() : 1.0F;
         net.minecraft.world.damagesource.DamageSource damageSource = electricityEffectInstance != null ? 
             electricityEffectInstance.getDamageSource() : entity.damageSources().generic();
         
-        // 为范围内的所有实体赋予电击状态效果（排除玩家）
+        // 首先为中心实体（目标实体）添加电击状态效果
+        if (!(entity instanceof Player)) { // 排除玩家
+            if (entity.hasEffect(ElementEffectRegistry.ELECTRICITY.get())) {
+                // 如果目标实体已有电击效果，延长持续时间而不是添加新效果
+                MobEffectInstance existingEffect = entity.getEffect(ElementEffectRegistry.ELECTRICITY.get());
+                int currentDuration = existingEffect.getDuration();
+                int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
+                
+                // 重新应用效果，保持最高等级和最长持续时间
+                int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
+                entity.addEffect(new ElementEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    newDuration,
+                    newAmplifier,
+                    baseDamage,
+                    damageSource
+                ));
+            } else {
+                // 如果目标实体没有电击效果，则添加新效果
+                ElementEffectInstance effectInstance = 
+                    new ElementEffectInstance(
+                        (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
+                        CLOUD_DURATION, // 持续时间
+                        amplifier, // 保持原始等级
+                        baseDamage, // 保持原始伤害
+                        damageSource // 伤害源
+                    );
+                entity.addEffect(effectInstance);
+            }
+        }
+        
+        // 为范围内的其他实体赋予电击状态效果（排除玩家）
         for (LivingEntity livingEntity : entities) {
             // 排除玩家实体和中心实体
             if (livingEntity instanceof Player || livingEntity == entity) {
                 continue;
             }
             
-            // 计算传播的伤害值：基础伤害的100%（保持原始伤害）
-            float spreadDamage = baseDamage;
-            
-            // 为目标实体添加电击状态效果（DoT效果）
-            com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance effectInstance = 
-                new com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
-                    CLOUD_DURATION, // 持续时间
-                    amplifier, // 保持原始等级
-                    spreadDamage, // 传播伤害
-                    damageSource // 伤害源
-                );
-            livingEntity.addEffect(effectInstance);
+            // 检查目标是否已经有相同效果，如果有则延长持续时间而不是叠加
+            if (livingEntity.hasEffect(ElementEffectRegistry.ELECTRICITY.get())) {
+                // 如果已有电击效果，延长持续时间而不是添加新效果
+                MobEffectInstance existingEffect = livingEntity.getEffect(ElementEffectRegistry.ELECTRICITY.get());
+                int currentDuration = existingEffect.getDuration();
+                int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
+                
+                // 重新应用效果，保持最高等级和最长持续时间
+                int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
+                livingEntity.addEffect(new ElementEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    newDuration,
+                    newAmplifier,
+                    baseDamage,
+                    damageSource
+                ));
+            } else {
+                // 如果没有相同效果，则添加新效果
+                ElementEffectInstance effectInstance = 
+                    new ElementEffectInstance(
+                        (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
+                        CLOUD_DURATION, // 持续时间
+                        amplifier, // 保持原始等级
+                        baseDamage, // 保持原始伤害
+                        damageSource // 伤害源
+                    );
+                livingEntity.addEffect(effectInstance);
+            }
         }
     }
 }

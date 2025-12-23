@@ -50,6 +50,7 @@ public class ElectricityEffect extends ElementEffect {
         // 获取ElementEffectInstance以访问原始伤害值
         ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
         float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
+        DamageSource originalDamageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
         
         // 计算DoT伤害：基础伤害 * 20% * (1 + 等级/10)
         float dotDamage = baseDamage * 0.20F * (1.0F + amplifier * 0.1F);
@@ -57,39 +58,18 @@ public class ElectricityEffect extends ElementEffect {
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
         ElementTriggerHandler.setProcessingDotDamage(true);
         try {
-            // 使用魔法伤害源确保不会触发新的元素效果
-            net.minecraft.world.damagesource.DamageSource damageSource = entity.damageSources().magic();
-            entity.hurt(damageSource, dotDamage);
+            // 使用原始伤害源，但通过标志防止触发新元素效果
+            entity.hurt(originalDamageSource, dotDamage);
         } finally {
             // 确保在伤害处理完成后重置标志
             ElementTriggerHandler.setProcessingDotDamage(false);
         }
+        
+        // 应用眩晕效果（移动减速）和发光效果
+        applyStun(entity);
     }
     
-    @Override
-    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
-        super.addAttributeModifiers(entity, attributeMap, amplifier);
-        
-        // 检查是否正在处理DoT伤害，如果是则不创建新的电云，防止无限循环
-        if (ElementTriggerHandler.isProcessingDotDamage()) {
-            return;
-        }
-        
-        // 对主目标应用眩晕效果3秒
-        applyStun(entity);
-        
-        // 为主目标添加电云效果进行AoE传播
-        // 从ElementEffectInstance获取原始伤害值和伤害源
-        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
-        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
-        net.minecraft.world.damagesource.DamageSource damageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
-        
-        // 添加电云效果进行AoE传播，持续6秒
-        ElementEffectInstance cloudInstance = 
-            new ElementEffectInstance(
-                (ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), 120, amplifier, baseDamage, damageSource);
-        entity.addEffect(cloudInstance);
-    }
+
     
     /**
      * 应用眩晕效果
@@ -130,51 +110,5 @@ public class ElectricityEffect extends ElementEffect {
         }
     }
     
-    /**
-     * 对范围内敌人施加电击效果
-     * @param center 中心实体
-     * @param amplifier 效果等级
-     */
-    private void applyAoEShock(LivingEntity center, int amplifier, float baseDamage, net.minecraft.world.damagesource.DamageSource damageSource) {
-        if (center.level() instanceof ServerLevel serverLevel) {
-            // 获取周围5米内的所有生物（不包括中心实体）
-            net.minecraft.world.phys.AABB aabb = new net.minecraft.world.phys.AABB(
-                center.getX() - AOE_RANGE, center.getY() - AOE_RANGE, center.getZ() - AOE_RANGE,
-                center.getX() + AOE_RANGE, center.getY() + AOE_RANGE, center.getZ() + AOE_RANGE);
-            
-            java.util.List<LivingEntity> nearbyEntities = serverLevel.getEntitiesOfClass(LivingEntity.class, aabb,
-                entity -> entity != center && entity.isAlive());
-            
-            // 对每个周围的敌人施加电击DoT（但不施加眩晕，排除玩家）
-            for (LivingEntity entity : nearbyEntities) {
-                // 排除玩家实体
-                if (entity instanceof Player) {
-                    continue;
-                }
-                
-                // 应用电击状态效果，持续时间与中心实体相同
-                // 使用ElementEffectInstance以支持范围效果
-                ElementEffectInstance effectInstance = 
-                    new ElementEffectInstance(
-                        this, // 使用当前电击效果实例
-                        SHOCK_DURATION, // 持续时间
-                        amplifier, // 效果等级
-                        baseDamage, // 基础伤害
-                        damageSource // 伤害源
-                    );
-                entity.addEffect(effectInstance);
-                
-                // 生成电击粒子效果
-                serverLevel.sendParticles(
-                    ParticleTypes.ELECTRIC_SPARK,
-                    entity.getX(),
-                    entity.getY(),
-                    entity.getZ(),
-                    10,
-                    0.3, 0.3, 0.3,
-                    0.05
-                );
-            }
-        }
-    }
+
 }

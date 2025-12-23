@@ -162,6 +162,10 @@
   "effect.hamstercore.magnetic.description": "影响目标移动",
   "effect.hamstercore.radiation": "辐射",
   "effect.hamstercore.radiation.description": "降低目标属性",
+  "effect.hamstercore.electric_cloud": "电云",
+  "effect.hamstercore.electric_cloud.description": "电击效果的范围传播",
+  "effect.hamstercore.gas_cloud": "毒云",
+  "effect.hamstercore.gas_cloud.description": "毒气效果的范围传播",    
   "effect.hamstercore.viral": "病毒",
   "effect.hamstercore.viral.description": "降低目标最大生命值"
 }

@@ -36,6 +36,7 @@ public class GasEffect extends ElementEffect {
         // 获取ElementEffectInstance以访问原始伤害值
         ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
         float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
+        DamageSource originalDamageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
         
         // 计算DoT伤害：基础伤害 * 30% * (1 + 等级/10) - 提高伤害
         float dotDamage = baseDamage * 0.30F * (1.0F + amplifier * 0.1F);
@@ -43,34 +44,13 @@ public class GasEffect extends ElementEffect {
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
         ElementTriggerHandler.setProcessingDotDamage(true);
         try {
-            // 使用魔法伤害源确保不会触发新的元素效果
-            DamageSource damageSource = entity.damageSources().magic();
-            entity.hurt(damageSource, dotDamage);
+            // 使用原始伤害源，但通过标志防止触发新元素效果
+            entity.hurt(originalDamageSource, dotDamage);
         } finally {
             // 确保在伤害处理完成后重置标志
             ElementTriggerHandler.setProcessingDotDamage(false);
         }
     }
     
-    @Override
-    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
-        super.addAttributeModifiers(entity, attributeMap, amplifier);
-        
-        // 检查是否正在处理DoT伤害，如果是则不创建新的毒云，防止无限循环
-        if (ElementTriggerHandler.isProcessingDotDamage()) {
-            return;
-        }
-        
-        // 当添加毒气效果时，为主目标添加毒云效果进行AoE传播
-        // 从ElementEffectInstance获取原始伤害值
-        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
-        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
-        DamageSource damageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
-        
-        // 添加毒云效果进行AoE传播，持续6秒
-        ElementEffectInstance cloudInstance = 
-            new ElementEffectInstance(
-                (ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), 120, amplifier, baseDamage, damageSource);
-        entity.addEffect(cloudInstance);
-    }
+
 }

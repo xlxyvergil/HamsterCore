@@ -7,6 +7,7 @@ import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -65,26 +66,72 @@ public class GasCloudEffect extends ElementEffect {
         float baseDamage = gasEffectInstance != null ? gasEffectInstance.getFinalDamage() : 1.0F;
         DamageSource damageSource = gasEffectInstance != null ? gasEffectInstance.getDamageSource() : entity.damageSources().generic();
         
-        // 为范围内的所有实体赋予毒气状态效果（排除玩家）
+        // 首先为中心实体（目标实体）添加毒气状态效果
+        if (!(entity instanceof Player)) { // 排除玩家
+            if (entity.hasEffect(ElementEffectRegistry.GAS.get())) {
+                // 如果目标实体已有毒气效果，延长持续时间而不是添加新效果
+                MobEffectInstance existingEffect = entity.getEffect(ElementEffectRegistry.GAS.get());
+                int currentDuration = existingEffect.getDuration();
+                int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
+                
+                // 重新应用效果，保持最高等级和最长持续时间
+                int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
+                entity.addEffect(new ElementEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    newDuration,
+                    newAmplifier,
+                    baseDamage,
+                    damageSource
+                ));
+            } else {
+                // 如果目标实体没有毒气效果，则添加新效果
+                ElementEffectInstance effectInstance = 
+                    new ElementEffectInstance(
+                        (ElementEffect) ElementEffectRegistry.GAS.get(), // GasEffect
+                        CLOUD_DURATION, // 持续时间
+                        amplifier, // 保持原始等级
+                        baseDamage, // 保持原始伤害
+                        damageSource // 伤害源
+                    );
+                entity.addEffect(effectInstance);
+            }
+        }
+        
+        // 为范围内的其他实体赋予毒气状态效果（排除玩家）
         for (LivingEntity livingEntity : entities) {
             // 排除玩家实体和中心实体
             if (livingEntity instanceof Player || livingEntity == entity) {
                 continue;
             }
             
-            // 计算传播的伤害值：基础伤害的100%（保持原始伤害）
-            float spreadDamage = baseDamage;
-            
-            // 为目标实体添加毒气状态效果（DoT效果）
-            ElementEffectInstance effectInstance = 
-                new ElementEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.GAS.get(), // GasEffect
-                    CLOUD_DURATION, // 持续时间
-                    amplifier, // 保持原始等级
-                    spreadDamage, // 传播伤害
-                    damageSource // 伤害源
-                );
-            livingEntity.addEffect(effectInstance);
+            // 检查目标是否已经有相同效果，如果有则延长持续时间而不是叠加
+            if (livingEntity.hasEffect(ElementEffectRegistry.GAS.get())) {
+                // 如果已有毒气效果，延长持续时间而不是添加新效果
+                MobEffectInstance existingEffect = livingEntity.getEffect(ElementEffectRegistry.GAS.get());
+                int currentDuration = existingEffect.getDuration();
+                int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
+                
+                // 重新应用效果，保持最高等级和最长持续时间
+                int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
+                livingEntity.addEffect(new ElementEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    newDuration,
+                    newAmplifier,
+                    baseDamage,
+                    damageSource
+                ));
+            } else {
+                // 如果没有相同效果，则添加新效果
+                ElementEffectInstance effectInstance = 
+                    new ElementEffectInstance(
+                        (ElementEffect) ElementEffectRegistry.GAS.get(), // GasEffect
+                        CLOUD_DURATION, // 持续时间
+                        amplifier, // 保持原始等级
+                        baseDamage, // 保持原始伤害
+                        damageSource // 伤害源
+                    );
+                livingEntity.addEffect(effectInstance);
+            }
         }
     }
 }

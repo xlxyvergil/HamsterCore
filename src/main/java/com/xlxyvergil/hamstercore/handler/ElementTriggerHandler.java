@@ -253,8 +253,8 @@ public class ElementTriggerHandler {
             // 冰冻效果：减速和暴击伤害加成
             applyFreezeEffect(target, finalDamage, damageSource);
         } else if (elementType == ElementType.ELECTRICITY) {
-            // 电击效果：电击DoT和眩晕
-            applyShockEffect(target, finalDamage, damageSource);
+            // 电击效果：添加电云效果进行AoE传播
+            applyElectricCloudEffect(target, finalDamage, damageSource);
         } else if (elementType == ElementType.HEAT) {
             // 火焰效果：护甲减少和火焰DoT
             applyFireEffect(target, finalDamage, damageSource);
@@ -268,8 +268,8 @@ public class ElementTriggerHandler {
             // 腐蚀效果：护甲削减
             applyCorrosionEffect(target, finalDamage, damageSource);
         } else if (elementType == ElementType.GAS) {
-            // 毒气效果：AoE毒气DoT
-            applyGasEffect(target, finalDamage, damageSource);
+            // 毒气效果：添加毒云效果进行AoE传播
+            applyGasCloudEffect(target, finalDamage, damageSource);
         } else if (elementType == ElementType.MAGNETIC) {
             // 磁力效果：护盾伤害和护盾再生失效
             applyMagneticEffect(target, finalDamage, damageSource);
@@ -279,6 +279,66 @@ public class ElementTriggerHandler {
         } else if (elementType == ElementType.VIRAL) {
             // 病毒效果：受到生命值伤害增伤
             applyVirusEffect(target, finalDamage, damageSource);
+        }
+    }
+    
+    /**
+     * 应用电云效果（AoE电击传播）
+     * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
+     */
+    private static void applyElectricCloudEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
+        // 使用我们自己的公式计算伤害值，然后传递给ElectricCloudEffect
+        if (ElementEffectRegistry.ELECTRIC_CLOUD.get() instanceof ElectricCloudEffect) {
+            // 检查目标是否已有相同效果
+            int currentAmplifier = 0;
+            if (target.hasEffect(ElementEffectRegistry.ELECTRIC_CLOUD.get())) {
+                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.ELECTRIC_CLOUD.get());
+                currentAmplifier = existingEffect.getAmplifier();
+                
+                // 获取当前持续时间
+                int currentDuration = existingEffect.getDuration();
+                
+                // 增加效果等级，但不超过最大等级
+                int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
+                
+                // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), 120, newAmplifier, finalDamage, damageSource));
+            } else {
+                // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), 120, 0, finalDamage, damageSource));
+            }
+        }
+    }
+    
+    /**
+     * 应用毒云效果（AoE毒气传播）
+     * @param target 目标实体
+     * @param finalDamage 最终伤害值
+     * @param damageSource 原始伤害源
+     */
+    private static void applyGasCloudEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
+        // 使用我们自己的公式计算伤害值，然后传递给GasCloudEffect
+        if (ElementEffectRegistry.GAS_CLOUD.get() instanceof GasCloudEffect) {
+            // 检查目标是否已有相同效果
+            int currentAmplifier = 0;
+            if (target.hasEffect(ElementEffectRegistry.GAS_CLOUD.get())) {
+                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.GAS_CLOUD.get());
+                currentAmplifier = existingEffect.getAmplifier();
+                
+                // 获取当前持续时间
+                int currentDuration = existingEffect.getDuration();
+                
+                // 增加效果等级，但不超过最大等级
+                int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
+                
+                // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), 120, newAmplifier, finalDamage, damageSource));
+            } else {
+                // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), 120, 0, finalDamage, damageSource));
+            }
         }
     }
     
