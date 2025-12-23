@@ -409,12 +409,12 @@ public class ElementTriggerHandler {
                 // 增加效果等级，但不超过最大等级
                 int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
                 
-                // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
-                // ElectricityEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, newAmplifier, finalDamage));
+                // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
+                // ElectricityEffect的addAttributeModifiers会处理范围效果
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, newAmplifier, finalDamage, damageSource));
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, 0, finalDamage));
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, 0, finalDamage, damageSource));
             }
         }
     }
@@ -502,12 +502,12 @@ public class ElementTriggerHandler {
                 // 增加效果等级，但不超过最大等级
                 int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
                 
-                // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
-                // BlastEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, newAmplifier, finalDamage));
+                // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
+                // BlastEffect的addAttributeModifiers会处理范围伤害
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, newAmplifier, finalDamage, damageSource));
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, 0, finalDamage));
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, 0, finalDamage, damageSource));
             }
         }
     }
@@ -561,12 +561,12 @@ public class ElementTriggerHandler {
                 // 增加效果等级，但不超过最大等级
                 int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
                 
-                // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
-                // GasEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, newAmplifier, finalDamage));
+                // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
+                // GasEffect的addAttributeModifiers会处理范围伤害
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, newAmplifier, finalDamage, damageSource));
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, 0, finalDamage));
+                target.addEffect(new ElementEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, 0, finalDamage, damageSource));
             }
         }
     }

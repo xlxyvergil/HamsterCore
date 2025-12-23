@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import com.xlxyvergil.hamstercore.element.effect.effects.GasEffect;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 
 /**
  * 毒气效果管理器
@@ -106,9 +107,10 @@ public class GasManager {
                 if (distance <= totalRadius) {
                     // 给实体添加GasEffect状态效果，持续120 ticks（6秒）
                     // 等级为amplifier
-                    net.minecraft.world.effect.MobEffectInstance effectInstance = 
-                        new net.minecraft.world.effect.MobEffectInstance(
-                            new GasEffect(), 120, amplifier);
+                    // 使用ElementEffectInstance以支持范围效果
+                    ElementEffectInstance effectInstance = 
+                        new ElementEffectInstance(
+                            new GasEffect(), 120, amplifier, 0.0f, damageSource);
                     livingEntity.addEffect(effectInstance);
                 }
             }

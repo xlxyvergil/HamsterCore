@@ -1,8 +1,10 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
+import com.xlxyvergil.hamstercore.element.effect.BlastManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -21,27 +23,24 @@ public class BlastEffect extends ElementEffect {
     
     @Override
     public boolean isDurationEffectTick(int duration, int amplifier) {
-        // 每20 ticks（1秒）触发一次效果
-        return duration % 20 == 0;
+        // 不在applyEffectTick中处理伤害，只在添加效果时添加到BlastManager
+        return false;
     }
     
     @Override
-    public void applyEffectTick(LivingEntity entity, int amplifier) {
-        // 实现爆炸DoT效果，每秒造成一次伤害
-        // 获取ElementEffectInstance以访问原始伤害值
+    public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
+        super.addAttributeModifiers(entity, attributeMap, amplifier);
+        
+        // 当添加爆炸效果时，将其添加到BlastManager进行范围伤害管理
+        // 从ElementEffectInstance获取原始伤害值
         ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
         float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
+        DamageSource damageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
         
-        // 计算DoT伤害：基础伤害 * 40% * (1 + 等级/10)
-        float dotDamage = baseDamage * 0.40F * (1.0F + amplifier * 0.1F);
+        // 计算爆炸伤害：基础伤害 * 30% * (1 + 等级/10)
+        float blastDamage = baseDamage * 0.30F * (1.0F + amplifier * 0.1F);
         
-        // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
-        ElementTriggerHandler.setProcessingDotDamage(true);
-        try {
-            entity.hurt(entity.level().damageSources().mobAttack(entity.getLastAttacker()), dotDamage);
-        } finally {
-            // 确保在伤害处理完成后重置标志
-            ElementTriggerHandler.setProcessingDotDamage(false);
-        }
+        // 添加到爆炸管理器，等待1.5秒后爆炸
+        BlastManager.addBlast(entity, blastDamage, amplifier, damageSource);
     }
 }

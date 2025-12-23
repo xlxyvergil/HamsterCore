@@ -11,6 +11,9 @@ public class ElementEffectInstance extends MobEffectInstance {
     // 存储最终伤害值，用于DoT效果计算
     private float finalDamage = 0.0f;
     
+    // 存储伤害源，用于范围效果
+    private net.minecraft.world.damagesource.DamageSource damageSource;
+    
     public ElementEffectInstance(ElementEffect effect) {
         super(effect);
     }
@@ -36,8 +39,22 @@ public class ElementEffectInstance extends MobEffectInstance {
         this.finalDamage = finalDamage;
     }
     
+    public ElementEffectInstance(ElementEffect effect, int duration, int amplifier, float finalDamage, net.minecraft.world.damagesource.DamageSource damageSource) {
+        super(effect, duration, amplifier);
+        this.finalDamage = finalDamage;
+        this.damageSource = damageSource;
+    }
+    
     public float getFinalDamage() {
         return finalDamage;
+    }
+    
+    public net.minecraft.world.damagesource.DamageSource getDamageSource() {
+        return damageSource;
+    }
+    
+    public void setDamageSource(net.minecraft.world.damagesource.DamageSource damageSource) {
+        this.damageSource = damageSource;
     }
     
     public void setFinalDamage(float finalDamage) {
