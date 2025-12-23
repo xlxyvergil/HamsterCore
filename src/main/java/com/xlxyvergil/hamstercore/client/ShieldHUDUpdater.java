@@ -91,10 +91,11 @@ public class ShieldHUDUpdater {
         
         // 绘制护盾数值
         String shieldText = String.format("%.0f/%.0f", currentShield, maxShield);
+        int textWidth = Minecraft.getInstance().font.width(shieldText);
         guiGraphics.drawString(
             Minecraft.getInstance().font,
             shieldText,
-            left + 82 + 4, // 护盾右边，间隔4像素
+            left + (82 - textWidth) / 2, // 护盾条中间
             top - 2,
             0xFFFFFF,
             true

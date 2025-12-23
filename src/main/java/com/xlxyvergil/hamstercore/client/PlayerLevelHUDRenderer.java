@@ -48,32 +48,32 @@ public class PlayerLevelHUDRenderer {
         // 获取玩家等级
         int playerLevel = cap.getPlayerLevel();
         
-        // 设置渲染位置（快捷道具栏左侧，底边与道具栏底边平行）
-        int x = width / 2 - 91 - 1 - 5; // 91是快捷道具栏左侧到屏幕中心的距离，再减去经验条宽度和间距
+        // 设置渲染位置（快捷道具栏右侧，底边与道具栏底边平行）
+        int x = width / 2 + 91 + 1; // 91是快捷道具栏右侧到屏幕中心的距离，加上间距
         int y = height - 22 - 1; // 底边与道具栏底边平行并向上升1像素（22是经验条高度）
         
         Font font = Minecraft.getInstance().font;
         
-        // 渲染等级文本（向上提升5像素）
-        String levelText = "Lv." + playerLevel + "/30";
-        int textX = x - font.width(levelText) - 2; // 文本在经验条左边
-        int textY = y + 11 - font.lineHeight / 2 - 5; // 文本垂直居中并向上提升5像素
-        guiGraphics.drawString(font, Component.literal(levelText), textX, textY, 0xFFFFFF, false);
-        
-        // 渲染剩余经验文本（在等级文本下方）
-        // 当玩家达到最高等级时，不显示剩余经验
+        // 只有在未满级时才显示等级文本和经验相关元素
         if (playerLevel < 30) {
+            // 渲染等级文本（向上提升5像素）
+            String levelText = "Lv." + playerLevel;
+            int textX = x + 5 + 2; // 文本在经验条右边，经验条宽度为5像素
+            int textY = y + 11 - font.lineHeight / 2 - 5; // 文本垂直居中并向上提升5像素
+            guiGraphics.drawString(font, Component.literal(levelText), textX, textY, 0xFFFFFF, false);
+            
+            // 渲染剩余经验文本（在等级文本下方）
             int expToNext = cap.getExperienceToNextLevel();
             int currentExp = cap.getCurrentLevelExperience();
             int remainingExp = expToNext - currentExp;
             String remainingExpText = formatNumber(remainingExp);
-            int remainingTextX = x - font.width(remainingExpText) - 2;
+            int remainingTextX = x + 5 + 2;
             int remainingTextY = textY + font.lineHeight + 1; // 在等级文本下方
             guiGraphics.drawString(font, Component.literal(remainingExpText), remainingTextX, remainingTextY, 0xFFFF00, false);
+            
+            // 渲染经验进度条（竖直）
+            renderExperienceBar(guiGraphics, cap, x, y);
         }
-        
-        // 渲染经验进度条（竖直）
-        renderExperienceBar(guiGraphics, cap, x, y);
     }
     
     private static void renderExperienceBar(GuiGraphics guiGraphics, PlayerLevelCapability cap, int x, int y) {

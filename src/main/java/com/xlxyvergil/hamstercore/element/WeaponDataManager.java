@@ -95,10 +95,10 @@ public class WeaponDataManager {
         }
         
         // 判断物品类型并调用相应的配置获取方法
-        if (ModSpecialItemsFetcher.isTacZGun(stack)) {
+        if (net.minecraftforge.fml.ModList.get().isLoaded("tacz") && ModSpecialItemsFetcher.isTacZGun(stack)) {
             // TACZ枪械使用专门的配置获取方法
             return TacZWeaponConfig.getWeaponConfig(stack);
-        } else if (SlashBladeItemsFetcher.isSlashBlade(stack)) {
+        } else if (net.minecraftforge.fml.ModList.get().isLoaded("slashblade") && SlashBladeItemsFetcher.isSlashBlade(stack)) {
             // 拔刀剑使用专门的配置获取方法
             return SlashBladeWeaponConfig.getWeaponConfig(stack);
         } else {
