@@ -29,24 +29,30 @@ public class PunctureEffect extends ElementEffect {
     public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
         super.addAttributeModifiers(entity, attributeMap, amplifier);
         
-        // 减少伤害输出20% * (amplifier + 1)
-        double damageReduction = -0.2 * (amplifier + 1);
-        
-        AttributeModifier modifier = new AttributeModifier(
-            DAMAGE_OUTPUT_REDUCTION_UUID,
-            "Puncture damage reduction",
-            damageReduction,
-            AttributeModifier.Operation.MULTIPLY_TOTAL
-        );
-        
-        entity.getAttribute(Attributes.ATTACK_DAMAGE).addTransientModifier(modifier);
+        // 只有当实体具有攻击属性时才添加修饰符
+        if (entity.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
+            // 减少伤害输出20% * (amplifier + 1)
+            double damageReduction = -0.2 * (amplifier + 1);
+            
+            AttributeModifier modifier = new AttributeModifier(
+                DAMAGE_OUTPUT_REDUCTION_UUID,
+                "Puncture damage reduction",
+                damageReduction,
+                AttributeModifier.Operation.MULTIPLY_TOTAL
+            );
+            
+            entity.getAttribute(Attributes.ATTACK_DAMAGE).addTransientModifier(modifier);
+        }
     }
     
     @Override
     public void removeAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
         super.removeAttributeModifiers(entity, attributeMap, amplifier);
         
-        // 移除伤害输出减少修饰符
-        entity.getAttribute(Attributes.ATTACK_DAMAGE).removeModifier(DAMAGE_OUTPUT_REDUCTION_UUID);
+        // 只有当实体具有攻击属性时才移除修饰符
+        if (entity.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
+            // 移除伤害输出减少修饰符
+            entity.getAttribute(Attributes.ATTACK_DAMAGE).removeModifier(DAMAGE_OUTPUT_REDUCTION_UUID);
+        }
     }
 }
