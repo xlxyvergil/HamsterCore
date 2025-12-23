@@ -50,11 +50,23 @@ public class WeaponItemIds {
         // 2. 收集额外配置应用器的武器ID
         allIds.addAll(collectAdditionalConfigApplierIds());
         
-        // 3. 收集SlashBlade配置应用器的武器ID
-        allIds.addAll(collectSlashBladeConfigApplierIds());
+        // 3. 收集SlashBlade配置应用器的武器ID（仅在拔刀剑模组加载时执行）
+        if (net.minecraftforge.fml.ModList.get().isLoaded("slashblade")) {
+            try {
+                allIds.addAll(collectSlashBladeConfigApplierIds());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         
-        // 4. 收集TacZ配置应用器的武器ID
-        allIds.addAll(collectTacZConfigApplierIds());
+        // 4. 收集TacZ配置应用器的武器ID（仅在TACZ模组加载时执行）
+        if (net.minecraftforge.fml.ModList.get().isLoaded("tacz")) {
+            try {
+                allIds.addAll(collectTacZConfigApplierIds());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         
         // 批量添加到缓存
         WEAPON_ITEM_IDS.addAll(allIds);
