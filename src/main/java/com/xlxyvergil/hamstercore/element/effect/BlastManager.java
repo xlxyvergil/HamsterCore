@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.xlxyvergil.hamstercore.element.effect.effects.BlastEffect;
+import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
@@ -162,15 +164,25 @@ public class BlastManager {
         List<Entity> entities = level.getEntities(center, boundingBox, 
             entity -> entity instanceof LivingEntity && entity != center);
         
-        // 对范围内的所有实体造成伤害
-        for (Entity entity : entities) {
-            if (entity instanceof LivingEntity livingEntity) {
-                livingEntity.hurt(damageSource, damage);
-            }
-        }
+        // 使用魔法伤害源防止爆炸伤害触发新的元素效果
+        DamageSource magicDamageSource = center.damageSources().magic();
         
-        // 中心实体也受到伤害
-        center.hurt(damageSource, damage);
+        // 设置正在处理范围伤害的标志，防止连锁反应
+        ElementTriggerHandler.setProcessingDotDamage(true);
+        try {
+            // 对范围内的所有实体造成伤害（排除玩家）
+            for (Entity entity : entities) {
+                if (entity instanceof LivingEntity livingEntity && !(entity instanceof Player)) {
+                    livingEntity.hurt(magicDamageSource, damage);
+                }
+            }
+            
+            // 中心实体也受到伤害
+            center.hurt(magicDamageSource, damage);
+        } finally {
+            // 确保在伤害处理完成后重置标志
+            ElementTriggerHandler.setProcessingDotDamage(false);
+        }
         
         // 播放爆炸效果
         if (level instanceof ServerLevel serverLevel) {

@@ -31,6 +31,11 @@ public class BlastEffect extends ElementEffect {
     public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
         super.addAttributeModifiers(entity, attributeMap, amplifier);
         
+        // 检查是否正在处理DoT伤害，防止连锁反应
+        if (ElementTriggerHandler.isProcessingDotDamage()) {
+            return;
+        }
+        
         // 当添加爆炸效果时，将其添加到BlastManager进行范围伤害管理
         // 从ElementEffectInstance获取原始伤害值
         ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);

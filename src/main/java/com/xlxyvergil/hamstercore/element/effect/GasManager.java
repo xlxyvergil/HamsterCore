@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
-import com.xlxyvergil.hamstercore.element.effect.effects.GasEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 
 /**
  * 毒气效果管理器
@@ -33,13 +33,14 @@ public class GasManager {
         private final double centerX, centerY, centerZ;
         private final int amplifier;
         private final DamageSource damageSource;
+        private final float baseDamage; // 基础伤害值
         private final double baseRadius; // 基础半径（3米）
         private final double additionalRadius; // 额外半径（每层0.3米，最大3米）
         private final double totalRadius; // 总半径
         private int ticksRemaining; // 剩余时间（6秒 = 120 ticks）
         private int tickCounter; // 计数器
         
-        public GasCloud(LivingEntity target, int amplifier, DamageSource damageSource) {
+        public GasCloud(LivingEntity target, int amplifier, DamageSource damageSource, float baseDamage) {
             this.cloudId = UUID.randomUUID();
             this.sourceEntity = target;
             this.centerX = target.getX();
@@ -47,6 +48,7 @@ public class GasManager {
             this.centerZ = target.getZ();
             this.amplifier = amplifier;
             this.damageSource = damageSource;
+            this.baseDamage = baseDamage;
             this.baseRadius = 3.0; // 基础3米
             // 计算额外半径：每层0.3米，最大3米
             this.additionalRadius = Math.min(amplifier * 0.3, 3.0);
@@ -80,7 +82,9 @@ public class GasManager {
          */
         private void applyGasEffect() {
             Level level = sourceEntity.level();
-            if (level == null) return;
+            if (level == null || !(level instanceof ServerLevel)) return;
+            
+            ServerLevel serverLevel = (ServerLevel) level;
             
             // 计算作用范围
             AABB boundingBox = new AABB(
@@ -92,11 +96,16 @@ public class GasManager {
                 centerZ + totalRadius
             );
             
-            // 找到范围内的所有实体
-            List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, boundingBox);
+            // 找到范围内的所有实体，创建副本避免并发修改异常
+            List<LivingEntity> entities = new ArrayList<>(serverLevel.getEntitiesOfClass(LivingEntity.class, boundingBox));
             
-            // 为范围内的所有实体赋予毒气状态效果
+            // 为范围内的所有实体赋予毒气状态效果（排除玩家）
             for (LivingEntity livingEntity : entities) {
+                // 排除玩家实体
+                if (livingEntity instanceof Player) {
+                    continue;
+                }
+                
                 double distance = Math.sqrt(
                     Math.pow(livingEntity.getX() - centerX, 2) +
                     Math.pow(livingEntity.getY() - centerY, 2) +
@@ -105,12 +114,15 @@ public class GasManager {
                 
                 // 检查是否在范围内
                 if (distance <= totalRadius) {
+                    // 计算毒气DoT伤害：基础伤害 * 10% * (1 + 等级/10)
+                    float gasDamage = baseDamage * 0.10F * (1.0F + amplifier * 0.1F);
+                    
                     // 给实体添加GasEffect状态效果，持续120 ticks（6秒）
                     // 等级为amplifier
                     // 使用ElementEffectInstance以支持范围效果
                     ElementEffectInstance effectInstance = 
                         new ElementEffectInstance(
-                            new GasEffect(), 120, amplifier, 0.0f, damageSource);
+                            (ElementEffect) ElementEffectRegistry.GAS.get(), 120, amplifier, gasDamage, damageSource);
                     livingEntity.addEffect(effectInstance);
                 }
             }
@@ -124,9 +136,10 @@ public class GasManager {
      * @param target 目标实体
      * @param amplifier 效果等级
      * @param damageSource 伤害源
+     * @param baseDamage 基础伤害值
      */
-    public static void addGasCloud(LivingEntity target, int amplifier, DamageSource damageSource) {
-        GasCloud cloud = new GasCloud(target, amplifier, damageSource);
+    public static void addGasCloud(LivingEntity target, int amplifier, DamageSource damageSource, float baseDamage) {
+        GasCloud cloud = new GasCloud(target, amplifier, damageSource, baseDamage);
         gasClouds.put(cloud.getCloudId(), cloud);
         
     }

@@ -24,6 +24,7 @@ public class ElementEffectRegistry {
     // 基础元素效果
     public static final RegistryObject<MobEffect> COLD = EFFECTS.register("cold", ColdEffect::new);
     public static final RegistryObject<MobEffect> ELECTRICITY = EFFECTS.register("electricity", ElectricityEffect::new);
+    public static final RegistryObject<MobEffect> ELECTRIC_CLOUD = EFFECTS.register("electric_cloud", ElectricCloudEffect::new);
     public static final RegistryObject<MobEffect> HEAT = EFFECTS.register("heat", HeatEffect::new);
     public static final RegistryObject<MobEffect> TOXIN = EFFECTS.register("toxin", ToxinEffect::new);
     
@@ -31,6 +32,7 @@ public class ElementEffectRegistry {
     public static final RegistryObject<MobEffect> BLAST = EFFECTS.register("blast", BlastEffect::new);
     public static final RegistryObject<MobEffect> CORROSIVE = EFFECTS.register("corrosive", CorrosiveEffect::new);
     public static final RegistryObject<MobEffect> GAS = EFFECTS.register("gas", GasEffect::new);
+    public static final RegistryObject<MobEffect> GAS_CLOUD = EFFECTS.register("gas_cloud", GasCloudEffect::new);
     public static final RegistryObject<MobEffect> MAGNETIC = EFFECTS.register("magnetic", MagneticEffect::new);
     public static final RegistryObject<MobEffect> RADIATION = EFFECTS.register("radiation", RadiationEffect::new);
     public static final RegistryObject<MobEffect> VIRAL = EFFECTS.register("viral", ViralEffect::new);
