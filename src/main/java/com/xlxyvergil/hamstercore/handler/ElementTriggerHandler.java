@@ -58,6 +58,11 @@ public class ElementTriggerHandler {
      * @param damageSource 原始伤害源
      */
     public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData, float finalDamage, DamageSource damageSource) {
+        // 检查缓存数据是否为null
+        if (cacheData == null) {
+            return;
+        }
+        
         // 检查是否正在处理DoT伤害，如果是，则不触发新的元素效果
         if (isProcessingDotDamage()) {
             return;

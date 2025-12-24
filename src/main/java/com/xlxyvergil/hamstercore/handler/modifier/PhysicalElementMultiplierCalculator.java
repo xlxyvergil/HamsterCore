@@ -66,8 +66,8 @@ public class PhysicalElementMultiplierCalculator {
             }
         }
         
-        // 物理元素总倍率 = 所有物理元素倍率之和
-        totalPhysicalMultiplier = physicalTotalRatio;
+        // 物理元素总倍率 = 所有物理元素倍率之和，确保至少为1.0
+        totalPhysicalMultiplier = Math.max(1.0, physicalTotalRatio);
         
         return new PhysicalElementResult(totalPhysicalMultiplier, breakdown);
     }

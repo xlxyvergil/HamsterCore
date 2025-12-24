@@ -118,6 +118,27 @@ public class PlayerCapabilityEvents {
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (!event.getEntity().level().isClientSide()) {
             Player player = event.getEntity();
+                
+            // 对于重生的玩家，我们需要从存档中恢复等级数据
+            // 先确保能力被附加
+            player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
+                // 尝试从存档文件加载数据
+                // 重生事件中没有getPlayerFile方法，直接构建文件路径
+                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                    java.io.File playerDataDir = serverPlayer.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
+                    java.io.File customDir = new java.io.File(playerDataDir, "hamstercore");
+                    java.io.File file = new java.io.File(customDir, serverPlayer.getStringUUID() + "_hamstercore_player_level.dat");
+                    if (file.exists()) {
+                        try {
+                            CompoundTag data = net.minecraft.nbt.NbtIo.readCompressed(file);
+                            cap.deserializeNBT(data);
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+                
             // 获取玩家等级
             int playerLevel = player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY)
                 .map(PlayerLevelCapability::getPlayerLevel)
@@ -136,9 +157,9 @@ public class PlayerCapabilityEvents {
         Player player = event.getEntity();
         player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
             CompoundTag data = cap.serializeNBT();
-            event.getPlayerFile("hamstercore_player_level").getParentFile().mkdirs();
+            event.getPlayerFile("hamstercore_player_level.dat").getParentFile().mkdirs();
             try {
-                net.minecraft.nbt.NbtIo.writeCompressed(data, event.getPlayerFile("hamstercore_player_level"));
+                net.minecraft.nbt.NbtIo.writeCompressed(data, event.getPlayerFile("hamstercore_player_level.dat"));
             } catch (java.io.IOException e) {
                 e.printStackTrace();
             }
@@ -149,12 +170,17 @@ public class PlayerCapabilityEvents {
     @SubscribeEvent
     public static void onPlayerLoad(PlayerEvent.LoadFromFile event) {
         Player player = event.getEntity();
-        java.io.File file = event.getPlayerFile("hamstercore_player_level");
+        java.io.File file = event.getPlayerFile("hamstercore_player_level.dat");
         if (file.exists()) {
             try {
                 CompoundTag data = net.minecraft.nbt.NbtIo.readCompressed(file);
                 player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
                     cap.deserializeNBT(data);
+                    
+                    // 在加载数据后，重新初始化玩家能力
+                    PlayerCapabilityAttacher.initializePlayerCapabilities(player, cap.getPlayerLevel());
+                    // 同步到客户端
+                    PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
                 });
             } catch (java.io.IOException e) {
                 e.printStackTrace();

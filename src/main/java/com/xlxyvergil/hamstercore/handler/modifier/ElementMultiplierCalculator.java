@@ -76,8 +76,8 @@ public class ElementMultiplierCalculator {
             }
         }
         
-        // 元素总倍率 = 所有元素倍率之和
-        totalElementMultiplier = elementTotalRatio;
+        // 元素总倍率 = 所有元素倍率之和，确保至少为1.0
+        totalElementMultiplier = Math.max(1.0, elementTotalRatio);
         
         return new ElementResult(totalElementMultiplier, breakdown);
     }

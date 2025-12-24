@@ -127,8 +127,8 @@ public class CriticalMultiplierCalculator {
         // 从缓存中获取的暴击伤害值（已经是经过基础暴击伤害计算的完整值）
         double totalCriticalDamage = criticalDamage;
         
-        // 计算最终暴击倍率（基于暴击等级的增幅）
-        criticalMultiplier = 1 + criticalLevel * (totalCriticalDamage - 1);
+        // 计算最终暴击倍率（基于暴击等级的增幅），确保至少为1.0
+        criticalMultiplier = Math.max(1.0, 1 + criticalLevel * (totalCriticalDamage - 1));
         
         return new CriticalResult(criticalMultiplier, criticalLevel, criticalDamage);
     }
