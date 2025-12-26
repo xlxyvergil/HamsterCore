@@ -20,9 +20,9 @@ public class EntityShieldCapability implements INBTSerializable<CompoundTag> {
     private boolean gatingActive = false;
     private int gatingDuration = 0;
     private float regenRate = 0.0f;          // 护盾恢复速率
-    private int regenDelay = 0;              // 护盾未耗尽时的恢复延迟
-    private int regenDelayDepleted = 0;      // 护盾耗尽时的恢复延迟
-    private int immunityTime = 0;            // 护盾保险时间
+    private int regenDelay = 0;              // 护盾未耗尽时的恢复延迟（毫秒）
+    private int regenDelayDepleted = 0;      // 护盾耗尽时的恢复延迟（毫秒）
+    private int immunityTime = 0;            // 护盾保险时间（毫秒）
     private boolean insuranceAvailable = true; // 护盾保险是否可用
     private EntityType<?> entityType; // 实体类型，用于可能的未来扩展
     

@@ -1,52 +1,73 @@
-modLoader="javafml"
-loaderVersion="[47,)"
-license="MIT"
+modLoader="javafml" #mandatory
 
-[[mods]]
-modId="hamstercore"
-version="1.0.2"
-displayName="HamsterCore"
-description="Core functionality for the Hamster mod suite"
-authors="xlxyvergil"
+loaderVersion="[47,)" #mandatory
 
-[[dependencies.hamstercore]]
-modId="forge"
-mandatory=true
-versionRange="[47.3,)"
-ordering="NONE"
-side="BOTH"
+license="${mod_license}"
 
-[[dependencies.hamstercore]]
-modId="placebo"
-mandatory=true
-versionRange="[8.6.0,)"
-ordering="BEFORE"
-side="BOTH"
+[[mods]] #mandatory
 
-[[dependencies.hamstercore]]
-modId="jade"
-mandatory=false
-versionRange="[11.13,)"
-ordering="AFTER"
-side="CLIENT"
+modId="${mod_id}" #mandatory
 
-[[dependencies.hamstercore]]
-modId="tacz"
-mandatory=false
-versionRange="[1.0.0,)"
-ordering="NONE"
-side="BOTH"
+version="${mod_version}" #mandatory
 
-[[dependencies.hamstercore]]
-modId="jei"
-mandatory=false
-versionRange="[15.0.0,)"
-ordering="NONE"
-side="CLIENT"
+displayName="${mod_name}" #mandatory
 
-[[dependencies.hamstercore]]
-modId="slashblade"
-mandatory=false
-versionRange="[1.0.0,)"
-ordering="NONE"
-side="BOTH"
+authors="${mod_authors}" #optional
+
+description='''${mod_description}'''
+
+[[dependencies.${mod_id}]]
+   modId="forge"
+   mandatory=true
+   versionRange="${forge_version_range}"
+   ordering="NONE"
+   side="BOTH"
+
+[[dependencies.${mod_id}]]
+   modId="minecraft"
+   mandatory=true
+   versionRange="${minecraft_version_range}"
+   ordering="NONE"
+   side="BOTH"
+
+[[dependencies.${mod_id}]]
+   modId="placebo"
+   mandatory=true
+   versionRange="[${placeboVersion},)"
+   ordering="NONE"
+   side="BOTH"
+
+[[dependencies.${mod_id}]]
+   modId="apothic_attributes"
+   mandatory=false
+   versionRange="[${attributeslibVersion},)"
+   ordering="NONE"
+   side="BOTH"
+
+[[dependencies.${mod_id}]]
+   modId="jade"
+   mandatory=false
+   versionRange="[11.0.0,12.0.0)"
+   ordering="AFTER"
+   side="CLIENT"
+
+[[dependencies.${mod_id}]]
+   modId="tacz"
+   mandatory=false
+   versionRange="[1.1.6,)"
+   ordering="NONE"
+   side="BOTH"
+
+[[dependencies.${mod_id}]]
+   modId="jei"
+   mandatory=false
+   versionRange="[15.0.0,)"
+   ordering="NONE"
+   side="CLIENT"
+
+[[dependencies.${mod_id}]]
+   modId="slashblade"
+   mandatory=false
+   versionRange="[1.8.0,)"
+   ordering="NONE"
+   side="BOTH"

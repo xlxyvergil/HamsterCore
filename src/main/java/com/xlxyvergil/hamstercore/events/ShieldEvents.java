@@ -78,7 +78,7 @@ public class ShieldEvents {
             int immunityTime = shieldCap.getImmunityTime();
             if (immunityTime > 0) {
                 // 应用无敌效果，将毫秒转换为ticks（1秒=20 ticks）
-                int immunityTicks = immunityTime / 50; // 1000ms = 20 ticks, 所以 1ms = 1/50 ticks
+                int immunityTicks = (int) (immunityTime / 50); // 1000ms = 20 ticks, 所以 1ms = 1/50 ticks
                 player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, immunityTicks, 10, false, false, false));
                 
                 // 设置护盾保险激活状态
@@ -175,7 +175,9 @@ public class ShieldEvents {
         float oldShield = shieldCap.getCurrentShield();
         
         // 如果距离上次受伤超过了恢复延迟时间且护盾未满，则开始恢复
-        if (timeSinceLastHurt >= regenDelay && shieldCap.getCurrentShield() < shieldCap.getMaxShield()) {
+        // regenDelay现在是以毫秒为单位，需要转换为ticks进行比较 (1 tick = 50毫秒)
+        long regenDelayInTicks = regenDelay / 50;
+        if (timeSinceLastHurt >= regenDelayInTicks && shieldCap.getCurrentShield() < shieldCap.getMaxShield()) {
             // 每tick恢复的护盾值
             float tickRegen = shieldCap.getRegenRate() / 20.0f;
             

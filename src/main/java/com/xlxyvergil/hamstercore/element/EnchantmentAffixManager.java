@@ -11,7 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import com.xlxyvergil.hamstercore.enchantment.ElementEnchantment;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import net.minecraft.core.registries.BuiltInRegistries;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import java.util.*;
 
 /**
@@ -66,7 +66,7 @@ public class EnchantmentAffixManager {
             saveEnchantmentAffixAssociations(stack, associations);
                 
             // 清除缓存，确保下次计算时使用最新的数据
-            AffixCacheManager.invalidateCache(stack);
+            // AffixCacheManager已移除，不再需要调用
         }
     
 

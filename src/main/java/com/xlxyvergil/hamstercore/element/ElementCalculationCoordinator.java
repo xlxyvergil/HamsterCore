@@ -1,19 +1,21 @@
 package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// 添加ElementUsageData的导入，用于存储元素属性的NBT数据
+import com.xlxyvergil.hamstercore.element.ElementUsageData;
+
 /**
  * 元素计算协调器
  * 协调元素计算流程，负责：
  * 1. 调用ElementCalculator从InitialModifiers层获取并计算数据
  * 2. 调用ElementCombinationModifier处理元素复合
- * 3. 将计算结果缓存到AffixCacheManager中
+ * 3. 将计算结果存储到物品的NBT中，类似Apotheosis的词缀系统
  */
 public class ElementCalculationCoordinator {
     public static final ElementCalculationCoordinator INSTANCE = new ElementCalculationCoordinator();
@@ -22,11 +24,12 @@ public class ElementCalculationCoordinator {
     }
     
     /**
-     * 计算元素值并缓存结果
+     * 计算元素值并将其存储到物品的NBT中
+     * 类似Apotheosis的词缀系统，将元素数据直接写入物品NBT
      * @param stack 物品栈
      * @param weaponData 武器数据
      */
-    public void calculateAndCacheElements(ItemStack stack, WeaponData weaponData) {
+    public void calculateAndStoreElements(ItemStack stack, WeaponData weaponData) {
         // 1. 调用ElementCalculator从InitialModifiers层计算所有元素值
         Map<String, Double> elementValues = calculateElementValuesFromInitialModifiers(weaponData);
         
@@ -65,12 +68,14 @@ public class ElementCalculationCoordinator {
         // 4. 调用ElementCombinationModifier处理元素复合
         Map<String, Double> combinedElements = processElementCombinations(weaponData, elementsForCombination);
         
-        // 5. 将计算结果缓存到AffixCacheManager中
-        AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
-        cacheData.setCriticalStats(specialStats);
-        cacheData.setPhysicalElements(physicalElements);
-        cacheData.setFactionElements(factionElements);
-        cacheData.setCombinedElements(combinedElements);
+        // 5. 将计算结果存储到物品的NBT中，类似Apotheosis的词缀系统
+        ElementUsageData.ElementData elementData = new ElementUsageData.ElementData();
+        elementData.setCriticalStats(specialStats);
+        elementData.setPhysicalElements(physicalElements);
+        elementData.setFactionElements(factionElements);
+        elementData.setCombinedElements(combinedElements);
+        
+        ElementUsageData.writeElementDataToItem(stack, elementData);
     }
     
     /**

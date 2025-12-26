@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.element;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
+import com.xlxyvergil.hamstercore.util.ItemAffixApplicableUtil;
 import com.xlxyvergil.hamstercore.util.ModSpecialItemsFetcher;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.nbt.CompoundTag;
@@ -38,6 +39,11 @@ public class WeaponDataManager {
             return new WeaponData();
         }
         
+        // 首先使用ItemAffixApplicableUtil判断物品是否适用于词缀系统
+        if (!ItemAffixApplicableUtil.isItemApplicableForAffix(stack)) {
+            return new WeaponData();
+        }
+        
         // 首先尝试从NBT中读取
         WeaponData weaponData = readElementData(stack);
         if (weaponData != null) {
@@ -67,6 +73,11 @@ public class WeaponDataManager {
             return new WeaponData();
         }
         
+        // 首先使用ItemAffixApplicableUtil判断物品是否适用于词缀系统
+        if (!ItemAffixApplicableUtil.isItemApplicableForAffix(stack)) {
+            return new WeaponData();
+        }
+        
         // 从NBT中读取武器数据
         WeaponData weaponData = readElementData(stack);
         if (weaponData != null) {
@@ -91,6 +102,11 @@ public class WeaponDataManager {
      */
     public static WeaponData getWeaponConfig(ItemStack stack) {
         if (stack.isEmpty()) {
+            return null;
+        }
+        
+        // 首先使用ItemAffixApplicableUtil判断物品是否适用于词缀系统
+        if (!ItemAffixApplicableUtil.isItemApplicableForAffix(stack)) {
             return null;
         }
         

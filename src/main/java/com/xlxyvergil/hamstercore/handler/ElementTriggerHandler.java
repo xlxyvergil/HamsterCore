@@ -13,6 +13,7 @@ import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.element.effect.effects.*;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -53,16 +54,10 @@ public class ElementTriggerHandler {
      * 处理元素触发效果（带伤害源）
      * @param attacker 攻击者
      * @param target 目标实体
-     * @param cacheData 缓存的元素数据
      * @param finalDamage 最终伤害值
      * @param damageSource 原始伤害源
      */
-    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, AffixCacheManager.AffixCacheData cacheData, float finalDamage, DamageSource damageSource) {
-        // 检查缓存数据是否为null
-        if (cacheData == null) {
-            return;
-        }
-        
+    public static void handleElementTriggers(LivingEntity attacker, LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 检查是否正在处理DoT伤害，如果是，则不触发新的元素效果
         if (isProcessingDotDamage()) {
             return;
@@ -81,32 +76,29 @@ public class ElementTriggerHandler {
         // 清空之前会话的触发元素记录
         triggeredElements.get().clear();
         
-        // 从缓存数据中获取元素属性
+        // 从攻击者实体获取元素属性
         List<Map.Entry<ElementType, Double>> elementList = new ArrayList<>();
         
         // 添加物理元素
-        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-        for (Map.Entry<String, Double> entry : physicalElements.entrySet()) {
-            if (entry.getValue() > 0.0) {
-                ElementType elementType = ElementType.byName(entry.getKey());
-                if (elementType != null) {
-                    elementList.add(new HashMap.SimpleEntry<>(elementType, entry.getValue()));
-                }
-            }
-        }
+        addElementIfPositive(elementList, ElementType.IMPACT, AttributeHelper.getImpact(attacker));
+        addElementIfPositive(elementList, ElementType.PUNCTURE, AttributeHelper.getPuncture(attacker));
+        addElementIfPositive(elementList, ElementType.SLASH, AttributeHelper.getSlash(attacker));
+        
+        // 添加基础元素
+        addElementIfPositive(elementList, ElementType.COLD, AttributeHelper.getCold(attacker));
+        addElementIfPositive(elementList, ElementType.ELECTRICITY, AttributeHelper.getElectricity(attacker));
+        addElementIfPositive(elementList, ElementType.HEAT, AttributeHelper.getHeat(attacker));
+        addElementIfPositive(elementList, ElementType.TOXIN, AttributeHelper.getToxin(attacker));
         
         // 添加复合元素
-        Map<String, Double> combinedElements = cacheData.getCombinedElements();
-        for (Map.Entry<String, Double> entry : combinedElements.entrySet()) {
-            if (entry.getValue() > 0.0) {
-                ElementType elementType = ElementType.byName(entry.getKey());
-                if (elementType != null) {
-                    elementList.add(new HashMap.SimpleEntry<>(elementType, entry.getValue()));
-                }
-            }
-        }
+        addElementIfPositive(elementList, ElementType.BLAST, AttributeHelper.getBlast(attacker));
+        addElementIfPositive(elementList, ElementType.CORROSIVE, AttributeHelper.getCorrosive(attacker));
+        addElementIfPositive(elementList, ElementType.GAS, AttributeHelper.getGas(attacker));
+        addElementIfPositive(elementList, ElementType.MAGNETIC, AttributeHelper.getMagnetic(attacker));
+        addElementIfPositive(elementList, ElementType.RADIATION, AttributeHelper.getRadiation(attacker));
+        addElementIfPositive(elementList, ElementType.VIRAL, AttributeHelper.getViral(attacker));
         
-        // 检查武器是否有元素属性
+        // 检查攻击者是否有元素属性
         if (elementList.isEmpty()) {
             return;
         }
@@ -135,9 +127,8 @@ public class ElementTriggerHandler {
             return;
         }
         
-        // 获取特殊元素值（从缓存数据中获取）
-        Map<String, Double> criticalStats = cacheData.getCriticalStats();
-        double triggerChance = criticalStats.getOrDefault("trigger_chance", 0.0);
+        // 获取触发率值（从攻击者实体获取）
+        double triggerChance = AttributeHelper.getTriggerChance(attacker);
         
         // 判断是否触发
         if (RANDOM.nextDouble() > triggerChance) {
@@ -186,6 +177,18 @@ public class ElementTriggerHandler {
                 triggeredElementsSet.add(selectedElement);
                 applyElementEffect(selectedElement, attacker, target, finalDamage, damageSource);
             }
+        }
+    }
+    
+    /**
+     * 辅助方法：如果元素值为正，则添加到元素列表中
+     * @param elementList 元素列表
+     * @param elementType 元素类型
+     * @param value 元素值
+     */
+    private static void addElementIfPositive(List<Map.Entry<ElementType, Double>> elementList, ElementType elementType, double value) {
+        if (value > 0.0) {
+            elementList.add(new HashMap.SimpleEntry<>(elementType, value));
         }
     }
     

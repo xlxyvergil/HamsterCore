@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.enchantment;
 
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.element.ElementType;
+import com.xlxyvergil.hamstercore.util.ItemAffixApplicableUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -40,7 +41,7 @@ public class ElementEnchantment extends Enchantment {
     
     @Override
     public boolean canEnchant(ItemStack stack) {
-        return true;
+        return ItemAffixApplicableUtil.isItemApplicableForAffix(stack);
     }
     
     @Override

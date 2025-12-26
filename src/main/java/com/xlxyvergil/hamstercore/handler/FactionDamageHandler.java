@@ -3,14 +3,10 @@ package com.xlxyvergil.hamstercore.handler;
 
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
-import com.xlxyvergil.hamstercore.element.ElementCalculationCoordinator;
-import com.xlxyvergil.hamstercore.element.WeaponData;
-import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,22 +55,9 @@ public class FactionDamageHandler {
             // BD = 基础伤害
             float baseDamage = event.getAmount();
             
-            // 获取武器数据并计算缓存
-            AffixCacheManager.AffixCacheData cacheData = null;
-            if (!weapon.isEmpty()) {
-                // 获取武器数据
-                WeaponData weaponData = WeaponDataManager.loadElementData(weapon);
-                if (weaponData != null) {
-                    // 使用ElementCalculationCoordinator计算并缓存元素数据
-                    ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(weapon, weaponData);
-                    // 获取缓存的数据
-                    cacheData = AffixCacheManager.getOrCreateCache(weapon);
-                }
-            }
-            
-            // 使用元素伤害管理器计算最终伤害，传递缓存数据
+            // 使用元素伤害管理器计算最终伤害，直接传递攻击者实体
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
+                ElementDamageManager.calculateElementDamage(livingAttacker, target, baseDamage, weapon, targetFaction, targetArmor);
             
             // 检查攻击者是否具有穿刺效果，如果有则降低其造成的伤害
             float finalDamage = damageData.getFinalDamage();
@@ -105,8 +88,8 @@ public class FactionDamageHandler {
             // 设置最终伤害（包含病毒和磁力增伤）
             event.setAmount(damageWithMagneticBonus);
             
-            // 处理元素触发效果，传递缓存数据、包含病毒增伤的最终伤害和原始伤害源
-            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, cacheData, finalDamage, event.getSource());        
+            // 处理元素触发效果，直接传递攻击者实体、包含病毒增伤的最终伤害和原始伤害源
+            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, finalDamage, event.getSource());        
         }
     }
     

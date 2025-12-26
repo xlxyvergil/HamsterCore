@@ -1,9 +1,9 @@
 package com.xlxyvergil.hamstercore.handler;
 
-
 import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 import com.xlxyvergil.hamstercore.element.WeaponData;
 import com.xlxyvergil.hamstercore.handler.modifier.*;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * 元素伤害管理器
  * 负责管理武器元素数据的计算
- * 使用 AffixCacheManager 进行数据缓存
+ * 通过AttributeHelper直接从实体获取属性值
  */
 public class ElementDamageManager {
     
@@ -27,12 +27,11 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
-     * @param cacheData 缓存的元素数据
      * @return 元素伤害数据
      */
-    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, AffixCacheManager.AffixCacheData cacheData) {
-        // 直接计算元素伤害，不再缓存
-        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor, cacheData);
+    public static ElementDamageData calculateElementDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
+        // 通过modifier模块进行计算，从实体获取属性值
+        return calculateElementDamageInternal(attacker, target, baseDamage, weapon, targetFaction, targetArmor);
     }
 
     
@@ -44,10 +43,9 @@ public class ElementDamageManager {
      * @param weapon 武器物品
      * @param targetFaction 目标派系
      * @param targetArmor 目标护甲值
-     * @param cacheData 缓存的元素数据
      * @return 元素伤害数据
      */
-    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor, AffixCacheManager.AffixCacheData cacheData) {
+    private static ElementDamageData calculateElementDamageInternal(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon, String targetFaction, Double targetArmor) {
         ElementDamageData damageData = new ElementDamageData(baseDamage);
         
         // 对于空的武器栈，直接返回基础数据
@@ -59,35 +57,41 @@ public class ElementDamageManager {
         // 获取武器数据
         WeaponData data = WeaponDataManager.loadElementData(weapon);
         
-        // 计算各部分的伤害修正系数，使用传递的缓存数据，并存储详细结果
+        // 计算各部分的伤害修正系数，通过modifier模块从实体获取属性值，并存储详细结果
         ModifierResults modifierResults = new ModifierResults();
         
-        // 计算派系克制
-        FactionModifierCalculator.FactionResult factionResult = FactionModifierCalculator.calculateFactionModifier(data, targetFaction, cacheData);
-        damageData.factionModifier = factionResult.getFactionModifier();
-        modifierResults.setFactionModifier(factionResult.getFactionModifier());
+        // 计算派系克制 - 使用FactionModifierCalculator从实体获取派系属性
+        FactionModifierCalculator.FactionResult factionResult = FactionModifierCalculator.calculateFactionModifier(attacker, targetFaction);
+        double factionModifier = factionResult.getFactionModifier();
+        damageData.factionModifier = factionModifier;
+        modifierResults.setFactionModifier(factionModifier);
         modifierResults.setFactionBreakdown(factionResult.getBreakdown());
         
-        // 计算元素倍率
-        ElementMultiplierCalculator.ElementResult elementResult = ElementMultiplierCalculator.calculateElementMultiplier(attacker, cacheData);
-        damageData.elementMultiplier = elementResult.getElementMultiplier();
-        modifierResults.setElementMultiplier(elementResult.getElementMultiplier());
+        // 计算元素倍率 - 使用ElementMultiplierCalculator从实体获取元素属性
+        ElementMultiplierCalculator.ElementResult elementResult = ElementMultiplierCalculator.calculateElementMultiplier(attacker);
+        double elementMultiplier = elementResult.getElementMultiplier();
+        damageData.elementMultiplier = elementMultiplier;
+        modifierResults.setElementMultiplier(elementMultiplier);
         modifierResults.setElementBreakdown(elementResult.getBreakdown());
         
-        // 计算物理元素倍率
-        PhysicalElementMultiplierCalculator.PhysicalElementResult physicalResult = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker, cacheData);
-        damageData.physicalElementMultiplier = physicalResult.getPhysicalElementMultiplier();
-        modifierResults.setPhysicalElementMultiplier(physicalResult.getPhysicalElementMultiplier());
+        // 计算物理元素倍率 - 使用PhysicalElementMultiplierCalculator从实体获取物理元素属性
+        PhysicalElementMultiplierCalculator.PhysicalElementResult physicalResult = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker);
+        double physicalElementMultiplier = physicalResult.getPhysicalElementMultiplier();
+        damageData.physicalElementMultiplier = physicalElementMultiplier;
+        modifierResults.setPhysicalElementMultiplier(physicalElementMultiplier);
         modifierResults.setPhysicalElementBreakdown(physicalResult.getBreakdown());
         
-        // 计算暴击倍率和暴击信息
-        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, target, weapon, null, cacheData);
-        damageData.criticalMultiplier = criticalResult.getMultiplier();
-        damageData.setCriticalInfo(criticalResult.getLevel(), criticalResult.getDamage());
-        modifierResults.setCriticalMultiplier(criticalResult.getMultiplier());
-        modifierResults.setCriticalLevel(criticalResult.getLevel());
-        modifierResults.setCriticalDamage(criticalResult.getDamage());
-        modifierResults.setCriticalChance(cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0));
+        // 计算暴击倍率和暴击信息 - 使用CriticalMultiplierCalculator从实体获取暴击属性
+        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, target, weapon, new HashMap<>());
+        double critMultiplier = criticalResult.getMultiplier();
+        int criticalLevel = criticalResult.getLevel();
+        double criticalDamage = criticalResult.getDamage();
+        damageData.criticalMultiplier = critMultiplier;
+        damageData.setCriticalInfo(criticalLevel, criticalDamage);
+        modifierResults.setCriticalMultiplier(critMultiplier);
+        modifierResults.setCriticalLevel(criticalLevel);
+        modifierResults.setCriticalDamage(criticalDamage);
+        modifierResults.setCriticalChance(AttributeHelper.getCriticalChance(attacker));
         
         // 计算护甲减免
         ArmorReductionCalculator.ArmorReductionResult armorResult = ArmorReductionCalculator.calculateArmorReduction(target, targetArmor);
@@ -106,8 +110,6 @@ public class ElementDamageManager {
             return damageData;
         }
         
-        
-        
         // 计算最终伤害：将物理元素总倍率与元素倍率相加（减去1.0是因为两者都以1.0为基准）
         damageData.finalDamage = (float) (baseDamage * (1.0 + damageData.factionModifier) 
                                          * (damageData.elementMultiplier + damageData.physicalElementMultiplier) 
@@ -124,6 +126,7 @@ public class ElementDamageManager {
     
     
     
+
     
     /**
      * 统一的 modifier 计算结果类

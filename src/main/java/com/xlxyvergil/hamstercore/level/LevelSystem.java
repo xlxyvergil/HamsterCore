@@ -133,8 +133,10 @@ public class LevelSystem {
             cap.setLevel(level);
         });
         
-        // 为实体应用生命值修饰符
-        HealthModifierSystem.applyHealthModifier(entity);
+        // 为非玩家实体应用生命值修饰符
+        if (!(entity instanceof net.minecraft.world.entity.player.Player)) {
+            HealthModifierSystem.applyHealthModifier(entity);
+        }
     }
     
     @SubscribeEvent
@@ -146,8 +148,10 @@ public class LevelSystem {
                 cap.setLevel(level);
             });
             
-            // 为非Mob实体应用生命值修饰符
-            HealthModifierSystem.applyHealthModifier(livingEntity);
+            // 为非Mob非玩家实体应用生命值修饰符
+            if (!(livingEntity instanceof net.minecraft.world.entity.player.Player)) {
+                HealthModifierSystem.applyHealthModifier(livingEntity);
+            }
         }
     }
 }

@@ -27,11 +27,7 @@ public class WeaponApplicableItemsFinder {
                 continue;
             }
             
-            // 排除MOD特殊物品
-            if ("slashblade:slashblade".equals(itemKey.toString()) || 
-                "tacz:modern_kinetic_gun".equals(itemKey.toString())) {
-                continue;
-            }
+
             
             // 检查物品是否为武器或工具
             if (WeaponJudgeUtil.isWeaponOrTool(item)) {

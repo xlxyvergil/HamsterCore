@@ -88,7 +88,7 @@ public class ElementCalculator {
         // 现在由ElementCalculationCoordinator负责协调计算流程
         WeaponData weaponData = WeaponDataManager.loadElementData(itemStack);
         if (weaponData != null) {
-            ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(itemStack, weaponData);
+            ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(itemStack, weaponData);
         }
     }
 }

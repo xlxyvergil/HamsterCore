@@ -4,7 +4,7 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.element.effect.effects.ColdEffect;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -45,30 +45,19 @@ public class CriticalMultiplierCalculator {
     }
     
     /**
-     * 计算暴击倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
+     * 计算暴击倍率（直接从实体获取属性值）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
      * @param target 被攻击者
      * @param weapon 武器物品堆
      * @param specialAndFactionValues 特殊元素
-     * @param cacheData 缓存数据
      * @return 暴击计算结果
      */
-    public static CriticalResult calculateCriticalMultiplier(LivingEntity attacker, LivingEntity target, ItemStack weapon, Map<String, Double> specialAndFactionValues, AffixCacheManager.AffixCacheData cacheData) {
+    public static CriticalResult calculateCriticalMultiplier(LivingEntity attacker, LivingEntity target, ItemStack weapon, Map<String, Double> specialAndFactionValues) {
         double criticalMultiplier = 1.0; // 默认暴击倍率
         
-        // 首先尝试从缓存中获取暴击数据，如果没有则使用传统方法
-        double criticalChance = 0.0;
-        double criticalDamage = 0.0;
-        
-        if (cacheData != null && cacheData.getCriticalStats() != null) {
-            Map<String, Double> criticalStats = cacheData.getCriticalStats();
-            criticalChance = criticalStats.getOrDefault("critical_chance", 0.0);
-            criticalDamage = criticalStats.getOrDefault("critical_damage", 0.0);
-        } else if (specialAndFactionValues != null) {
-            // 回退到传统方法
-            criticalChance = specialAndFactionValues.getOrDefault("critical_chance", 0.0);
-            criticalDamage = specialAndFactionValues.getOrDefault("critical_damage", 0.0);
-        }
+        // 直接从实体获取暴击相关属性值
+        double criticalChance = AttributeHelper.getCriticalChance(attacker);
+        double criticalDamage = AttributeHelper.getCriticalDamage(attacker);
         
         // 检查被攻击者是否具有穿刺效果，如果有则增加暴击几率
         ElementEffectInstance punctureEffect = ElementEffectManager.getEffect(target, ElementType.PUNCTURE);
@@ -121,10 +110,10 @@ public class CriticalMultiplierCalculator {
         // 暴击倍率计算公式：
         // 暴击倍率 = 1 + 暴击等级 × (暴击伤害 - 1)
         // 其中：
-        // - 暴击伤害：从缓存中获取的已经过基础暴击伤害计算的完整值
+        // - 暴击伤害：从实体获取的已经过基础暴击伤害计算的完整值
         // - 暴击等级：根据暴击率计算得出
         
-        // 从缓存中获取的暴击伤害值（已经是经过基础暴击伤害计算的完整值）
+        // 从实体获取的暴击伤害值（已经是经过基础暴击伤害计算的完整值）
         double totalCriticalDamage = criticalDamage;
         
         // 计算最终暴击倍率（基于暴击等级的增幅），确保至少为1.0

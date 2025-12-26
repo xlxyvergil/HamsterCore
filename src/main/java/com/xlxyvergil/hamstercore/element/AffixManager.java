@@ -1,8 +1,7 @@
 package com.xlxyvergil.hamstercore.element;
 
-
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import net.minecraft.world.item.ItemStack;
+import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,11 +57,10 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
-        // 失效全局缓存和AffixManager的临时缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 失效AffixManager的临时缓存
         AffixManagerCache.invalidateCache(stack);
-        // 计算并缓存元素值
-        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 计算并存储元素值到NBT
+        ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, weaponData);
     }
     
     /**
@@ -93,11 +91,10 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
-        // 失效全局缓存和AffixManager的临时缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 失效AffixManager的临时缓存
         AffixManagerCache.invalidateCache(stack);
-        // 计算并缓存元素值
-        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 计算并存储元素值到NBT
+        ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, weaponData);
     }
     
     /**
@@ -141,11 +138,10 @@ public class AffixManager {
         // 显式保存WeaponData到NBT
         WeaponDataManager.saveElementData(stack, weaponData);
         
-        // 失效全局缓存和AffixManager的临时缓存
-        AffixCacheManager.invalidateCache(stack);
+        // 失效AffixManager的临时缓存
         AffixManagerCache.invalidateCache(stack);
-        // 计算并缓存元素值
-        ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+        // 计算并存储元素值到NBT
+        ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, weaponData);
     }
 
 

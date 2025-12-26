@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -34,46 +35,74 @@ public class ElementMultiplierCalculator {
     }
     
     /**
-     * 计算元素总倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
+     * 计算元素总倍率（直接从实体获取属性值）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
-     * @param cacheData 缓存数据
      * @return 元素倍率计算结果
      */
-    public static ElementResult calculateElementMultiplier(net.minecraft.world.entity.LivingEntity attacker, AffixCacheManager.AffixCacheData cacheData) {
+    public static ElementResult calculateElementMultiplier(LivingEntity attacker) {
         double totalElementMultiplier = 0.0; // 默认元素倍率为0.0（无加成）
         Map<String, Double> breakdown = new HashMap<>();
-        
-        // 如果缓存数据为空，返回默认值
-        if (cacheData == null) {
-            return new ElementResult(totalElementMultiplier, breakdown);
-        }
         
         // 计算元素总倍率（所有元素倍率之和）
         double elementTotalRatio = 0.0;
         
-        // 从缓存数据中获取复合元素值
-        Map<String, Double> combinedElements = cacheData.getCombinedElements();
+        // 从实体获取基础元素和复合元素的值
+        // 基础元素
+        double heatValue = AttributeHelper.getHeat(attacker);
+        double coldValue = AttributeHelper.getCold(attacker);
+        double electricityValue = AttributeHelper.getElectricity(attacker);
+        double toxinValue = AttributeHelper.getToxin(attacker);
         
-        // 缓存中获取基础元素和复合元素
-        String[] basicTypes = {"heat", "cold", "electricity", "toxin"};
-        String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
+        // 复合元素
+        double blastValue = AttributeHelper.getBlast(attacker);
+        double corrosiveValue = AttributeHelper.getCorrosive(attacker);
+        double gasValue = AttributeHelper.getGas(attacker);
+        double magneticValue = AttributeHelper.getMagnetic(attacker);
+        double radiationValue = AttributeHelper.getRadiation(attacker);
+        double viralValue = AttributeHelper.getViral(attacker);
         
         // 添加基础元素倍率
-        for (String type : basicTypes) {
-            Double value = combinedElements.get(type);
-            if (value != null && value > 0) {
-                elementTotalRatio += value;
-                breakdown.put("basic_" + type, value);
-            }
+        if (heatValue > 0) {
+            elementTotalRatio += heatValue;
+            breakdown.put("heat", heatValue);
+        }
+        if (coldValue > 0) {
+            elementTotalRatio += coldValue;
+            breakdown.put("cold", coldValue);
+        }
+        if (electricityValue > 0) {
+            elementTotalRatio += electricityValue;
+            breakdown.put("electricity", electricityValue);
+        }
+        if (toxinValue > 0) {
+            elementTotalRatio += toxinValue;
+            breakdown.put("toxin", toxinValue);
         }
         
         // 添加复合元素倍率
-        for (String type : complexTypes) {
-            Double value = combinedElements.get(type);
-            if (value != null && value > 0) {
-                elementTotalRatio += value;
-                breakdown.put("complex_" + type, value);
-            }
+        if (blastValue > 0) {
+            elementTotalRatio += blastValue;
+            breakdown.put("blast", blastValue);
+        }
+        if (corrosiveValue > 0) {
+            elementTotalRatio += corrosiveValue;
+            breakdown.put("corrosive", corrosiveValue);
+        }
+        if (gasValue > 0) {
+            elementTotalRatio += gasValue;
+            breakdown.put("gas", gasValue);
+        }
+        if (magneticValue > 0) {
+            elementTotalRatio += magneticValue;
+            breakdown.put("magnetic", magneticValue);
+        }
+        if (radiationValue > 0) {
+            elementTotalRatio += radiationValue;
+            breakdown.put("radiation", radiationValue);
+        }
+        if (viralValue > 0) {
+            elementTotalRatio += viralValue;
+            breakdown.put("viral", viralValue);
         }
         
         // 元素总倍率 = 所有元素倍率之和，确保至少为1.0

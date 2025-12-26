@@ -46,6 +46,12 @@ public class HealthModifierSystem {
      * @param entity 实体
      */
     public static void applyHealthModifier(LivingEntity entity) {
+        // 不对玩家应用此生命值修饰符系统，只对非玩家实体应用
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            // 玩家的生命值由其他系统管理（如PlayerLevelAttributeModifierSystem）
+            return;
+        }
+        
         // 检查生命值系统是否启用
         if (levelConfig != null && !levelConfig.isHealthSystemEnabled()) {
             // 如果系统被禁用，移除已有的修饰符

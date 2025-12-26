@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,6 +16,9 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.Minecraft;
 
 /**
  * 武器属性渲染器
@@ -29,11 +32,13 @@ public class WeaponAttributeRenderer {
     public static void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
         
-        // 获取缓存数据
-        AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(stack);
+        // 检查是否有任何元素数据
+        if (!ElementNBTUtils.hasNonZeroElements(stack)) {
+            return;
+        }
         
-        // 检查缓存中是否有任何元素数据
-        if (cacheData.getPhysicalElements().isEmpty() && cacheData.getCriticalStats().isEmpty() && cacheData.getFactionElements().isEmpty() && cacheData.getCombinedElements().isEmpty()) {
+        // 检查是否按住Ctrl+Shift键
+        if (!isCtrlShiftPressed()) {
             return;
         }
         
@@ -45,32 +50,51 @@ public class WeaponAttributeRenderer {
         tooltipElements.add(Component.translatable("hamstercore.ui.weapon_attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
         
         // 显示物理元素
-        addPhysicalElements(stack, tooltipElements, cacheData);
+        addPhysicalElements(stack, tooltipElements);
         
         // 显示基础元素和复合元素
-        addBasicAndComplexElements(stack, tooltipElements, cacheData);
+        addBasicAndComplexElements(stack, tooltipElements);
         
         // 显示特殊元素属性（暴击率、暴击伤害、触发率等）
-        addSpecialAttributes(stack, tooltipElements, cacheData);
+        addSpecialAttributes(stack, tooltipElements);
         
         // 显示派系元素
-        addFactionAttributes(stack, tooltipElements, cacheData);
+        addFactionAttributes(stack, tooltipElements);
+    }
+    
+    /**
+     * 检查是否按住Ctrl+Shift键
+     */
+    private static boolean isCtrlShiftPressed() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getWindow() == null) {
+            return false;
+        }
+        long window = mc.getWindow().getWindow();
+        
+        // 检查Ctrl键和Shift键是否都被按下
+        boolean isCtrlPressed = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_CONTROL) == GLFW.GLFW_PRESS || 
+                               GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_CONTROL) == GLFW.GLFW_PRESS;
+        boolean isShiftPressed = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS || 
+                                GLFW.glfwGetKey(window, GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+        
+        return isCtrlPressed && isShiftPressed;
     }
     
     /**
      * 显示物理元素
      */
-    private static void addPhysicalElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
-        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-        if (physicalElements.isEmpty()) {
+    private static void addPhysicalElements(ItemStack stack, List<Component> tooltipElements) {
+        // 使用ElementNBTUtils检查是否有物理元素
+        if (ElementNBTUtils.readPhysicalElements(stack).isEmpty()) {
             return;
         }
         
         // 遍历所有物理元素类型
         for (ElementType elementType : ElementType.getPhysicalElements()) {
             // 获取元素值
-            Double value = physicalElements.get(elementType.getName());
-            if (value == null || value <= 0) {
+            double value = ElementNBTUtils.readPhysicalElementValue(stack, elementType.getName());
+            if (value <= 0) {
                 continue;
             }
             
@@ -87,17 +111,17 @@ public class WeaponAttributeRenderer {
     /**
      * 显示基础元素和复合元素
      */
-    private static void addBasicAndComplexElements(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
-        Map<String, Double> combinedElements = cacheData.getCombinedElements();
-        if (combinedElements.isEmpty()) {
+    private static void addBasicAndComplexElements(ItemStack stack, List<Component> tooltipElements) {
+        // 使用ElementNBTUtils检查是否有基础或复合元素
+        if (ElementNBTUtils.readCombinedElements(stack).isEmpty()) {
             return;
         }
         
         // 遍历所有基础元素类型
         for (ElementType elementType : ElementType.getBasicElements()) {
             // 获取元素值
-            Double value = combinedElements.get(elementType.getName());
-            if (value == null || value <= 0) {
+            double value = ElementNBTUtils.readBasicElementValue(stack, elementType.getName());
+            if (value <= 0) {
                 continue;
             }
             
@@ -113,8 +137,8 @@ public class WeaponAttributeRenderer {
         // 遍历所有复合元素类型
         for (ElementType elementType : ElementType.getComplexElements()) {
             // 获取元素值
-            Double value = combinedElements.get(elementType.getName());
-            if (value == null || value <= 0) {
+            double value = ElementNBTUtils.readCombinedElementValue(stack, elementType.getName());
+            if (value <= 0) {
                 continue;
             }
             
@@ -131,15 +155,10 @@ public class WeaponAttributeRenderer {
     /**
      * 显示特殊元素属性（暴击率、暴击伤害、触发率等）
      */
-    private static void addSpecialAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
-        Map<String, Double> criticalStats = cacheData.getCriticalStats();
-        if (criticalStats.isEmpty()) {
-            return;
-        }
-        
-        // 处理暴击率
-        Double critChance = criticalStats.get("critical_chance");
-        if (critChance != null && critChance > 0) {
+    private static void addSpecialAttributes(ItemStack stack, List<Component> tooltipElements) {
+        // 检查是否有特殊元素属性
+        double critChance = ElementNBTUtils.readCriticalChance(stack);
+        if (critChance > 0) {
             String formattedValue = String.format("%.1f%%", critChance * 100);
             MutableComponent component = Component.literal("  ")
                     .append(Component.translatable("element.critical_chance.name").withStyle(ChatFormatting.RED))
@@ -149,8 +168,8 @@ public class WeaponAttributeRenderer {
         }
         
         // 处理暴击伤害
-        Double critDamage = criticalStats.get("critical_damage");
-        if (critDamage != null && critDamage > 0) {
+        double critDamage = ElementNBTUtils.readCriticalDamage(stack);
+        if (critDamage > 0) {
             String formattedValue = String.format("%.1f%%", critDamage * 100);
             MutableComponent component = Component.literal("  ")
                     .append(Component.translatable("element.critical_damage.name").withStyle(ChatFormatting.RED))
@@ -160,8 +179,8 @@ public class WeaponAttributeRenderer {
         }
         
         // 处理触发率
-        Double triggerRate = criticalStats.get("trigger_chance");
-        if (triggerRate != null && triggerRate > 0) {
+        double triggerRate = ElementNBTUtils.readTriggerChance(stack);
+        if (triggerRate > 0) {
             String formattedValue = String.format("%.1f%%", triggerRate * 100);
             MutableComponent component = Component.literal("  ")
                     .append(Component.translatable("element.trigger_chance.name").withStyle(ChatFormatting.YELLOW))
@@ -174,30 +193,27 @@ public class WeaponAttributeRenderer {
     /**
      * 显示派系元素
      */
-    private static void addFactionAttributes(ItemStack stack, List<Component> tooltipElements, AffixCacheManager.AffixCacheData cacheData) {
-        Map<String, Double> factionElements = cacheData.getFactionElements();
-        if (factionElements.isEmpty()) {
+    private static void addFactionAttributes(ItemStack stack, List<Component> tooltipElements) {
+        // 使用ElementNBTUtils检查是否有派系元素
+        if (ElementNBTUtils.readFactionElements(stack).isEmpty()) {
             return;
         }
         
-        // 遍历所有元素类型
-        for (ElementType elementType : ElementType.getAllTypes()) {
-            // 只处理派系元素
-            if (elementType.isSpecial()) {
-                // 获取元素值
-                Double value = factionElements.get(elementType.getName());
-                if (value == null || value <= 0) {
-                    continue;
-                }
-                
-                // 格式化并添加到工具提示
-                String formattedValue = String.format("%.1f%%", value * 100);
-                MutableComponent component = Component.literal("  ")
-                        .append(elementType.getColoredName())
-                        .append(Component.literal(": "))
-                        .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
-                tooltipElements.add(component);
+        // 遍历所有派系元素类型
+        for (ElementType elementType : ElementType.getFactionElements()) {
+            // 获取元素值
+            double value = ElementNBTUtils.readFactionElementValue(stack, elementType.getName());
+            if (value <= 0) {
+                continue;
             }
+            
+            // 格式化并添加到工具提示
+            String formattedValue = String.format("%.1f%%", value * 100);
+            MutableComponent component = Component.literal("  ")
+                    .append(elementType.getColoredName())
+                    .append(Component.literal(": "))
+                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
+            tooltipElements.add(component);
         }
     }
 }

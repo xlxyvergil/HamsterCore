@@ -1,6 +1,6 @@
 package com.xlxyvergil.hamstercore.handler.modifier;
 
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
+import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.Map;
@@ -34,36 +34,35 @@ public class PhysicalElementMultiplierCalculator {
     }
     
     
-    
     /**
-     * 计算物理元素总倍率（使用缓存数据）- 返回详细结果，既用于显示也用于计算
+     * 计算物理元素总倍率（直接从实体获取属性值）- 返回详细结果，既用于显示也用于计算
      * @param attacker 攻击者
-     * @param cacheData 缓存数据
      * @return 物理元素倍率计算结果
      */
-    public static PhysicalElementResult calculatePhysicalElementMultiplier(LivingEntity attacker, AffixCacheManager.AffixCacheData cacheData) {
+    public static PhysicalElementResult calculatePhysicalElementMultiplier(LivingEntity attacker) {
         double totalPhysicalMultiplier = 0.0; // 默认物理元素倍率为0.0（无加成）
         Map<String, Double> breakdown = new HashMap<>();
-        
-        // 如果缓存数据为空，返回默认值
-        if (cacheData == null) {
-            return new PhysicalElementResult(totalPhysicalMultiplier, breakdown);
-        }
         
         // 计算物理元素总倍率（所有物理元素倍率之和）
         double physicalTotalRatio = 0.0;
         
-        // 从缓存数据中获取物理元素
-        Map<String, Double> physicalElements = cacheData.getPhysicalElements();
-        String[] physicalTypes = {"slash", "puncture", "impact"};
+        // 从实体获取物理元素的值
+        double slashValue = AttributeHelper.getSlash(attacker);
+        double punctureValue = AttributeHelper.getPuncture(attacker);
+        double impactValue = AttributeHelper.getImpact(attacker);
         
         // 计算物理元素总倍率
-        for (String type : physicalTypes) {
-            Double value = physicalElements.get(type);
-            if (value != null && value > 0) {
-                physicalTotalRatio += value;
-                breakdown.put(type, value);
-            }
+        if (slashValue > 0) {
+            physicalTotalRatio += slashValue;
+            breakdown.put("slash", slashValue);
+        }
+        if (punctureValue > 0) {
+            physicalTotalRatio += punctureValue;
+            breakdown.put("puncture", punctureValue);
+        }
+        if (impactValue > 0) {
+            physicalTotalRatio += impactValue;
+            breakdown.put("impact", impactValue);
         }
         
         // 物理元素总倍率 = 所有物理元素倍率之和，确保至少为1.0

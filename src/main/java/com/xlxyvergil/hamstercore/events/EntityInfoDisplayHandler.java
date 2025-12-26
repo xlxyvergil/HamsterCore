@@ -9,10 +9,10 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.ElementType;
-import com.xlxyvergil.hamstercore.handler.AffixCacheManager;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager;
 import com.xlxyvergil.hamstercore.handler.ElementDamageManager.ModifierResults;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
+import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -67,17 +67,12 @@ public class EntityInfoDisplayHandler {
             // 获取基础伤害（FactionDamageHandler处理前的伤害）
             float baseDamage = event.getAmount();
             
-            // 获取缓存数据
-            AffixCacheManager.AffixCacheData cacheData = AffixCacheManager.getOrCreateCache(weapon);
-            
-            // 合并特殊元素和派系元素用于伤害计算
+            // 使用ElementNBTUtils获取武器元素数据
             Map<String, Double> specialAndFactionValues = new java.util.HashMap<>();
-            specialAndFactionValues.putAll(cacheData.getCriticalStats());
-            specialAndFactionValues.putAll(cacheData.getFactionElements());
             
-            // 使用ElementDamageManager计算真实的伤害数据
+            // 使用ElementDamageManager计算真实的伤害数据（现在不依赖缓存数据）
             ElementDamageManager.ElementDamageData damageData = 
-                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor, cacheData);
+                ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor);
             
             // 获取经过完整计算后的实际伤害
             float inflictedDamage = damageData.getFinalDamage();
@@ -116,7 +111,7 @@ public class EntityInfoDisplayHandler {
                 boolean hasWeaponDetails = false;
                 
                 // 显示暴击率
-                double critChance = cacheData.getCriticalStats().getOrDefault("critical_chance", 0.0);
+                double critChance = ElementNBTUtils.readCriticalChance(weapon);
                 if (critChance > 0) {
                     message.append(Component.literal("\n  "))
                         .append(Component.translatable("hamstercore.ui.critical_chance"))
@@ -150,7 +145,7 @@ public class EntityInfoDisplayHandler {
                 }
                 
                 // 显示触发率
-                double triggerChance = cacheData.getCriticalStats().getOrDefault("trigger_chance", 0.0);
+                double triggerChance = ElementNBTUtils.readTriggerChance(weapon);
                 if (triggerChance > 0) {
                     if (hasWeaponDetails) {
                         message.append(Component.literal(", "));
@@ -213,11 +208,12 @@ public class EntityInfoDisplayHandler {
                 }
 
                 // 添加武器元素属性信息
-                Map<String, Double> combinedElements = cacheData.getCombinedElements();
-                Map<String, Double> physicalElements = cacheData.getPhysicalElements();
+                // 使用ElementNBTUtils读取元素数据
+                Map<String, Double> combinedElements = ElementNBTUtils.readCombinedElements(weapon);
+                Map<String, Double> physicalElements = ElementNBTUtils.readPhysicalElements(weapon);
                 
                 // 检查是否有任何元素值
-                boolean hasElements = !combinedElements.isEmpty() || !physicalElements.isEmpty();
+                boolean hasElements = ElementNBTUtils.hasNonZeroElements(weapon);
                 
                 if (hasElements) {
                     // 添加元素属性标题
@@ -229,8 +225,8 @@ public class EntityInfoDisplayHandler {
                     
                     // 先显示物理元素
                     for (ElementType elementType : ElementType.getPhysicalElements()) {
-                        Double elementValue = physicalElements.get(elementType.getName());
-                        if (elementValue != null && elementValue > 0) {
+                        double elementValue = ElementNBTUtils.readPhysicalElementValue(weapon, elementType.getName());
+                        if (elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
                             message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
@@ -241,8 +237,8 @@ public class EntityInfoDisplayHandler {
                     
                     // 再显示基础元素
                     for (ElementType elementType : ElementType.getBasicElements()) {
-                        Double elementValue = combinedElements.get(elementType.getName());
-                        if (elementValue != null && elementValue > 0) {
+                        double elementValue = ElementNBTUtils.readBasicElementValue(weapon, elementType.getName());
+                        if (elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
                             message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
@@ -253,8 +249,8 @@ public class EntityInfoDisplayHandler {
                     
                     // 最后显示复合元素
                     for (ElementType elementType : ElementType.getComplexElements()) {
-                        Double elementValue = combinedElements.get(elementType.getName());
-                        if (elementValue != null && elementValue > 0) {
+                        double elementValue = ElementNBTUtils.readCombinedElementValue(weapon, elementType.getName());
+                        if (elementValue > 0) {
                             MutableComponent elementName = elementType.getColoredName();
                             message.append(Component.literal(" ")
                                 .append(String.format("%s: %.2f", elementName.getString(), elementValue))
@@ -275,7 +271,7 @@ public class EntityInfoDisplayHandler {
                 addTriggeredElementsToMessage(message);
                 
                 // 添加派系增伤信息
-                addFactionModifiersToMessage(message, weapon, cacheData);
+                addFactionModifiersToMessage(message, weapon);
             }
             
             player.sendSystemMessage(message);
@@ -316,9 +312,9 @@ public class EntityInfoDisplayHandler {
      * @param message 消息组件
      * @param weapon 武器物品堆
      */
-    private static void addFactionModifiersToMessage(MutableComponent message, ItemStack weapon, AffixCacheManager.AffixCacheData cacheData) {
-        // 从缓存中获取派系元素
-        Map<String, Double> factionElements = cacheData.getFactionElements();
+    private static void addFactionModifiersToMessage(MutableComponent message, ItemStack weapon) {
+        // 使用ElementNBTUtils获取派系元素
+        Map<String, Double> factionElements = ElementNBTUtils.readFactionElements(weapon);
         
         boolean hasFactionBonus = false;
         

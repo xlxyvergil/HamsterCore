@@ -112,8 +112,8 @@ public class DerivedAttributeModifierSystem {
         
         if (shieldAttr != null && regenDelayAttr != null) {
             // 这里可以根据需要定义恢复延迟的计算逻辑
-            // 目前我们使用一个简单的示例逻辑
-            double regenDelay = 2 * 20; // 默认2秒
+            // 目前我们使用一个简单的示例逻辑（以毫秒为单位）
+            double regenDelay = 2000; // 默认2000毫秒
             
             // 添加恢复延迟修饰符
             regenDelayAttr.addTransientModifier(new AttributeModifier(
@@ -135,8 +135,8 @@ public class DerivedAttributeModifierSystem {
         
         if (shieldAttr != null && depletedRegenDelayAttr != null) {
             // 这里可以根据需要定义护盾耗尽恢复延迟的计算逻辑
-            // 目前我们使用一个简单的示例逻辑
-            double depletedRegenDelay = 6 * 20; // 默认6秒
+            // 目前我们使用一个简单的示例逻辑（以毫秒为单位）
+            double depletedRegenDelay = 6000; // 默认6000毫秒
             
             // 添加护盾耗尽恢复延迟修饰符
             depletedRegenDelayAttr.addTransientModifier(new AttributeModifier(

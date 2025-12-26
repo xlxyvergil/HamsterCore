@@ -30,7 +30,7 @@ public class ElementCalculationEventHandler {
             WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
             if (weaponData != null) {
                 // 调用ElementCalculationCoordinator来计算元素值并放入缓存
-                ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+                ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, weaponData);
             }
         }
     }
@@ -98,7 +98,7 @@ public class ElementCalculationEventHandler {
             WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
             if (weaponData != null) {
                 // 调用ElementCalculationCoordinator来计算元素值并放入缓存
-                ElementCalculationCoordinator.INSTANCE.calculateAndCacheElements(stack, weaponData);
+                ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, weaponData);
             }
         }
     }
