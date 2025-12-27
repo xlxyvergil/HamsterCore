@@ -164,24 +164,5 @@ public class EntityCapabilityAttacher {
 
         // 同步生命值修饰符数据
         EntityHealthModifierSyncToClient.sync(entity);
-        
-        // 同步状态效果数据
-        syncEntityEffects(entity);
-    }
-    
-    public static void syncEntityEffects(LivingEntity entity) {
-        if (entity.level().isClientSide()) {
-            return;
-        }
-        
-        // 更新实体状态效果Capability并同步
-        entity.getCapability(EntityEffectCapability.CAPABILITY).ifPresent(cap -> {
-            // 获取实体当前的所有状态效果
-            java.util.Collection<MobEffectInstance> effects = entity.getActiveEffects();
-            // 更新Capability中的状态效果缓存
-            cap.updateEffects(effects);
-            // 同步到客户端
-            EntityEffectCapability.sync(entity);
-        });
     }
 }

@@ -163,54 +163,139 @@ public class RenderUtils {
     }
     
     /**
+     * 根据状态效果获取对应的图标资源
+     */
+    private static AssetsManager.ImageAssets getEffectIcon(ResourceLocation effectRegistryName) {
+        String path = effectRegistryName.getPath();
+        
+        // 根据HamsterCore自定义状态效果的路径返回对应的图标
+        switch (path) {
+            case "blast":
+                return AssetsManager.BLAST;
+            case "cold":
+                return AssetsManager.COLD;
+            case "corrosive":
+                return AssetsManager.CORROSIVE;
+            case "electric_cloud":
+                return AssetsManager.ELECTRIC_CLOUD;
+            case "electricity":
+                return AssetsManager.ELECTRICITY;
+            case "gas":
+                return AssetsManager.GAS;
+            case "gas_cloud":
+                return AssetsManager.GAS_CLOUD;
+            case "heat":
+                return AssetsManager.HEAT;
+            case "impact":
+                return AssetsManager.IMPACT;
+            case "magnetic":
+                return AssetsManager.MAGNETIC;
+            case "puncture":
+                return AssetsManager.PUNCTURE;
+            case "radiation":
+                return AssetsManager.RADIATION;
+            case "slash":
+                return AssetsManager.SLASH;
+            case "toxin":
+                return AssetsManager.TOXIN;
+            case "viral":
+                return AssetsManager.VIRAL;
+            default:
+                return null; // 未找到对应的图标
+        }
+    }
+    
+    /**
      * 渲染状态效果图标 - 在指定位置渲染状态效果图标和等级
      */
     public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects) {
+        renderEffectIcons(poseStack, iconX, iconY, effects, null);
+    }
+    
+    /**
+     * 渲染状态效果图标 - 在指定位置渲染状态效果图标和等级，带实体参数
+     */
+    public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects, net.minecraft.world.entity.LivingEntity entity) {
         // 创建 GuiGraphics - 直接使用 Minecraft 实例
         GuiGraphics guiGraphics = new GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource());
         guiGraphics.pose().pushPose();
         guiGraphics.pose().mulPoseMatrix(poseStack.last().pose());
         
         // 渲染状态效果图标和等级
-        int currentX = iconX;
-        for (MobEffectInstance effectInstance : effects) {
+        int maxIconsPerColumn = 5; // 每列最多4个图标
+        int columnSpacing = 22; // 列间距
+        int rowSpacing = 18; // 行间距
+        int maxColumns = 4; // 最大列数
+        int maxDistanceFromTop = 60; // 距离实体顶部的最大距离（避免超过护盾条）
+        
+        int currentColumn = 0;
+        int currentRow = 0;
+        
+        for (int i = 0; i < effects.size(); i++) {
+            MobEffectInstance effectInstance = effects.get(i);
             MobEffect effect = effectInstance.getEffect();
             int amplifier = effectInstance.getAmplifier(); // 等级（0为第一级）
+            
+            // 计算当前图标的位置
+            int currentX = iconX + (currentColumn * columnSpacing);
+            int currentY = iconY + (currentRow * rowSpacing);
+            
+            // 检查是否超过垂直限制（距离实体顶部的最大距离）
+            if (Math.abs(currentY) > maxDistanceFromTop) {
+                // 换到下一列
+                currentRow = 0;
+                currentColumn++;
+                
+                // 如果超出最大列数，停止渲染
+                if (currentColumn >= maxColumns) {
+                    break;
+                }
+                
+                // 重新计算位置
+                currentX = iconX + (currentColumn * columnSpacing);
+                currentY = iconY + (currentRow * rowSpacing);
+            }
+            
+            // 检查状态效果是否仍在持续时间
+            if (effectInstance.getDuration() <= 0 && !effectInstance.isInfiniteDuration()) {
+                continue; // 如果持续时间结束，则跳过渲染
+            }
             
             // 获取状态效果的图标资源位置
             ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effect);
             if (effectRegistryName != null) {
-                // 使用Minecraft原版的GUI纹理来渲染状态效果图标
-                // 状态效果图标在inventory.png中的位置
-                Minecraft.getInstance().getTextureManager().bindForSetup(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
-                
-                // 获取状态效果图标在纹理集中的位置
-                int iconXOffset = effect.getIcon() % 8 * 18;
-                int iconYOffset = effect.getIcon() / 8 * 18;
-                
-                // 渲染状态效果图标（原版大小18x18，我们按比例缩小到6x6）
-                guiGraphics.blit(
-                    net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS,
-                    currentX, iconY, 
-                    0, // z值
-                    iconXOffset, iconYOffset, 
-                    18, 18, 
-                    256, 256 // 纹理大小
-                );
+                // 使用AssetsManager渲染对应的状态效果图标
+                AssetsManager.ImageAssets effectIcon = getEffectIcon(effectRegistryName);
+                if (effectIcon != null) {
+                    // 以18x18像素完整尺寸渲染图标
+                    effectIcon.blit(guiGraphics, currentX, currentY, 18, 18);
+                }
+                // 如果没有找到对应的图标，不渲染任何内容，这表示代码映射有问题，需要修复
 
-                // 渲染状态效果等级（6x6像素大小）
+                // 渲染状态效果等级（在图标右下角）
                 String levelText = String.valueOf(amplifier + 1); // 显示为1开始的等级
+                int textWidth = Minecraft.getInstance().font.width(levelText);
+                // 在图标右下角绘制等级数字
                 guiGraphics.drawString(
                     Minecraft.getInstance().font,
                     levelText,
-                    currentX + 6,   // 紧邻图标右侧
-                    iconY,       // 与图标同一水平线
+                    currentX + 18 - textWidth,   // 右对齐，靠近图标的右边
+                    currentY + 12,       // 在图标下方，稍微往上一点
                     0xFFFFFF,     // 白色文字
-                    false // 不使用阴影
+                    true // 使用阴影
                 );
-
-                // 更新下一个图标的位置
-                currentX += 14; // 每个图标占用14像素宽度（6像素图标 + 2像素间距 + 6像素等级文字）
+            }
+            
+            // 更新位置计数器
+            currentRow++;
+            if (currentRow >= maxIconsPerColumn) {
+                currentRow = 0;
+                currentColumn++;
+                
+                // 如果超出最大列数，停止渲染
+                if (currentColumn >= maxColumns) {
+                    break;
+                }
             }
         }
         

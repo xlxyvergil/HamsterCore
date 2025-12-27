@@ -8,13 +8,10 @@ import com.xlxyvergil.hamstercore.config.ClientConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
 import com.xlxyvergil.hamstercore.config.WeaponConfig;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityEffectCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
-import com.xlxyvergil.hamstercore.events.CapabilityAttachEvents;
-import com.xlxyvergil.hamstercore.events.EntityEffectEvents;
 import com.xlxyvergil.hamstercore.events.PlayerLevelEvents;
 import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
@@ -69,11 +66,7 @@ public class HamsterCore {
         // 注册玩家能力相关事件
         MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
         
-        // 注册状态效果相关事件
-        MinecraftForge.EVENT_BUS.register(EntityEffectEvents.class);
-        
-        // 注册能力附加相关事件
-        MinecraftForge.EVENT_BUS.register(CapabilityAttachEvents.class);
+
         
         // 加载客户端配置
         ClientConfig.load();
@@ -148,6 +141,5 @@ public class HamsterCore {
         event.register(EntityLevelCapabilityProvider.class);
         event.register(EntityArmorCapabilityProvider.class);
         event.register(PlayerLevelCapabilityProvider.class);
-        event.register(EntityEffectCapability.CAPABILITY);
     }
 }

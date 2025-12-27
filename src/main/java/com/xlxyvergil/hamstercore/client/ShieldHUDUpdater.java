@@ -91,15 +91,25 @@ public class ShieldHUDUpdater {
         
         // 绘制护盾数值
         String shieldText = String.format("%.0f/%.0f", currentShield, maxShield);
-        int textWidth = Minecraft.getInstance().font.width(shieldText);
+        
+        // 缩小字体大小 - 应用0.8的缩放比例（相当于缩小约2像素）
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
+        
+        // 计算缩放后的文本宽度和位置
+        float scaledLeft = (left + (82 - Minecraft.getInstance().font.width(shieldText)) / 2) / 0.8F;
+        float scaledTop = (top - 2) / 0.8F;
+        
         guiGraphics.drawString(
             Minecraft.getInstance().font,
             shieldText,
-            left + (82 - textWidth) / 2, // 护盾条中间
-            top - 2,
+            scaledLeft, // 护盾条中间（缩放后的位置）
+            scaledTop,
             0xFFFFFF,
             true
         );
+        
+        guiGraphics.pose().popPose();
         
         // 更新leftHeight以确保其他GUI元素不会重叠
         float maxHealth = (float) player.getAttribute(Attributes.MAX_HEALTH).getValue();
