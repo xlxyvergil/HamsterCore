@@ -106,14 +106,6 @@ public class EntityAttributeRegistry {
         () -> new PercentBasedAttribute("attribute.name.hamstercore.viral", 0.0D, 0.0D, 1000.0D).setSyncable(true));
     
     // 特殊属性
-    /** HC暴击率属性 */
-    public static final RegistryObject<Attribute> CRITICAL_CHANCE = ATTRIBUTES.register("critical_chance", 
-        () -> new PercentBasedAttribute("attribute.name.hamstercore.critical_chance", 0.0D, 0.0D, 100.0D).setSyncable(true));
-    
-    /** HC暴击伤害属性 */
-    public static final RegistryObject<Attribute> CRITICAL_DAMAGE = ATTRIBUTES.register("critical_damage", 
-        () -> new PercentBasedAttribute("attribute.name.hamstercore.critical_damage", 0.0D, 0.0D, 1000.0D).setSyncable(true));
-    
     /** 触发率属性 */
     public static final RegistryObject<Attribute> TRIGGER_CHANCE = ATTRIBUTES.register("trigger_chance", 
         () -> new PercentBasedAttribute("attribute.name.hamstercore.trigger_chance", 0.0D, 0.0D, 100.0D).setSyncable(true));
@@ -173,8 +165,6 @@ public class EntityAttributeRegistry {
             event.add(type, MAGNETIC.get());
             event.add(type, RADIATION.get());
             event.add(type, VIRAL.get());
-            event.add(type, CRITICAL_CHANCE.get());
-            event.add(type, CRITICAL_DAMAGE.get());
             event.add(type, TRIGGER_CHANCE.get());
             event.add(type, GRINEER.get());
             event.add(type, INFESTED.get());

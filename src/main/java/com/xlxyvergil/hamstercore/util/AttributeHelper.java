@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
+import dev.shadowsoffire.attributeslib.api.ALObjects;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -196,7 +197,7 @@ public class AttributeHelper {
      * @return 暴击率属性值
      */
     public static double getCriticalChance(LivingEntity entity) {
-        return entity.getAttribute(EntityAttributeRegistry.CRITICAL_CHANCE.get()).getValue();
+        return entity.getAttribute(ALObjects.Attributes.CRIT_CHANCE.get()).getValue();
     }
     
     /**
@@ -205,7 +206,7 @@ public class AttributeHelper {
      * @return 暴击伤害属性值
      */
     public static double getCriticalDamage(LivingEntity entity) {
-        return entity.getAttribute(EntityAttributeRegistry.CRITICAL_DAMAGE.get()).getValue();
+        return entity.getAttribute(ALObjects.Attributes.CRIT_DAMAGE.get()).getValue();
     }
     
     /**

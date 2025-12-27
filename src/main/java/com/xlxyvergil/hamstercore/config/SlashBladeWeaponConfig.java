@@ -29,9 +29,9 @@ public class SlashBladeWeaponConfig {
     
     private static final String SLASHBLADE_MOD_ID = "slashblade";
     
-    // 默认特殊属性值
-    private static final double DEFAULT_CRITICAL_CHANCE = 0.05; // 5%暴击率
-    private static final double DEFAULT_CRITICAL_DAMAGE = 1.5;  // 1.5倍暴击伤害
+    // 默认特殊属性值 - 与ApothicAttributes的默认值保持一致
+    private static final double DEFAULT_CRITICAL_CHANCE = 0.05; // 5%暴击率 (与ApothicAttributes默认值一致)
+    private static final double DEFAULT_CRITICAL_DAMAGE = 1.5;  // 1.5倍暴击伤害 (与ApothicAttributes默认值一致)
     private static final double DEFAULT_TRIGGER_CHANCE = 0.1;   // 10%触发率
     
     // 默认物理元素占比（拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%）

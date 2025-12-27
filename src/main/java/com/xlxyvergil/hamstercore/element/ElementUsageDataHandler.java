@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
+import dev.shadowsoffire.attributeslib.api.ALObjects;
 import dev.shadowsoffire.attributeslib.api.IFormattableAttribute;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -228,9 +229,9 @@ public class ElementUsageDataHandler {
                 return EntityAttributeRegistry.VIRAL.get();
             // 特殊属性
             case "critical_chance":
-                return EntityAttributeRegistry.CRITICAL_CHANCE.get();
+                return ALObjects.Attributes.CRIT_CHANCE.get();
             case "critical_damage":
-                return EntityAttributeRegistry.CRITICAL_DAMAGE.get();
+                return ALObjects.Attributes.CRIT_DAMAGE.get();
             case "trigger_chance":
                 return EntityAttributeRegistry.TRIGGER_CHANCE.get();
             // 派系元素

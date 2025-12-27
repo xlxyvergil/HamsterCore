@@ -200,7 +200,7 @@ public class WeaponAttributeRenderer {
         }
         
         // 遍历所有派系元素类型
-        for (ElementType elementType : ElementType.getFactionElements()) {
+        for (ElementType elementType : ElementType.getSpecialElements()) {
             // 获取元素值
             double value = ElementNBTUtils.readFactionElementValue(stack, elementType.getName());
             if (value <= 0) {
