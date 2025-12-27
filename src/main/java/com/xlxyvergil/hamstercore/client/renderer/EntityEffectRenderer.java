@@ -17,14 +17,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class EntityEffectRenderer {
 
     /**
-     * 渲染状态效果图标 - 与EntityShieldRenderer类似的方式
-     */
-    public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects) {
-        // 使用 RenderUtils 渲染状态效果图标 - 在指定位置并使用效果列表
-        RenderUtils.renderEffectIcons(poseStack, iconX, iconY, effects, null);
-    }
-    
-    /**
      * 渲染状态效果图标 - 与EntityShieldRenderer类似的方式，带实体参数
      */
     public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects, net.minecraft.world.entity.LivingEntity entity) {

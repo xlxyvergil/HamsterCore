@@ -41,6 +41,13 @@ public class WeaponData {
     }
     
     /**
+     * 从Basic层移除指定类型的元素
+     */
+    public void removeBasicElement(String type) {
+        basicElements.remove(type);
+    }
+    
+    /**
      * 获取按优先级排序的Basic层元素列表
      * 优先级顺序: def ＜ user
      */

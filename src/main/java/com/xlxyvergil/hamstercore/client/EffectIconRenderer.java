@@ -25,12 +25,20 @@ import net.minecraftforge.fml.common.Mod;
 import java.lang.Math;
 
 /**
- * 状态效果图标渲染器 - 专门处理实体头顶状态效果的显示
+ * 状态效果图标渲染器 - 专门处理实体状态效果的显示
  */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class EffectIconRenderer {
 
+    /**
+     * 检查状态效果是否属于HamsterCore模组
+     */
+    private static boolean isHamsterCoreEffect(MobEffect effect) {
+        ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effect);
+        return effectRegistryName != null && "hamstercore".equals(effectRegistryName.getNamespace());
+    }
+    
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
         // 检查是否为正确的渲染阶段
@@ -55,8 +63,16 @@ public class EffectIconRenderer {
                 // 从管理器中获取缓存的状态效果
                 java.util.List<MobEffectInstance> cachedEffects = EntityEffectManager.getEntityEffects(living.getId());
                 
-                // 检查实体是否有任何状态效果
-                boolean hasEffects = !cachedEffects.isEmpty();
+                // 过滤只保留HamsterCore的状态效果
+                java.util.List<MobEffectInstance> hamsterCoreEffects = new java.util.ArrayList<>();
+                for (MobEffectInstance effect : cachedEffects) {
+                    if (isHamsterCoreEffect(effect.getEffect())) {
+                        hamsterCoreEffects.add(effect);
+                    }
+                }
+                
+                // 检查实体是否有任何HamsterCore状态效果
+                boolean hasEffects = !hamsterCoreEffects.isEmpty();
 
                 if (hasEffects) {
                     // 完全按照 battery_shield 的方式获取 GuiGraphics
@@ -89,7 +105,7 @@ public class EffectIconRenderer {
                     poseStack.scale(-0.025f, -0.025f, 1);
 
                     // 渲染状态效果图标 - 使用EntityEffectRenderer进行渲染，从上方开始垂直排列，整体向上移动10像素
-                    EntityEffectRenderer.renderEffectIcons(poseStack, -9, -46, cachedEffects, living);
+                    EntityEffectRenderer.renderEffectIcons(poseStack, -9, -46, hamsterCoreEffects, living);
 
                     poseStack.popPose();
                 }

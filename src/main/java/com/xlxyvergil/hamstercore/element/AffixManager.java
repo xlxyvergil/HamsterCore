@@ -20,7 +20,7 @@ public class AffixManager {
      * 从Basic层移除指定类型的元素
      */
     private static void removeFromBasicLayer(WeaponData weaponData, String elementType) {
-        weaponData.getBasicElements().remove(elementType);
+        weaponData.removeBasicElement(elementType);
     }
     
     /**
@@ -110,12 +110,6 @@ public class AffixManager {
                 removedElementType = entry.getElementType();
                 break;
             }
-        }
-        
-        // 记录删除前的元素类型状态
-        Map<String, Boolean> elementTypesBeforeRemoval = new HashMap<>();
-        if (removedElementType != null) {
-            elementTypesBeforeRemoval.put(removedElementType, hasElementTypeInInitialModifiers(weaponData, removedElementType));
         }
         
         // 删除词缀

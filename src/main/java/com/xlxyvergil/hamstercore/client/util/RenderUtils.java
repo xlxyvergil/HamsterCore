@@ -206,6 +206,14 @@ public class RenderUtils {
     }
     
     /**
+     * 检查状态效果是否属于HamsterCore模组
+     */
+    private static boolean isHamsterCoreEffect(MobEffect effect) {
+        ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effect);
+        return effectRegistryName != null && "hamstercore".equals(effectRegistryName.getNamespace());
+    }
+    
+    /**
      * 渲染状态效果图标 - 在指定位置渲染状态效果图标和等级
      */
     public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects) {
@@ -235,6 +243,11 @@ public class RenderUtils {
             MobEffectInstance effectInstance = effects.get(i);
             MobEffect effect = effectInstance.getEffect();
             int amplifier = effectInstance.getAmplifier(); // 等级（0为第一级）
+            
+            // 检查状态效果是否属于HamsterCore模组，如果不是则跳过
+            if (!isHamsterCoreEffect(effect)) {
+                continue;
+            }
             
             // 计算当前图标的位置
             int currentX = iconX + (currentColumn * columnSpacing);
