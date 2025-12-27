@@ -3,7 +3,10 @@ package com.xlxyvergil.hamstercore.client.util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
@@ -157,5 +160,47 @@ public class RenderUtils {
         );
         
         return result.getType() != BlockHitResult.Type.MISS;
+    }
+    
+    /**
+     * 渲染状态效果图标 - 在指定位置渲染状态效果图标和等级
+     */
+    public static void renderEffectIcons(PoseStack poseStack, int iconX, int iconY, java.util.List<MobEffectInstance> effects) {
+        // 创建 GuiGraphics - 直接使用 Minecraft 实例
+        GuiGraphics guiGraphics = new GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource());
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().mulPoseMatrix(poseStack.last().pose());
+        
+        // 渲染状态效果图标和等级
+        int currentX = iconX;
+        for (MobEffectInstance effectInstance : effects) {
+            MobEffect effect = effectInstance.getEffect();
+            int amplifier = effectInstance.getAmplifier(); // 等级（0为第一级）
+            
+            // 获取状态效果的图标资源位置
+            ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effect);
+            if (effectRegistryName != null && "hamstercore".equals(effectRegistryName.getNamespace())) {
+                ResourceLocation effectTexture = new ResourceLocation("hamstercore", "textures/mob_effect/" + effectRegistryName.getPath() + ".png");
+
+                // 渲染状态效果图标（6x6像素）
+                guiGraphics.blit(effectTexture, currentX, iconY, 0, 0, 6, 6, 6, 6);
+
+                // 渲染状态效果等级（6x6像素大小）
+                String levelText = String.valueOf(amplifier + 1); // 显示为1开始的等级
+                guiGraphics.drawString(
+                    Minecraft.getInstance().font,
+                    levelText,
+                    currentX + 6,   // 紧邻图标右侧
+                    iconY,       // 与图标同一水平线
+                    0xFFFFFF,     // 白色文字
+                    false // 不使用阴影
+                );
+
+                // 更新下一个图标的位置
+                currentX += 14; // 每个图标占用14像素宽度（6像素图标 + 2像素间距 + 6像素等级文字）
+            }
+        }
+        
+        guiGraphics.pose().popPose();
     }
 }
