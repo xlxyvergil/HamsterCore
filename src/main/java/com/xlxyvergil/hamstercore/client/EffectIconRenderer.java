@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.client.renderer.EntityEffectRenderer;
 import com.xlxyvergil.hamstercore.client.util.RenderUtils;
+import com.xlxyvergil.hamstercore.content.capability.entity.EntityEffectCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -49,34 +50,35 @@ public class EffectIconRenderer {
                 boolean isBlocked = RenderUtils.raytrace(living);
                 if (isBlocked) return;
 
-                // 检查实体是否有HamsterCore自定义的状态效果
-                boolean hasHamsterCoreEffects = living.getActiveEffects().stream()
-                    .anyMatch(effectInstance -> {
-                        ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effectInstance.getEffect());
-                        return effectRegistryName != null && "hamstercore".equals(effectRegistryName.getNamespace());
-                    });
+                // 从Capability中获取缓存的状态效果
+                EntityEffectCapability.getCapabilityOptional(living).ifPresent(cap -> {
+                    java.util.List<MobEffectInstance> cachedEffects = cap.getCachedEffects();
+                    
+                    // 检查实体是否有任何状态效果（可以扩展为只渲染HamsterCore自定义的状态效果）
+                    boolean hasEffects = !cachedEffects.isEmpty();
 
-                if (hasHamsterCoreEffects) {
-                    // 完全按照 battery_shield 的方式获取 GuiGraphics
-                    final GuiGraphics guiGraphics = ((com.xlxyvergil.hamstercore.api.IRenderContextProvider) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
-                    PoseStack poseStack = guiGraphics.pose();
-                    poseStack.pushPose();
+                    if (hasEffects) {
+                        // 完全按照 battery_shield 的方式获取 GuiGraphics
+                        final GuiGraphics guiGraphics = ((com.xlxyvergil.hamstercore.api.IRenderContextProvider) Minecraft.getInstance()).getGuiGraphics(event.getPoseStack());
+                        PoseStack poseStack = guiGraphics.pose();
+                        poseStack.pushPose();
 
-                    // 计算位置 - 按照 battery_shield 的方式
-                    Vec3 livingFrom = living.getPosition(event.getPartialTick()).add(0, living.getBbHeight() + 0.5f, 0);
-                    Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
+                        // 计算位置 - 按照 battery_shield 的方式
+                        Vec3 livingFrom = living.getPosition(event.getPartialTick()).add(0, living.getBbHeight() + 0.5f, 0);
+                        Vec3 posFromPlayer = fromPos.vectorTo(livingFrom);
 
-                    // 变换矩阵 - 完全按照 battery_shield
-                    poseStack.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
-                    poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.getEntityRenderDispatcher().camera.getYRot()));
-                    poseStack.mulPose(Axis.XP.rotationDegrees(minecraft.getEntityRenderDispatcher().camera.getXRot()));
-                    poseStack.scale(-0.025f, -0.025f, 1);
+                        // 变换矩阵 - 完全按照 battery_shield
+                        poseStack.translate(posFromPlayer.x, posFromPlayer.y, posFromPlayer.z);
+                        poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.getEntityRenderDispatcher().camera.getYRot()));
+                        poseStack.mulPose(Axis.XP.rotationDegrees(minecraft.getEntityRenderDispatcher().camera.getXRot()));
+                        poseStack.scale(-0.025f, -0.025f, 1);
 
-                    // 渲染状态效果图标 - 使用EntityEffectRenderer进行渲染
-                    EntityEffectRenderer.renderEffectIcons(poseStack, -38, -25, new java.util.ArrayList<>(living.getActiveEffects()));
+                        // 渲染状态效果图标 - 使用EntityEffectRenderer进行渲染
+                        EntityEffectRenderer.renderEffectIcons(poseStack, -38, -25, cachedEffects);
 
-                    poseStack.popPose();
-                }
+                        poseStack.popPose();
+                    }
+                });
             });
         }
     }

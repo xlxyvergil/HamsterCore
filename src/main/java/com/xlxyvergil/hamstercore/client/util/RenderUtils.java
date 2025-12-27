@@ -179,11 +179,24 @@ public class RenderUtils {
             
             // 获取状态效果的图标资源位置
             ResourceLocation effectRegistryName = BuiltInRegistries.MOB_EFFECT.getKey(effect);
-            if (effectRegistryName != null && "hamstercore".equals(effectRegistryName.getNamespace())) {
-                ResourceLocation effectTexture = new ResourceLocation("hamstercore", "textures/mob_effect/" + effectRegistryName.getPath() + ".png");
-
-                // 渲染状态效果图标（6x6像素）
-                guiGraphics.blit(effectTexture, currentX, iconY, 0, 0, 6, 6, 6, 6);
+            if (effectRegistryName != null) {
+                // 使用Minecraft原版的GUI纹理来渲染状态效果图标
+                // 状态效果图标在inventory.png中的位置
+                Minecraft.getInstance().getTextureManager().bindForSetup(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
+                
+                // 获取状态效果图标在纹理集中的位置
+                int iconXOffset = effect.getIcon() % 8 * 18;
+                int iconYOffset = effect.getIcon() / 8 * 18;
+                
+                // 渲染状态效果图标（原版大小18x18，我们按比例缩小到6x6）
+                guiGraphics.blit(
+                    net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS,
+                    currentX, iconY, 
+                    0, // z值
+                    iconXOffset, iconYOffset, 
+                    18, 18, 
+                    256, 256 // 纹理大小
+                );
 
                 // 渲染状态效果等级（6x6像素大小）
                 String levelText = String.valueOf(amplifier + 1); // 显示为1开始的等级
