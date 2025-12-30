@@ -14,33 +14,30 @@ public class ElementCalculator {
     }
 
     /**
-     * 计算所有元素值，包括基础元素、复合元素和特殊元素
+     * 计算所有元素值，包括基础元素、复合元素和其他通用属性
      * @param weaponData 武器数据
-     * @return 所有元素的计算值
+     * @return 所有元素的计算值（保持String键名以支持通用属性）
      */
-    public Map<ElementType, Double> calculateAllElementValues(WeaponData weaponData) {
-        Map<ElementType, Double> elementValues = new HashMap<>();
+    public Map<String, Double> calculateAllElementValues(WeaponData weaponData) {
+        Map<String, Double> elementValues = new HashMap<>();
 
         if (weaponData == null) {
             return elementValues;
         }
 
-        // 直接从InitialModifiers层计算元素值
+        // 直接从InitialModifiers层计算元素值（支持通用属性）
         Map<String, Double> initialElementValues = calculateElementValuesFromInitialModifiers(weaponData);
 
-        // 转换为ElementType映射
+        // 转换为通用映射（保持所有属性，包括非HamsterCore属性）
         for (Map.Entry<String, Double> entry : initialElementValues.entrySet()) {
-            ElementType type = ElementType.byName(entry.getKey());
-            if (type != null) {
-                elementValues.put(type, entry.getValue());
-            }
+            elementValues.put(entry.getKey(), entry.getValue());
         }
 
         return elementValues;
     }
 
     /**
-     * 从InitialModifiers层计算元素值
+     * 从InitialModifiers层计算元素值（按name进行分组计算，模拟Forge属性修饰符计算）
      * @param weaponData 武器数据
      * @return 元素值映射
      */
@@ -53,24 +50,68 @@ public class ElementCalculator {
 
         List<InitialModifierEntry> initialModifiers = weaponData.getInitialModifiers();
 
-        // 累加同类型元素的值
-        for (InitialModifierEntry entry : initialModifiers) {
-            String elementType = entry.getElementType();
-            double amount = entry.getAmount();
+        // 按name分组，然后根据operation类型进行计算（模拟Forge属性修饰符计算）
+        Map<String, List<InitialModifierEntry>> groupedModifiers = initialModifiers.stream()
+            .collect(Collectors.groupingBy(InitialModifierEntry::getName));
 
-            elementValues.put(elementType, elementValues.getOrDefault(elementType, 0.0) + amount);
+        for (Map.Entry<String, List<InitialModifierEntry>> entry : groupedModifiers.entrySet()) {
+            String name = entry.getKey();
+            List<InitialModifierEntry> modifiers = entry.getValue();
+            
+            // 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+            double calculatedValue = calculateValueForName(modifiers);
+            elementValues.put(name, calculatedValue);
         }
 
         return elementValues;
     }
 
     /**
-     * 获取激活的元素列表
+     * 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+     * @param modifiers 同名的修饰符列表
+     * @return 合并计算后的值
+     */
+    private double calculateValueForName(List<InitialModifierEntry> modifiers) {
+        double baseValue = 0.0;
+        double additionValue = 0.0;
+        double multiplyBaseValue = 0.0; // MULTIPLY_BASE
+        double multiplyTotalValue = 0.0; // MULTIPLY_TOTAL
+
+        for (InitialModifierEntry entry : modifiers) {
+            double amount = entry.getAmount();
+            String operation = entry.getOperation();
+
+            switch (operation.toUpperCase()) {
+                case "ADDITION":
+                    additionValue += amount;
+                    break;
+                case "MULTIPLY_BASE":
+                    multiplyBaseValue += amount;
+                    break;
+                case "MULTIPLY_TOTAL":
+                    multiplyTotalValue += amount;
+                    break;
+                default:
+                    additionValue += amount; // 默认为ADDITION
+                    break;
+            }
+        }
+
+        // 计算最终值：(baseValue + additionValue) * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
+        // 对于初始值，baseValue为0，所以结果是: additionValue * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
+        double result = additionValue * (1 + multiplyBaseValue);
+        result = result * (1 + multiplyTotalValue);
+
+        return result;
+    }
+
+    /**
+     * 获取激活的元素列表（包括HamsterCore元素和其他通用属性）
      * @param weaponData 武器数据
      * @return 激活的元素列表
      */
-    public List<Map.Entry<ElementType, Double>> getActivatedElements(WeaponData weaponData) {
-        Map<ElementType, Double> elementValues = calculateAllElementValues(weaponData);
+    public List<Map.Entry<String, Double>> getActivatedElements(WeaponData weaponData) {
+        Map<String, Double> elementValues = calculateAllElementValues(weaponData);
         return elementValues.entrySet().stream()
                 .filter(entry -> entry.getValue() > 0.0)
                 .collect(Collectors.toList());

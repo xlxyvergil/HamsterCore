@@ -25,61 +25,51 @@ public class ElementCalculationCoordinator {
     
     /**
      * 计算元素值并将其存储到物品的NBT中
-     * 类似Apotheosis的词缀系统，将元素数据直接写入物品NBT
+     * 支持HamsterCore元素和其他通用属性
      * @param stack 物品栈
      * @param weaponData 武器数据
      */
     public void calculateAndStoreElements(ItemStack stack, WeaponData weaponData) {
-        // 1. 调用ElementCalculator从InitialModifiers层计算所有元素值
-        Map<String, Double> elementValues = calculateElementValuesFromInitialModifiers(weaponData);
+        // 1. 调用ElementCalculator从InitialModifiers层计算所有元素值（包括通用属性）
+        Map<String, Double> elementValues = ElementCalculator.INSTANCE.calculateElementValuesFromInitialModifiers(weaponData);
         
-        // 2. 分离物理元素、基础元素、复合元素、派系元素和特殊元素
-        Map<String, Double> physicalElements = new HashMap<>();
-        Map<String, Double> basicElements = new HashMap<>();
-        Map<String, Double> complexElements = new HashMap<>();
-        Map<String, Double> factionElements = new HashMap<>();
-        Map<String, Double> specialStats = new HashMap<>();
+        // 2. 分离需要复合计算的元素和其他通用属性
+        Map<String, Double> elementsForCombination = new HashMap<>();
+        Map<String, Double> otherAttributes = new HashMap<>(); // 存储其他通用属性（包括HamsterCore的非复合元素和其他mod属性）
         
         for (Map.Entry<String, Double> entry : elementValues.entrySet()) {
-            String elementType = entry.getKey();
+            String attributeName = entry.getKey();
             double value = entry.getValue();
             
-            ElementType type = ElementType.byName(elementType);
-            if (type != null) {
-                if (type.isPhysical()) {
-                    physicalElements.put(elementType, value);
-                } else if (type.isBasic()) {
-                    basicElements.put(elementType, value);
-                } else if (type.isComplex()) {
-                    complexElements.put(elementType, value);
-                } else if (type.isSpecial()) {
-                    factionElements.put(elementType, value);
-                } else if (type.isCriticalChance() || type.isCriticalDamage() || type.isTriggerChance()) {
-                    specialStats.put(elementType, value);
-                }
+            ElementType type = ElementType.byName(attributeName);
+            if (type != null && (type.isBasic() || type.isComplex())) {
+                // 需要复合计算的元素
+                elementsForCombination.put(attributeName, value);
+            } else {
+                // 其他所有属性（包括HamsterCore的非复合元素和其他mod属性）统一存储
+                otherAttributes.put(attributeName, value);
             }
         }
         
-        // 3. 合并基础元素和复合元素，用于处理元素复合
-        Map<String, Double> elementsForCombination = new HashMap<>();
-        elementsForCombination.putAll(basicElements);
-        elementsForCombination.putAll(complexElements);
+        // 3. 使用已分离的需要复合计算的元素
         
-        // 4. 调用ElementCombinationModifier处理元素复合
+        // 4. 调用ElementCombinationModifier处理HamsterCore元素复合
         Map<String, Double> combinedElements = processElementCombinations(weaponData, elementsForCombination);
         
-        // 5. 将计算结果存储到物品的NBT中，类似Apotheosis的词缀系统
+        // 5. 将计算结果存储到物品的NBT中，包括通用属性
         ElementUsageData.ElementData elementData = new ElementUsageData.ElementData();
-        elementData.setCriticalStats(specialStats);
-        elementData.setPhysicalElements(physicalElements);
-        elementData.setFactionElements(factionElements);
+        
+        // 将其他通用属性存储到物理元素映射中（包括HamsterCore的非复合元素和其他mod属性，现作为通用属性存储）
+        elementData.setPhysicalElements(otherAttributes);
+        
+        // 将复合后的元素存储到组合元素中
         elementData.setCombinedElements(combinedElements);
         
         ElementUsageData.writeElementDataToItem(stack, elementData);
     }
     
     /**
-     * 从InitialModifiers层计算元素值
+     * 从InitialModifiers层计算元素值（按name进行分组计算，模拟Forge属性修饰符计算）
      * @param weaponData 武器数据
      * @return 元素值映射
      */
@@ -88,15 +78,59 @@ public class ElementCalculationCoordinator {
         
         List<InitialModifierEntry> initialModifiers = weaponData.getInitialModifiers();
         
-        for (InitialModifierEntry entry : initialModifiers) {
-            String elementType = entry.getElementType();
-            double amount = entry.getAmount();
+        // 按name分组，然后根据operation类型进行计算（模拟Forge属性修饰符计算）
+        Map<String, List<InitialModifierEntry>> groupedModifiers = initialModifiers.stream()
+            .collect(Collectors.groupingBy(InitialModifierEntry::getName));
+
+        for (Map.Entry<String, List<InitialModifierEntry>> entry : groupedModifiers.entrySet()) {
+            String name = entry.getKey();
+            List<InitialModifierEntry> modifiers = entry.getValue();
             
-            // 累加同类型元素的值
-            elementValues.put(elementType, elementValues.getOrDefault(elementType, 0.0) + amount);
+            // 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+            double calculatedValue = calculateValueForName(modifiers);
+            elementValues.put(name, calculatedValue);
         }
         
         return elementValues;
+    }
+    
+    /**
+     * 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+     * @param modifiers 同名的修饰符列表
+     * @return 合并计算后的值
+     */
+    private double calculateValueForName(List<InitialModifierEntry> modifiers) {
+        double baseValue = 0.0;
+        double additionValue = 0.0;
+        double multiplyBaseValue = 0.0; // MULTIPLY_BASE
+        double multiplyTotalValue = 0.0; // MULTIPLY_TOTAL
+
+        for (InitialModifierEntry entry : modifiers) {
+            double amount = entry.getAmount();
+            String operation = entry.getOperation();
+
+            switch (operation.toUpperCase()) {
+                case "ADDITION":
+                    additionValue += amount;
+                    break;
+                case "MULTIPLY_BASE":
+                    multiplyBaseValue += amount;
+                    break;
+                case "MULTIPLY_TOTAL":
+                    multiplyTotalValue += amount;
+                    break;
+                default:
+                    additionValue += amount; // 默认为ADDITION
+                    break;
+            }
+        }
+
+        // 计算最终值：(baseValue + additionValue) * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
+        // 对于初始值，baseValue为0，所以结果是: additionValue * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
+        double result = additionValue * (1 + multiplyBaseValue);
+        result = result * (1 + multiplyTotalValue);
+
+        return result;
     }
     
     /**
