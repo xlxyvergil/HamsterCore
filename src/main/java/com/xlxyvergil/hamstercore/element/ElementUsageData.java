@@ -5,8 +5,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 元素使用数据类
@@ -17,60 +18,41 @@ public class ElementUsageData {
     
     // NBT标签键名
     private static final String ELEMENT_DATA_KEY = "ElementUsageData";
-    private static final String CRITICAL_STATS_KEY = "CriticalStats";
-    private static final String PHYSICAL_ELEMENTS_KEY = "PhysicalElements";
-    private static final String FACTION_ELEMENTS_KEY = "FactionElements";
-    private static final String COMBINED_ELEMENTS_KEY = "CombinedElements";
+    private static final String ELEMENT_MODIFIERS_KEY = "ElementModifiers";
+    private static final String MODIFIER_NAME_KEY = "name";
+    private static final String MODIFIER_AMOUNT_KEY = "amount";
+    private static final String MODIFIER_OPERATION_KEY = "operation";
+    private static final String MODIFIER_UUID_KEY = "uuid";
+    private static final String MODIFIER_SOURCE_KEY = "source";
+    private static final String MODIFIER_ELEMENT_TYPE_KEY = "elementType";
     
     /**
      * 将元素数据写入物品的NBT标签中
      * @param stack 物品栈
-     * @param elementData 元素数据
+     * @param modifiers 元素属性修饰符列表
      */
-    public static void writeElementDataToItem(ItemStack stack, ElementData elementData) {
+    public static void writeElementDataToItem(ItemStack stack, List<AttributeModifierEntry> modifiers) {
         if (stack.isEmpty()) {
             return;
         }
         
         CompoundTag tag = stack.getOrCreateTag();
+        ListTag modifiersList = new ListTag();
+        
+        // 写入所有属性修饰符
+        for (AttributeModifierEntry entry : modifiers) {
+            CompoundTag entryTag = new CompoundTag();
+            entryTag.putString(MODIFIER_NAME_KEY, entry.getName());
+            entryTag.putDouble(MODIFIER_AMOUNT_KEY, entry.getAmount());
+            entryTag.putString(MODIFIER_OPERATION_KEY, entry.getOperation());
+            entryTag.putUUID(MODIFIER_UUID_KEY, entry.getUuid());
+            entryTag.putString(MODIFIER_SOURCE_KEY, entry.getSource());
+            entryTag.putString(MODIFIER_ELEMENT_TYPE_KEY, entry.getElementType());
+            modifiersList.add(entryTag);
+        }
+        
         CompoundTag elementTag = new CompoundTag();
-        
-        // 写入暴击相关统计
-        if (elementData.getCriticalStats() != null && !elementData.getCriticalStats().isEmpty()) {
-            CompoundTag criticalStatsTag = new CompoundTag();
-            for (Map.Entry<String, Double> entry : elementData.getCriticalStats().entrySet()) {
-                criticalStatsTag.putDouble(entry.getKey(), entry.getValue());
-            }
-            elementTag.put(CRITICAL_STATS_KEY, criticalStatsTag);
-        }
-        
-        // 写入物理元素
-        if (elementData.getPhysicalElements() != null && !elementData.getPhysicalElements().isEmpty()) {
-            CompoundTag physicalElementsTag = new CompoundTag();
-            for (Map.Entry<String, Double> entry : elementData.getPhysicalElements().entrySet()) {
-                physicalElementsTag.putDouble(entry.getKey(), entry.getValue());
-            }
-            elementTag.put(PHYSICAL_ELEMENTS_KEY, physicalElementsTag);
-        }
-        
-        // 写入派系元素
-        if (elementData.getFactionElements() != null && !elementData.getFactionElements().isEmpty()) {
-            CompoundTag factionElementsTag = new CompoundTag();
-            for (Map.Entry<String, Double> entry : elementData.getFactionElements().entrySet()) {
-                factionElementsTag.putDouble(entry.getKey(), entry.getValue());
-            }
-            elementTag.put(FACTION_ELEMENTS_KEY, factionElementsTag);
-        }
-        
-        // 写入复合元素
-        if (elementData.getCombinedElements() != null && !elementData.getCombinedElements().isEmpty()) {
-            CompoundTag combinedElementsTag = new CompoundTag();
-            for (Map.Entry<String, Double> entry : elementData.getCombinedElements().entrySet()) {
-                combinedElementsTag.putDouble(entry.getKey(), entry.getValue());
-            }
-            elementTag.put(COMBINED_ELEMENTS_KEY, combinedElementsTag);
-        }
-        
+        elementTag.put(ELEMENT_MODIFIERS_KEY, modifiersList);
         tag.put(ELEMENT_DATA_KEY, elementTag);
         stack.setTag(tag);
     }
@@ -78,54 +60,40 @@ public class ElementUsageData {
     /**
      * 从物品的NBT标签中读取元素数据
      * @param stack 物品栈
-     * @return 元素数据
+     * @return 元素属性修饰符列表
      */
-    public static ElementData readElementDataFromItem(ItemStack stack) {
+    public static List<AttributeModifierEntry> readElementDataFromItem(ItemStack stack) {
+        List<AttributeModifierEntry> modifiers = new ArrayList<>();
+        
         if (stack.isEmpty() || !stack.hasTag()) {
-            return new ElementData();
+            return modifiers;
         }
         
         CompoundTag tag = stack.getTag();
         if (!tag.contains(ELEMENT_DATA_KEY)) {
-            return new ElementData();
+            return modifiers;
         }
         
         CompoundTag elementTag = tag.getCompound(ELEMENT_DATA_KEY);
-        ElementData elementData = new ElementData();
-        
-        // 读取暴击相关统计
-        if (elementTag.contains(CRITICAL_STATS_KEY)) {
-            CompoundTag criticalStatsTag = elementTag.getCompound(CRITICAL_STATS_KEY);
-            for (String key : criticalStatsTag.getAllKeys()) {
-                elementData.getCriticalStats().put(key, criticalStatsTag.getDouble(key));
-            }
+        if (!elementTag.contains(ELEMENT_MODIFIERS_KEY)) {
+            return modifiers;
         }
         
-        // 读取物理元素
-        if (elementTag.contains(PHYSICAL_ELEMENTS_KEY)) {
-            CompoundTag physicalElementsTag = elementTag.getCompound(PHYSICAL_ELEMENTS_KEY);
-            for (String key : physicalElementsTag.getAllKeys()) {
-                elementData.getPhysicalElements().put(key, physicalElementsTag.getDouble(key));
-            }
+        ListTag modifiersList = elementTag.getList(ELEMENT_MODIFIERS_KEY, Tag.TAG_COMPOUND);
+        for (int i = 0; i < modifiersList.size(); i++) {
+            CompoundTag entryTag = modifiersList.getCompound(i);
+            AttributeModifierEntry entry = new AttributeModifierEntry(
+                entryTag.getString(MODIFIER_NAME_KEY),
+                entryTag.getString(MODIFIER_ELEMENT_TYPE_KEY),
+                entryTag.getDouble(MODIFIER_AMOUNT_KEY),
+                entryTag.getString(MODIFIER_OPERATION_KEY),
+                entryTag.getUUID(MODIFIER_UUID_KEY),
+                entryTag.getString(MODIFIER_SOURCE_KEY)
+            );
+            modifiers.add(entry);
         }
         
-        // 读取派系元素
-        if (elementTag.contains(FACTION_ELEMENTS_KEY)) {
-            CompoundTag factionElementsTag = elementTag.getCompound(FACTION_ELEMENTS_KEY);
-            for (String key : factionElementsTag.getAllKeys()) {
-                elementData.getFactionElements().put(key, factionElementsTag.getDouble(key));
-            }
-        }
-        
-        // 读取复合元素
-        if (elementTag.contains(COMBINED_ELEMENTS_KEY)) {
-            CompoundTag combinedElementsTag = elementTag.getCompound(COMBINED_ELEMENTS_KEY);
-            for (String key : combinedElementsTag.getAllKeys()) {
-                elementData.getCombinedElements().put(key, combinedElementsTag.getDouble(key));
-            }
-        }
-        
-        return elementData;
+        return modifiers;
     }
     
     /**
@@ -139,7 +107,12 @@ public class ElementUsageData {
         }
         
         CompoundTag tag = stack.getTag();
-        return tag.contains(ELEMENT_DATA_KEY);
+        if (!tag.contains(ELEMENT_DATA_KEY)) {
+            return false;
+        }
+        
+        CompoundTag elementTag = tag.getCompound(ELEMENT_DATA_KEY);
+        return elementTag.contains(ELEMENT_MODIFIERS_KEY);
     }
     
     /**
@@ -161,73 +134,31 @@ public class ElementUsageData {
     }
     
     /**
-     * 元素数据内部类
-     * 存储各种类型的元素值
+     * 属性修饰符条目类
+     * 存储完整的属性修饰符数据
      */
-    public static class ElementData {
-        // 暴击相关统计：暴击率、暴击伤害、触发率等
-        private Map<String, Double> criticalStats = new HashMap<>();
+    public static class AttributeModifierEntry {
+        private final String name;          // 属性名称
+        private final String elementType;   // 元素类型
+        private final double amount;        // 数值
+        private final String operation;     // 操作类型
+        private final UUID uuid;           // UUID
+        private final String source;        // 来源
         
-        // 物理元素值
-        private Map<String, Double> physicalElements = new HashMap<>();
-        
-        // 派系元素值
-        private Map<String, Double> factionElements = new HashMap<>();
-        
-        // 复合元素值
-        private Map<String, Double> combinedElements = new HashMap<>();
-        
-        public Map<String, Double> getCriticalStats() {
-            return criticalStats;
+        public AttributeModifierEntry(String name, String elementType, double amount, String operation, UUID uuid, String source) {
+            this.name = name;
+            this.elementType = elementType;
+            this.amount = amount;
+            this.operation = operation;
+            this.uuid = uuid;
+            this.source = source;
         }
         
-        public void setCriticalStats(Map<String, Double> criticalStats) {
-            this.criticalStats = criticalStats;
-        }
-        
-        public Map<String, Double> getPhysicalElements() {
-            return physicalElements;
-        }
-        
-        public void setPhysicalElements(Map<String, Double> physicalElements) {
-            this.physicalElements = physicalElements;
-        }
-        
-        public Map<String, Double> getFactionElements() {
-            return factionElements;
-        }
-        
-        public void setFactionElements(Map<String, Double> factionElements) {
-            this.factionElements = factionElements;
-        }
-        
-        public Map<String, Double> getCombinedElements() {
-            return combinedElements;
-        }
-        
-        public void setCombinedElements(Map<String, Double> combinedElements) {
-            this.combinedElements = combinedElements;
-        }
-        
-        /**
-         * 清空所有元素数据
-         */
-        public void clear() {
-            criticalStats.clear();
-            physicalElements.clear();
-            factionElements.clear();
-            combinedElements.clear();
-        }
-        
-        /**
-         * 检查是否为空
-         * @return 如果没有任何元素数据则返回true
-         */
-        public boolean isEmpty() {
-            return criticalStats.isEmpty() && 
-                   physicalElements.isEmpty() && 
-                   factionElements.isEmpty() && 
-                   combinedElements.isEmpty();
-        }
+        public String getName() { return name; }
+        public String getElementType() { return elementType; }
+        public double getAmount() { return amount; }
+        public String getOperation() { return operation; }
+        public UUID getUuid() { return uuid; }
+        public String getSource() { return source; }
     }
 }

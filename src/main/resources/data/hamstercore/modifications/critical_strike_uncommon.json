@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:critical_strike_uncommon",
+  "weight": 8,
+  "quality": 1.5,
+  "dimensions": [],
+  "category": "general",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "minecraft:generic.attack_damage",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.05,
+      "source": "user"
+    },
+    {
+      "type": "minecraft:generic.attack_speed",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.03,
+      "source": "user"
+    }
+  ]
+}

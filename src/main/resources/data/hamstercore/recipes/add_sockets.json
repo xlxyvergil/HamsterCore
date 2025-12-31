@@ -1,0 +1,8 @@
+{
+  "type": "hamstercore:add_sockets",
+  "group": "socketing",
+  "input": {
+    "item": "hamstercore:sigil_of_socketing"
+  },
+  "max_sockets": 8
+}

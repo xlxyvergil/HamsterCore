@@ -1,0 +1,35 @@
+{
+  "variant": "hamstercore:ultimate_enhancement_epic",
+  "weight": 3,
+  "quality": 3,
+  "dimensions": [],
+  "category": "general",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "minecraft:generic.attack_damage",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.15,
+      "source": "user"
+    },
+    {
+      "type": "minecraft:generic.attack_speed",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.1,
+      "source": "user"
+    },
+    {
+      "type": "minecraft:generic.movement_speed",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.08,
+      "source": "user"
+    },
+    {
+      "type": "minecraft:generic.max_health",
+      "operation": "ADDITION",
+      "value": 10,
+      "source": "user"
+    }
+  ]
+}

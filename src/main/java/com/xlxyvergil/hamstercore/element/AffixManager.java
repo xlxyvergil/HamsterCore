@@ -1,10 +1,7 @@
 package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.world.item.ItemStack;
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class AffixManager {
@@ -38,19 +35,23 @@ public class AffixManager {
     public static void addAffix(ItemStack stack, String name, String elementType, double amount, String operation, UUID uuid, String source) {
         WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
         
-        // 检查是否是该类型第一次加入InitialModifier
-        boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, elementType);
+        // 确保elementType包含命名空间，name保持原始名称
+        String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
         
-        InitialModifierEntry entry = new InitialModifierEntry(name, elementType, amount, operation, uuid, source);
+        // 检查是否是该类型第一次加入InitialModifier
+        boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, namespacedElementType);
+        
+        // 创建初始修饰符条目：name是原始名称，elementType是带命名空间的完整名称
+        InitialModifierEntry entry = new InitialModifierEntry(name, namespacedElementType, amount, operation, uuid, source);
         weaponData.addInitialModifier(entry);
         
         // 只有基础元素和复合元素在第一次加入时才添加到Basic层
         if (isFirstTime) {
-            ElementType type = ElementType.byName(elementType);
+            ElementType type = ElementType.byName(name);
             if (type != null && (type.isBasic() || type.isComplex())) {
                 // 使用当前Basic层元素的数量作为order值，保证唯一性和递增性
                 int order = weaponData.getBasicElements().size();
-                weaponData.addBasicElement(elementType, source, order);
+                weaponData.addBasicElement(name, source, order);
             }
         }
         

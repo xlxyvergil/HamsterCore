@@ -1,4 +1,5 @@
 {
+  "itemGroup.hamstercore.modification": "改装系统",
   "hamstercore.faction.grineer": "克隆尼",
   "hamstercore.faction.infested": "感染体",
   "hamstercore.faction.corpus": "科普斯",
@@ -188,5 +189,29 @@
   "effect.hamstercore.gas_cloud": "毒云",
   "effect.hamstercore.gas_cloud.description": "毒气效果的范围传播",    
   "effect.hamstercore.viral": "病毒",
-  "effect.hamstercore.viral.description": "降低目标最大生命值"
+  "effect.hamstercore.viral.description": "降低目标最大生命值",
+  
+  "item.hamstercore.modification": "改装件",
+  "item.hamstercore.modification.hamstercore:attack_damage_boost_common": "攻击伤害提升",
+  "item.hamstercore.modification.hamstercore:attack_damage_boost_rare": "强力攻击提升",
+  "item.hamstercore.modification.hamstercore:critical_strike_uncommon": "暴击打击",
+  "item.hamstercore.modification.hamstercore:legendary_power": "传说之力",
+  "item.hamstercore.modification.hamstercore:ultimate_enhancement_epic": "终极强化",
+  "item.hamstercore.sigil_of_socketing": "槽位符文",
+  "item.hamstercore.sigil_of_withdrawal": "卸载符文",
+  
+  "hamstercore.modification.category.general": "通用",
+  "hamstercore.modification.category.special": "特殊",
+  "hamstercore.modification.rarity.common": "普通",
+  "hamstercore.modification.rarity.uncommon": "罕见",
+  "hamstercore.modification.rarity.rare": "稀有",
+  "hamstercore.modification.rarity.epic": "史诗",
+  "hamstercore.modification.rarity.mythic": "神话",
+  "hamstercore.modification.unique": "唯一",
+  "hamstercore.modification.socket_info": "槽位: %d/%d (通用) %d/%d (特殊)",
+  "hamstercore.modification.no_slots": "无槽位",
+  "hamstercore.modification.installed": "已安装",
+  "hamstercore.modification.operation.ADDITION": "加法",
+  "hamstercore.modification.operation.MULTIPLY_BASE": "乘法基础",
+  "hamstercore.modification.operation.MULTIPLY_TOTAL": "乘法总计"
 }

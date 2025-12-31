@@ -72,7 +72,6 @@ public class ElementCalculator {
      * @return 合并计算后的值
      */
     private double calculateValueForName(List<InitialModifierEntry> modifiers) {
-        double baseValue = 0.0;
         double additionValue = 0.0;
         double multiplyBaseValue = 0.0; // MULTIPLY_BASE
         double multiplyTotalValue = 0.0; // MULTIPLY_TOTAL

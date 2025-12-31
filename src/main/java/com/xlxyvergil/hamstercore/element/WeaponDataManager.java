@@ -9,7 +9,6 @@ import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
-import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

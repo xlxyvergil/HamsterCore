@@ -3,12 +3,13 @@ package com.xlxyvergil.hamstercore.element;
 import com.xlxyvergil.hamstercore.element.modifier.ElementCombinationModifier;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 // 添加ElementUsageData的导入，用于存储元素属性的NBT数据
-import com.xlxyvergil.hamstercore.element.ElementUsageData;
 
 /**
  * 元素计算协调器
@@ -56,16 +57,58 @@ public class ElementCalculationCoordinator {
         // 4. 调用ElementCombinationModifier处理HamsterCore元素复合
         Map<String, Double> combinedElements = processElementCombinations(weaponData, elementsForCombination);
         
-        // 5. 将计算结果存储到物品的NBT中，包括通用属性
-        ElementUsageData.ElementData elementData = new ElementUsageData.ElementData();
+        // 5. 创建属性修饰符条目列表，准备存储到物品NBT中
+        List<ElementUsageData.AttributeModifierEntry> modifierEntries = new ArrayList<>();
         
-        // 将其他通用属性存储到物理元素映射中（包括HamsterCore的非复合元素和其他mod属性，现作为通用属性存储）
-        elementData.setPhysicalElements(otherAttributes);
+        // 6. 处理所有InitialModifiers，创建完整的属性修饰符条目
+        for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
+            String attributeName = entry.getName();
+            String elementType = entry.getElementType();
+            String source = entry.getSource();
+            UUID uuid = entry.getUuid();
+            String operation = entry.getOperation();
+            
+            // 获取计算后的数值
+            double amount;
+            boolean isFromCombinedElements = false;
+            
+            if (combinedElements.containsKey(attributeName)) {
+                // 如果是复合元素或基础元素，使用复合后的数值
+                amount = combinedElements.get(attributeName);
+                isFromCombinedElements = true;
+            } else if (otherAttributes.containsKey(attributeName)) {
+                // 如果是其他属性，使用计算后的数值
+                amount = otherAttributes.get(attributeName);
+            } else {
+                // 如果没有计算结果，使用原始数值
+                amount = entry.getAmount();
+            }
+            
+            // 只有经过复合处理的元素才需要确保elementType包含命名空间
+            if (isFromCombinedElements) {
+                // 检查是否是HamsterCore的元素
+                ElementType hamsterElementType = ElementType.byName(attributeName);
+                if (hamsterElementType != null && !elementType.contains(":")) {
+                    // 如果是HamsterCore的元素且没有命名空间，添加hamstercore:前缀
+                    elementType = "hamstercore:" + elementType;
+                }
+            }
+            
+            // 创建属性修饰符条目
+            ElementUsageData.AttributeModifierEntry modifierEntry = new ElementUsageData.AttributeModifierEntry(
+                attributeName,
+                elementType,
+                amount,
+                operation,
+                uuid,
+                source
+            );
+            
+            modifierEntries.add(modifierEntry);
+        }
         
-        // 将复合后的元素存储到组合元素中
-        elementData.setCombinedElements(combinedElements);
-        
-        ElementUsageData.writeElementDataToItem(stack, elementData);
+        // 7. 将完整的属性修饰符数据存储到物品的NBT中
+        ElementUsageData.writeElementDataToItem(stack, modifierEntries);
     }
     
     /**

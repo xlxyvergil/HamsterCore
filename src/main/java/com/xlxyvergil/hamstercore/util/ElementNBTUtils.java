@@ -1,10 +1,10 @@
 package com.xlxyvergil.hamstercore.util;
 
 import com.xlxyvergil.hamstercore.element.ElementUsageData;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,54 +23,23 @@ public class ElementNBTUtils {
     }
     
     /**
-     * 从物品中读取所有元素数据
-     * @param stack 物品栈
-     * @return 元素数据对象，如果物品不包含元素数据则返回空的ElementData对象
-     */
-    public static ElementUsageData.ElementData readElementData(ItemStack stack) {
-        return ElementUsageData.readElementDataFromItem(stack);
-    }
-    
-    /**
-     * 从物品中读取暴击相关统计数据
-     * @param stack 物品栈
-     * @return 暴击相关统计数据映射
-     */
-    public static Map<String, Double> readCriticalStats(ItemStack stack) {
-        if (!hasElementData(stack)) {
-            return new HashMap<>();
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        return new HashMap<>(elementData.getCriticalStats());
-    }
-    
-    /**
      * 从物品中读取物理元素数据
      * @param stack 物品栈
      * @return 物理元素数据映射
      */
     public static Map<String, Double> readPhysicalElements(ItemStack stack) {
-        if (!hasElementData(stack)) {
-            return new HashMap<>();
+        Map<String, Double> elements = new HashMap<>();
+        Map<String, Double> allElements = readAllElementValues(stack);
+        
+        // 物理元素类型
+        String[] physicalTypes = {"impact", "puncture", "slash"};
+        for (String type : physicalTypes) {
+            if (allElements.containsKey(type)) {
+                elements.put(type, allElements.get(type));
+            }
         }
         
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        return new HashMap<>(elementData.getPhysicalElements());
-    }
-    
-    /**
-     * 从物品中读取派系元素数据
-     * @param stack 物品栈
-     * @return 派系元素数据映射
-     */
-    public static Map<String, Double> readFactionElements(ItemStack stack) {
-        if (!hasElementData(stack)) {
-            return new HashMap<>();
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        return new HashMap<>(elementData.getFactionElements());
+        return elements;
     }
     
     /**
@@ -79,12 +48,66 @@ public class ElementNBTUtils {
      * @return 复合元素数据映射
      */
     public static Map<String, Double> readCombinedElements(ItemStack stack) {
-        if (!hasElementData(stack)) {
-            return new HashMap<>();
+        Map<String, Double> elements = new HashMap<>();
+        Map<String, Double> allElements = readAllElementValues(stack);
+        
+        // 复合元素类型
+        String[] combinedTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
+        for (String type : combinedTypes) {
+            if (allElements.containsKey(type)) {
+                elements.put(type, allElements.get(type));
+            }
         }
         
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        return new HashMap<>(elementData.getCombinedElements());
+        // 基础元素类型
+        String[] basicTypes = {"cold", "electricity", "heat", "toxin"};
+        for (String type : basicTypes) {
+            if (allElements.containsKey(type)) {
+                elements.put(type, allElements.get(type));
+            }
+        }
+        
+        return elements;
+    }
+    
+    /**
+     * 从物品中读取派系元素数据
+     * @param stack 物品栈
+     * @return 派系元素数据映射
+     */
+    public static Map<String, Double> readFactionElements(ItemStack stack) {
+        Map<String, Double> elements = new HashMap<>();
+        Map<String, Double> allElements = readAllElementValues(stack);
+        
+        // 派系元素类型
+        String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmum"};
+        for (String type : factionTypes) {
+            if (allElements.containsKey(type)) {
+                elements.put(type, allElements.get(type));
+            }
+        }
+        
+        return elements;
+    }
+    
+    /**
+     * 从物品中读取暴击相关统计数据
+     * @param stack 物品栈
+     * @return 暴击相关统计数据映射
+     */
+    public static Map<String, Double> readCriticalStats(ItemStack stack) {
+        Map<String, Double> stats = new HashMap<>();
+        Map<String, Double> allElements = readAllElementValues(stack);
+        
+        // 暴击相关统计
+        String[] criticalTypes = {"critical_chance", "critical_damage", "trigger_chance"};
+        for (String type : criticalTypes) {
+            if (allElements.containsKey(type)) {
+                stats.put(type, allElements.get(type));
+            }
+        }
+        
+        return stats;
     }
     
     /**
@@ -98,30 +121,11 @@ public class ElementNBTUtils {
             return 0.0;
         }
         
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        
-        // 检查暴击相关统计
-        Double value = elementData.getCriticalStats().get(elementType);
-        if (value != null) {
-            return value;
-        }
-        
-        // 检查物理元素
-        value = elementData.getPhysicalElements().get(elementType);
-        if (value != null) {
-            return value;
-        }
-        
-        // 检查派系元素
-        value = elementData.getFactionElements().get(elementType);
-        if (value != null) {
-            return value;
-        }
-        
-        // 检查复合元素
-        value = elementData.getCombinedElements().get(elementType);
-        if (value != null) {
-            return value;
+        List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
+        for (ElementUsageData.AttributeModifierEntry entry : entries) {
+            if (entry.getName().equals(elementType)) {
+                return entry.getAmount();
+            }
         }
         
         return 0.0;
@@ -161,13 +165,7 @@ public class ElementNBTUtils {
      * @return 物理元素值，如果不存在则返回0.0
      */
     public static double readPhysicalElementValue(ItemStack stack, String elementType) {
-        if (!hasElementData(stack)) {
-            return 0.0;
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        Double value = elementData.getPhysicalElements().get(elementType);
-        return value != null ? value : 0.0;
+        return readElementValue(stack, elementType);
     }
     
     /**
@@ -177,13 +175,7 @@ public class ElementNBTUtils {
      * @return 基础元素值，如果不存在则返回0.0
      */
     public static double readBasicElementValue(ItemStack stack, String elementType) {
-        if (!hasElementData(stack)) {
-            return 0.0;
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        Double value = elementData.getCombinedElements().get(elementType);
-        return value != null ? value : 0.0;
+        return readElementValue(stack, elementType);
     }
     
     /**
@@ -193,13 +185,7 @@ public class ElementNBTUtils {
      * @return 复合元素值，如果不存在则返回0.0
      */
     public static double readCombinedElementValue(ItemStack stack, String elementType) {
-        if (!hasElementData(stack)) {
-            return 0.0;
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        Double value = elementData.getCombinedElements().get(elementType);
-        return value != null ? value : 0.0;
+        return readElementValue(stack, elementType);
     }
     
     /**
@@ -209,13 +195,7 @@ public class ElementNBTUtils {
      * @return 派系元素值，如果不存在则返回0.0
      */
     public static double readFactionElementValue(ItemStack stack, String elementType) {
-        if (!hasElementData(stack)) {
-            return 0.0;
-        }
-        
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        Double value = elementData.getFactionElements().get(elementType);
-        return value != null ? value : 0.0;
+        return readElementValue(stack, elementType);
     }
     
     /**
@@ -228,11 +208,8 @@ public class ElementNBTUtils {
             return 0;
         }
         
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        return elementData.getCriticalStats().size() + 
-               elementData.getPhysicalElements().size() + 
-               elementData.getFactionElements().size() + 
-               elementData.getCombinedElements().size();
+        List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
+        return entries.size();
     }
     
     /**
@@ -245,28 +222,33 @@ public class ElementNBTUtils {
             return false;
         }
         
-        ElementUsageData.ElementData elementData = readElementData(stack);
-        
-        // 检查暴击相关统计
-        for (Double value : elementData.getCriticalStats().values()) {
-            if (value != 0.0) return true;
-        }
-        
-        // 检查物理元素
-        for (Double value : elementData.getPhysicalElements().values()) {
-            if (value != 0.0) return true;
-        }
-        
-        // 检查派系元素
-        for (Double value : elementData.getFactionElements().values()) {
-            if (value != 0.0) return true;
-        }
-        
-        // 检查复合元素
-        for (Double value : elementData.getCombinedElements().values()) {
-            if (value != 0.0) return true;
+        List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
+        for (ElementUsageData.AttributeModifierEntry entry : entries) {
+            if (entry.getAmount() != 0.0) {
+                return true;
+            }
         }
         
         return false;
+    }
+    
+    /**
+     * 从物品中读取所有元素数据
+     * @param stack 物品栈
+     * @return 元素数据映射
+     */
+    public static Map<String, Double> readAllElementValues(ItemStack stack) {
+        Map<String, Double> values = new HashMap<>();
+        
+        if (!hasElementData(stack)) {
+            return values;
+        }
+        
+        List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
+        for (ElementUsageData.AttributeModifierEntry entry : entries) {
+            values.put(entry.getName(), entry.getAmount());
+        }
+        
+        return values;
     }
 }

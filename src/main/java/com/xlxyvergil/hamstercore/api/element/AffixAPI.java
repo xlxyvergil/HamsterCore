@@ -1,10 +1,8 @@
 package com.xlxyvergil.hamstercore.api.element;
 
 import com.xlxyvergil.hamstercore.element.AffixManager;
-import com.xlxyvergil.hamstercore.element.InitialModifierEntry;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,7 +18,7 @@ public class AffixAPI {
      * @param amount 词缀数值
      * @param operation 操作类型
      * @param uuid 唯一标识
-     * @param source 来源（通常是modid）
+     * @param source user/def
      */
     public static void addAffix(ItemStack stack, String name, String elementType, double amount, String operation, UUID uuid, String source) {
         AffixManager.addAffix(stack, name, elementType, amount, operation, uuid, source);

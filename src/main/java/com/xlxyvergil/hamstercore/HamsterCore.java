@@ -1,8 +1,6 @@
 package com.xlxyvergil.hamstercore;
 
 import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
-import com.xlxyvergil.hamstercore.client.PlayerLevelHUDRenderer;
-import com.xlxyvergil.hamstercore.client.renderer.item.WeaponAttributeRenderer;
 import com.xlxyvergil.hamstercore.config.ArmorConfig;
 import com.xlxyvergil.hamstercore.config.ClientConfig;
 import com.xlxyvergil.hamstercore.config.FactionConfig;
@@ -12,7 +10,6 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabil
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
-import com.xlxyvergil.hamstercore.events.PlayerLevelEvents;
 import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
@@ -25,6 +22,8 @@ import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
+import com.xlxyvergil.hamstercore.modification.ModificationItems;
+import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 
@@ -54,6 +53,15 @@ public class HamsterCore {
         
         // 注册元素效果
         ElementEffectRegistry.register();
+        
+        // 注册改装系统物品
+        ModificationItems.ITEMS.register(modEventBus);
+        
+        // 注册改装系统创造模式标签页
+        ModificationItems.CREATIVE_MODE_TABS.register(modEventBus);
+        
+        // 注册改装系统配方序列化器
+        ModificationRecipeSerializers.SERIALIZERS.register(modEventBus);
                 
         // 初始化网络包
         PacketHandler.init();

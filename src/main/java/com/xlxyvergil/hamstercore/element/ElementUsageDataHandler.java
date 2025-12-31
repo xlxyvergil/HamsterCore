@@ -1,33 +1,22 @@
 package com.xlxyvergil.hamstercore.element;
 
-import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
-import dev.shadowsoffire.attributeslib.api.ALObjects;
-import dev.shadowsoffire.attributeslib.api.IFormattableAttribute;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * 元素使用数据处理器
  * 类似Apotheosis的词缀系统，处理将存储在物品NBT中的元素数据转换为实体属性
  * 通过ItemAttributeModifierEvent事件系统将元素属性应用到实体上
  */
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = "hamstercore")
 public class ElementUsageDataHandler {
     
     /**
@@ -41,8 +30,8 @@ public class ElementUsageDataHandler {
     public static void handleItemAttributeModifiers(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
         
-        // 检查物品是否在主手槽位
-        if (event.getSlotType() != EquipmentSlot.MAINHAND) {
+        // 只有主手装备才应用元素属性
+        if (event.getSlotType() != net.minecraft.world.entity.EquipmentSlot.MAINHAND) {
             return;
         }
         
@@ -52,48 +41,44 @@ public class ElementUsageDataHandler {
         }
         
         // 从物品NBT中读取元素数据
-        ElementUsageData.ElementData elementData = ElementUsageData.readElementDataFromItem(stack);
-        
-        // 从WeaponData获取所有InitialModifiers（用于生成AttributeModifier）
-        WeaponData weaponData = WeaponDataManager.getWeaponData(stack);
-        List<InitialModifierEntry> allModifiers = weaponData.getInitialModifiers();
+        List<ElementUsageData.AttributeModifierEntry> modifierEntries = ElementUsageData.readElementDataFromItem(stack);
         
         // 应用所有属性修饰符
-        applyAllAttributes(event, stack, allModifiers);
+        applyAllAttributes(event, modifierEntries);
     }
     
     /**
      * 应用所有属性修饰符
      */
-    private static void applyAllAttributes(ItemAttributeModifierEvent event, ItemStack stack, List<InitialModifierEntry> modifiers) {
-        // 直接应用每个属性修饰符
-        for (InitialModifierEntry modifierEntry : modifiers) {
-            applyAttributeModifier(event, stack, modifierEntry, event.getSlotType());
+    private static void applyAllAttributes(ItemAttributeModifierEvent event, List<ElementUsageData.AttributeModifierEntry> modifierEntries) {
+        // 直接应用每个属性修饰符条目
+        for (ElementUsageData.AttributeModifierEntry entry : modifierEntries) {
+            applyAttributeModifier(event, entry);
         }
     }
     
     /**
      * 应用单个属性修饰符
      */
-    private static void applyAttributeModifier(ItemAttributeModifierEvent event, ItemStack stack, InitialModifierEntry modifierEntry, EquipmentSlot slot) {
-        // 获取属性名称
-        String attributeName = modifierEntry.getName();
+    private static void applyAttributeModifier(ItemAttributeModifierEvent event, ElementUsageData.AttributeModifierEntry entry) {
+        // 使用elementType作为属性ID，确保包含命名空间
+        String attributeId = entry.getElementType();
         
-        // 尝试获取Minecraft属性，如果获取不到则跳过
-        Attribute attribute = getMinecraftAttributeById(attributeName);
+        // 尝试获取属性，无论是Minecraft原生属性还是其他mod的属性
+        Attribute attribute = getAttributeById(attributeId);
         if (attribute == null) {
             return; // 如果属性不存在，则跳过
         }
         
         // 获取操作类型
-        AttributeModifier.Operation operation = getOperationFromEntry(modifierEntry.getOperation());
+        AttributeModifier.Operation operation = getOperationFromEntry(entry.getOperation());
         
-        // 直接使用Entry中存储的UUID，不重新生成
+        // 直接使用Entry中存储的UUID和其他数据生成属性修饰符
         AttributeModifier modifier = new AttributeModifier(
-            modifierEntry.getUuid(), // 使用Entry中存储的UUID
-            "ElementUsageData." + attributeName, // 使用Entry中存储的name
-            modifierEntry.getAmount(), // 使用Entry中存储的amount
-            operation // 使用Entry中存储的operation
+            entry.getUuid(), // 使用Entry中存储的UUID
+            entry.getName(), // 使用Entry中存储的名称
+            entry.getAmount(), // 使用Entry中存储的计算后数值
+            operation // 使用Entry中存储的操作类型
         );
         
         // 添加属性修饰符到事件
@@ -115,11 +100,11 @@ public class ElementUsageDataHandler {
     }
     
     /**
-     * 根据ID获取Minecraft属性
+     * 根据ID获取属性
      */
-    private static Attribute getMinecraftAttributeById(String attributeId) {
+    private static Attribute getAttributeById(String attributeId) {
         try {
-            // 尝试获取原生Minecraft属性或注册表中的属性
+            // 尝试获取属性，无论是Minecraft原生属性还是其他mod的属性
             ResourceLocation rl = new ResourceLocation(attributeId);
             return ForgeRegistries.ATTRIBUTES.getValue(rl);
         } catch (Exception e) {

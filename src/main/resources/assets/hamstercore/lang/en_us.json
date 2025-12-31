@@ -1,4 +1,5 @@
 {
+  "itemGroup.hamstercore.modification": "Modification System",
   "hamstercore.faction.grineer": "Grineer",
   "hamstercore.faction.infested": "Infested",
   "hamstercore.faction.corpus": "Corpus",
@@ -189,5 +190,29 @@
   "effect.hamstercore.gas_cloud": "Gas Cloud",
   "effect.hamstercore.gas_cloud.description": "Range spread of gas effect",
   "effect.hamstercore.viral": "Viral",
-  "effect.hamstercore.viral.description": "Reduces target max health"
+  "effect.hamstercore.viral.description": "Reduces target max health",
+  
+  "item.hamstercore.modification": "Modification",
+  "item.hamstercore.modification.hamstercore:attack_damage_boost_common": "Attack Damage Boost",
+  "item.hamstercore.modification.hamstercore:attack_damage_boost_rare": "Powerful Attack Boost",
+  "item.hamstercore.modification.hamstercore:critical_strike_uncommon": "Critical Strike",
+  "item.hamstercore.modification.hamstercore:legendary_power": "Legendary Power",
+  "item.hamstercore.modification.hamstercore:ultimate_enhancement_epic": "Ultimate Enhancement",
+  "item.hamstercore.sigil_of_socketing": "Sigil of Socketing",
+  "item.hamstercore.sigil_of_withdrawal": "Sigil of Withdrawal",
+  
+  "hamstercore.modification.category.general": "General",
+  "hamstercore.modification.category.special": "Special",
+  "hamstercore.modification.rarity.common": "Common",
+  "hamstercore.modification.rarity.uncommon": "Uncommon",
+  "hamstercore.modification.rarity.rare": "Rare",
+  "hamstercore.modification.rarity.epic": "Epic",
+  "hamstercore.modification.rarity.mythic": "Mythic",
+  "hamstercore.modification.unique": "Unique",
+  "hamstercore.modification.socket_info": "Sockets: %d/%d (General) %d/%d (Special)",
+  "hamstercore.modification.no_slots": "No Sockets",
+  "hamstercore.modification.installed": "Installed",
+  "hamstercore.modification.operation.ADDITION": "Addition",
+  "hamstercore.modification.operation.MULTIPLY_BASE": "Multiply Base",
+  "hamstercore.modification.operation.MULTIPLY_TOTAL": "Multiply Total"
 }

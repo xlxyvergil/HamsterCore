@@ -180,6 +180,9 @@ public class WeaponConfig {
      * 添加默认属性
      */
     public static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
+        // 确保elementType包含命名空间，name保持原始名称
+        String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
+        
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());
         
@@ -189,8 +192,8 @@ public class WeaponConfig {
             data.addBasicElement(elementType, "def", 0);
         }
         
-        // 添加到初始属性列表
-        data.addInitialModifier(new InitialModifierEntry(elementType, elementType, defaultValue, "ADDITION", modifierUuid, "def"));
+        // 添加到初始属性列表：name是原始名称，elementType是带命名空间的完整名称
+        data.addInitialModifier(new InitialModifierEntry(elementType, namespacedElementType, defaultValue, "ADDITION", modifierUuid, "def"));
     }
     
     /**
@@ -393,8 +396,11 @@ public class WeaponConfig {
                                         // 生成UUID
                                         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                         
+                                        // 确保elementType包含命名空间，name保持原始名称
+                                        String namespacedElementType = name.contains(":") ? name : "hamstercore:" + name;
+                                        
                                         // 创建并添加初始属性
-                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "def"));
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, namespacedElementType, amount, operation, modifierUuid, "def"));
                                         
                                         // 只有基础元素和复合元素才添加到Basic层
                                         ElementType type = ElementType.byName(name);
