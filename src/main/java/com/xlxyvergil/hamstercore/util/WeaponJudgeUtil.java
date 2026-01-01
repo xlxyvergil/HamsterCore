@@ -176,4 +176,61 @@ public class WeaponJudgeUtil {
         
         return false;
     }
+    
+    /**
+     * 检查物品是否为近战武器
+     * @param item 要检查的物品
+     * @return 如果是近战武器返回true
+     */
+    public static boolean isMeleeWeapon(Item item) {
+        // 首先排除slashblade:slashblade和modid为tacz的物品
+        if (isExcludedItem(item)) {
+            return false;
+        }
+        
+        // 检查是否为原版近战武器类型
+        if (item instanceof SwordItem ||
+            item instanceof AxeItem ||
+            item instanceof TridentItem ||
+            item instanceof ShovelItem ||
+            item instanceof PickaxeItem ||
+            item instanceof HoeItem) {
+            return true;
+        }
+        
+        // 检查是否能执行近战相关的工具动作
+        ItemStack stack = new ItemStack(item);
+        return stack.canPerformAction(ToolActions.SWORD_DIG) ||
+               stack.canPerformAction(ToolActions.SWORD_SWEEP) ||
+               stack.canPerformAction(ToolActions.AXE_DIG) ||
+               stack.canPerformAction(ToolActions.PICKAXE_DIG) ||
+               stack.canPerformAction(ToolActions.SHOVEL_DIG) ||
+               stack.canPerformAction(ToolActions.SHOVEL_FLATTEN) ||
+               stack.canPerformAction(ToolActions.HOE_DIG);
+    }
+    
+    /**
+     * 检查物品是否为远程武器
+     * @param item 要检查的物品
+     * @return 如果是远程武器返回true
+     */
+    public static boolean isRangedWeapon(Item item) {
+        // 首先排除slashblade:slashblade和modid为tacz的物品
+        if (isExcludedItem(item)) {
+            return false;
+        }
+        
+        // 检查是否为原版远程武器类型
+        return item instanceof BowItem ||
+               item instanceof CrossbowItem;
+    }
+    
+    /**
+     * 检查物品是否为武器
+     * @param item 要检查的物品
+     * @return 如果是武器返回true
+     */
+    public static boolean isWeapon(Item item) {
+        return isMeleeWeapon(item) || isRangedWeapon(item);
+    }
 }
