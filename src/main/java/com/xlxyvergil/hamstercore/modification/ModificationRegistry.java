@@ -46,8 +46,7 @@ public class ModificationRegistry extends SimpleJsonResourceReloadListener {
                 .resultOrPartial(error -> {})
                 .ifPresent(mod -> this.modifications.put(id, mod));
         });
-        // 初始化自定义模型数据映射
-        ModificationItem.initializeCustomModelData();
+        // 不再需要初始化自定义模型数据映射，使用自定义渲染器
     }
 
     public Optional<Modification> getModification(ResourceLocation id) {

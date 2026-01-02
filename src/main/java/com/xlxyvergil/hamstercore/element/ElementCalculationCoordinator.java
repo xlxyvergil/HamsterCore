@@ -39,16 +39,22 @@ public class ElementCalculationCoordinator {
         Map<String, Double> otherAttributes = new HashMap<>(); // 存储其他通用属性（包括HamsterCore的非复合元素和其他mod属性）
         
         for (Map.Entry<String, Double> entry : elementValues.entrySet()) {
-            String attributeName = entry.getKey();
+            String attributeKey = entry.getKey();
             double value = entry.getValue();
             
-            ElementType type = ElementType.byName(attributeName);
+            // 提取简单元素名称（不带命名空间）
+            String simpleName = attributeKey;
+            if (simpleName.contains(":")) {
+                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
+            }
+            
+            ElementType type = ElementType.byName(simpleName);
             if (type != null && (type.isBasic() || type.isComplex())) {
-                // 需要复合计算的元素
-                elementsForCombination.put(attributeName, value);
+                // 需要复合计算的元素，使用简单名称
+                elementsForCombination.put(simpleName, value);
             } else {
-                // 其他所有属性（包括HamsterCore的非复合元素和其他mod属性）统一存储
-                otherAttributes.put(attributeName, value);
+                // 其他所有属性（包括HamsterCore的非复合元素和其他mod属性）统一存储，使用原始键
+                otherAttributes.put(attributeKey, value);
             }
         }
         
@@ -68,17 +74,27 @@ public class ElementCalculationCoordinator {
             UUID uuid = entry.getUuid();
             String operation = entry.getOperation();
             
+            // 确保elementType包含命名空间
+            String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
+            
             // 获取计算后的数值
             double amount;
             boolean isFromCombinedElements = false;
             
-            if (combinedElements.containsKey(attributeName)) {
+            // 提取简单元素名称（不带命名空间）用于查找复合结果
+            String simpleName = elementType;
+            if (simpleName.contains(":")) {
+                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
+            }
+            
+            // 检查是否是需要复合计算的元素（使用简单名称查找）
+            if (combinedElements.containsKey(simpleName)) {
                 // 如果是复合元素或基础元素，使用复合后的数值
-                amount = combinedElements.get(attributeName);
+                amount = combinedElements.get(simpleName);
                 isFromCombinedElements = true;
-            } else if (otherAttributes.containsKey(attributeName)) {
-                // 如果是其他属性，使用计算后的数值
-                amount = otherAttributes.get(attributeName);
+            } else if (otherAttributes.containsKey(namespacedElementType)) {
+                // 如果是其他属性，使用计算后的数值（使用完整命名空间类型查找）
+                amount = otherAttributes.get(namespacedElementType);
             } else {
                 // 如果没有计算结果，使用原始数值
                 amount = entry.getAmount();

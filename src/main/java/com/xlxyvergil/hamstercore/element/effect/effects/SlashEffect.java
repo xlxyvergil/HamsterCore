@@ -32,8 +32,8 @@ public class SlashEffect extends ElementEffect {
         ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
         float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
         
-        // 计算DoT伤害：基础伤害 * 35% * (1 + 等级/10)
-        float dotDamage = baseDamage * 0.35F * (1.0F + amplifier * 0.1F);
+        // 计算DoT伤害：基础伤害 * (25% + 等级*10%)
+        float dotDamage = baseDamage * (0.25F + amplifier * 0.1F);
         
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
         // 同时ElementDamageManager会检查这个标志，跳过暴击计算，避免双重暴击

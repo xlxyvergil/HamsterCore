@@ -13,9 +13,7 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.Optional;
 
@@ -29,7 +27,6 @@ import com.xlxyvergil.hamstercore.modification.client.ModificationItemRenderer;
 
 public class ModificationItem extends Item {
     public static final String TAG_MODIFICATION_ID = "ModificationId";
-    private static final Map<String, Integer> MODIFICATION_CUSTOM_MODEL_DATA = new HashMap<>();
 
     public ModificationItem(Properties properties) {
         super(properties);

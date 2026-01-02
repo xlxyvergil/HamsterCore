@@ -50,17 +50,17 @@ public class ElementCalculator {
 
         List<InitialModifierEntry> initialModifiers = weaponData.getInitialModifiers();
 
-        // 按name分组，然后根据operation类型进行计算（模拟Forge属性修饰符计算）
+        // 按elementType分组，然后根据operation类型进行计算（模拟Forge属性修饰符计算）
         Map<String, List<InitialModifierEntry>> groupedModifiers = initialModifiers.stream()
-            .collect(Collectors.groupingBy(InitialModifierEntry::getName));
+            .collect(Collectors.groupingBy(InitialModifierEntry::getElementType));
 
         for (Map.Entry<String, List<InitialModifierEntry>> entry : groupedModifiers.entrySet()) {
-            String name = entry.getKey();
+            String elementType = entry.getKey();
             List<InitialModifierEntry> modifiers = entry.getValue();
             
-            // 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+            // 对同类型修饰符进行合并计算（模拟Forge属性修饰符计算）
             double calculatedValue = calculateValueForName(modifiers);
-            elementValues.put(name, calculatedValue);
+            elementValues.put(elementType, calculatedValue);
         }
 
         return elementValues;

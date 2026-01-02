@@ -171,7 +171,13 @@ public class TacZConfigApplier {
                                  
                     // 直接添加初始属性
                     // 确保elementType包含命名空间，name保持原始名称
-                    String namespacedElementType = name.contains(":") ? name : "hamstercore:" + name;
+                    String namespacedElementType;
+                    // 特殊处理暴击率和暴击伤害，使用attributeslib:前缀
+                    if (name.equals("crit_chance") || name.equals("crit_damage")) {
+                        namespacedElementType = "attributeslib:" + name;
+                    } else {
+                        namespacedElementType = name.contains(":") ? name : "hamstercore:" + name;
+                    }
                     weaponData.addInitialModifier(new InitialModifierEntry(name, namespacedElementType, amount, operationStr, uuid, "def"));
                     
                     // 只有基础元素和复合元素才添加到Basic层

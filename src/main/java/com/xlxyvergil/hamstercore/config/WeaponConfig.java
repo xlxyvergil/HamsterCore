@@ -500,8 +500,17 @@ public class WeaponConfig {
                                         // 生成UUID
                                         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + name).getBytes());
                                         
+                                        // 确保elementType包含命名空间，name保持原始名称
+                                        String namespacedElementType;
+                                        // 特殊处理暴击率和暴击伤害，使用attributeslib:前缀
+                                        if (name.equals("crit_chance") || name.equals("crit_damage")) {
+                                            namespacedElementType = "attributeslib:" + name;
+                                        } else {
+                                            namespacedElementType = name.contains(":") ? name : "hamstercore:" + name;
+                                        }
+                                        
                                         // 创建并添加初始属性
-                                        weaponData.addInitialModifier(new InitialModifierEntry(name, name, amount, operation, modifierUuid, "def"));
+                                        weaponData.addInitialModifier(new InitialModifierEntry(name, namespacedElementType, amount, operation, modifierUuid, "def"));
                                         
                                         // 只有基础元素和复合元素才添加到Basic层
                                         ElementType type = ElementType.byName(name);
