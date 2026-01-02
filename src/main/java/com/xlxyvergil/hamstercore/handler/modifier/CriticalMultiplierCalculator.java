@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
-import com.xlxyvergil.hamstercore.element.effect.effects.ColdEffect;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;

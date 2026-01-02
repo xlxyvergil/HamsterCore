@@ -11,7 +11,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import com.xlxyvergil.hamstercore.enchantment.ElementEnchantment;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import net.minecraft.core.registries.BuiltInRegistries;
-import com.xlxyvergil.hamstercore.util.ElementNBTUtils;
 import java.util.*;
 
 /**
@@ -190,24 +189,6 @@ public class EnchantmentAffixManager {
         stackTag.put(ENCHANTMENT_AFFIX_TAG, associationList);
     }
 
-    /**
-     * 检查物品是否为已配置的武器
-     * 通过WeaponItemIds缓存系统确认物品是否可以使用附魔
-     */
-    private static boolean isConfiguredWeapon(ItemStack stack) {
-        if (stack.isEmpty()) {
-            return false;
-        }
-        
-        // 获取物品的ResourceLocation
-        var itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        if (itemKey == null || itemKey == BuiltInRegistries.ITEM.getDefaultKey()) {
-            return false;
-        }
-        
-        // 通过WeaponItemIds检查是否为已配置的武器
-        return WeaponItemIds.isConfiguredWeapon(itemKey);
-    }
     
     /**
      * 获取附魔ID

@@ -30,8 +30,8 @@ public class SlashBladeWeaponConfig {
     private static final String SLASHBLADE_MOD_ID = "slashblade";
     
     // 默认特殊属性值 - 与ApothicAttributes的默认值保持一致
-    private static final double DEFAULT_CRITICAL_CHANCE = 0.2; // 20%暴击率 (与ApothicAttributes默认值一致)
-    private static final double DEFAULT_CRITICAL_DAMAGE = 0.5;  // 0.5倍暴击伤害 (与ApothicAttributes默认值一致)
+    private static final double DEFAULT_CRIT_CHANCE = 0.2; // 20%暴击率 (与ApothicAttributes默认值一致)
+    private static final double DEFAULT_CRIT_DAMAGE = 0.5;  // 0.5倍暴击伤害 (与ApothicAttributes默认值一致)
     private static final double DEFAULT_TRIGGER_CHANCE = 0.2;   // 20%触发率
     
     // 默认物理元素占比（拔刀剑统一使用默认元素占比：切割70% 冲击20% 穿刺10%）
@@ -269,8 +269,8 @@ public class SlashBladeWeaponConfig {
         addDefaultModifier(data, ElementType.PUNCTURE.getName(), DEFAULT_PUNCTURE);
         
         // 添加默认特殊属性初始属性
-        addDefaultModifier(data, "critical_chance", DEFAULT_CRITICAL_CHANCE);
-        addDefaultModifier(data, "critical_damage", DEFAULT_CRITICAL_DAMAGE);
+        addDefaultModifier(data, "crit_chance", DEFAULT_CRIT_CHANCE);
+        addDefaultModifier(data, "crit_damage", DEFAULT_CRIT_DAMAGE);
         addDefaultModifier(data, "trigger_chance", DEFAULT_TRIGGER_CHANCE);
     }
     
@@ -279,7 +279,13 @@ public class SlashBladeWeaponConfig {
      */
     private static void addDefaultModifier(WeaponData data, String elementType, double defaultValue) {
         // 确保elementType包含命名空间，name保持原始名称
-        String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
+        String namespacedElementType;
+        // 特殊处理暴击率和暴击伤害，使用attributeslib:前缀
+        if (elementType.equals("crit_chance") || elementType.equals("crit_damage")) {
+            namespacedElementType = "attributeslib:" + elementType;
+        } else {
+            namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
+        }
         
         // 为每种元素类型使用固定的UUID
         UUID modifierUuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementType).getBytes());

@@ -56,9 +56,11 @@ public class ElectricityEffect extends ElementEffect {
         float dotDamage = baseDamage * 0.20F * (1.0F + amplifier * 0.1F);
         
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
+        // 同时ElementDamageManager会检查这个标志，跳过暴击计算，避免双重暴击
         ElementTriggerHandler.setProcessingDotDamage(true);
         try {
             // 使用原始伤害源，但通过标志防止触发新元素效果
+            // ElementDamageManager会检查ProcessingDotDamage标志，跳过暴击计算
             entity.hurt(originalDamageSource, dotDamage);
         } finally {
             // 确保在伤害处理完成后重置标志

@@ -41,8 +41,10 @@ public class HeatEffect extends ElementEffect {
         float dotDamage = baseDamage * 0.50F * (1.0F + amplifier * 0.1F);
         
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
+        // 同时ElementDamageManager会检查这个标志，跳过暴击计算，避免双重暴击
         ElementTriggerHandler.setProcessingDotDamage(true);
         try {
+            // 使用伤害源进行伤害，让伤害系统统一处理，但跳过暴击计算
             entity.hurt(entity.level().damageSources().mobAttack(entity.getLastAttacker()), dotDamage);
         } finally {
             // 确保在伤害处理完成后重置标志

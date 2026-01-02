@@ -67,22 +67,23 @@ public class ElementDamageManager {
         modifierResults.setFactionModifier(factionModifier);
         modifierResults.setFactionBreakdown(factionResult.getBreakdown());
         
-        // 计算元素倍率 - 使用ElementMultiplierCalculator从实体获取元素属性
-        ElementMultiplierCalculator.ElementResult elementResult = ElementMultiplierCalculator.calculateElementMultiplier(attacker);
-        double elementMultiplier = elementResult.getElementMultiplier();
-        damageData.elementMultiplier = elementMultiplier;
-        modifierResults.setElementMultiplier(elementMultiplier);
-        modifierResults.setElementBreakdown(elementResult.getBreakdown());
-        
-        // 计算物理元素倍率 - 使用PhysicalElementMultiplierCalculator从实体获取物理元素属性
-        PhysicalElementMultiplierCalculator.PhysicalElementResult physicalResult = PhysicalElementMultiplierCalculator.calculatePhysicalElementMultiplier(attacker);
-        double physicalElementMultiplier = physicalResult.getPhysicalElementMultiplier();
-        damageData.physicalElementMultiplier = physicalElementMultiplier;
-        modifierResults.setPhysicalElementMultiplier(physicalElementMultiplier);
-        modifierResults.setPhysicalElementBreakdown(physicalResult.getBreakdown());
+        // 计算总元素倍率 - 使用TotalElementMultiplierCalculator从实体获取所有元素属性
+        TotalElementMultiplierCalculator.TotalElementResult totalElementResult = TotalElementMultiplierCalculator.calculateTotalElementMultiplier(attacker);
+        double totalElementMultiplier = totalElementResult.getTotalElementMultiplier();
+        damageData.elementMultiplier = totalElementMultiplier;
+        modifierResults.setElementMultiplier(totalElementMultiplier);
+        modifierResults.setElementBreakdown(totalElementResult.getBreakdown());
         
         // 计算暴击倍率和暴击信息 - 使用CriticalMultiplierCalculator从实体获取暴击属性
-        CriticalMultiplierCalculator.CriticalResult criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, target, weapon, new HashMap<>());
+        // 如果是DOT伤害，则跳过暴击计算，避免双重暴击
+        CriticalMultiplierCalculator.CriticalResult criticalResult;
+        if (ElementTriggerHandler.isProcessingDotDamage()) {
+            // 如果正在处理DOT伤害，创建一个没有暴击的结果
+            criticalResult = new CriticalMultiplierCalculator.CriticalResult(1.0, 0, 0.0);
+        } else {
+            // 否则正常计算暴击
+            criticalResult = CriticalMultiplierCalculator.calculateCriticalMultiplier(attacker, target, weapon, new HashMap<>());
+        }
         double critMultiplier = criticalResult.getMultiplier();
         int criticalLevel = criticalResult.getLevel();
         double criticalDamage = criticalResult.getDamage();
@@ -103,16 +104,9 @@ public class ElementDamageManager {
         // 存储所有modifier结果
         damageData.setModifierResults(modifierResults);
         
-        // 如果武器没有元素属性，则只应用护甲减免（不应用元素相关的修正）
-        if (data == null) {
-            // 无元素武器：只应用护甲减免
-            damageData.finalDamage = (float) (baseDamage * damageData.armorReduction);
-            return damageData;
-        }
-        
-        // 计算最终伤害：将物理元素总倍率与元素倍率相加（减去1.0是因为两者都以1.0为基准）
+        // 计算最终伤害：使用总元素倍率（已经包含了所有元素的加成）
         damageData.finalDamage = (float) (baseDamage * (1.0 + damageData.factionModifier) 
-                                         * (damageData.elementMultiplier + damageData.physicalElementMultiplier) 
+                                         * damageData.elementMultiplier 
                                          * damageData.criticalMultiplier 
                                          * damageData.armorReduction);
         
@@ -126,7 +120,6 @@ public class ElementDamageManager {
     
     
     
-
     
     /**
      * 统一的 modifier 计算结果类
@@ -139,10 +132,6 @@ public class ElementDamageManager {
         // 元素倍率结果
         private double elementMultiplier; // 元素总倍率
         private Map<String, Double> elementBreakdown; // 各元素的倍率分解
-        
-        // 物理元素倍率结果
-        private double physicalElementMultiplier; // 物理元素总倍率
-        private Map<String, Double> physicalElementBreakdown; // 各物理元素的倍率分解
         
         // 暴击结果
         private double criticalMultiplier; // 暴击倍率
@@ -157,8 +146,7 @@ public class ElementDamageManager {
         
         public ModifierResults() {
             this.factionModifier = 0.0;
-            this.elementMultiplier = 0.0;
-            this.physicalElementMultiplier = 0.0;
+            this.elementMultiplier = 1.0;
             this.criticalMultiplier = 1.0;
             this.criticalLevel = 0;
             this.criticalDamage = 0.0;
@@ -168,7 +156,6 @@ public class ElementDamageManager {
             this.armorModifier = 0.0;
             this.factionBreakdown = new HashMap<>();
             this.elementBreakdown = new HashMap<>();
-            this.physicalElementBreakdown = new HashMap<>();
         }
         
         // Getters and Setters
@@ -183,12 +170,6 @@ public class ElementDamageManager {
         
         public Map<String, Double> getElementBreakdown() { return elementBreakdown; }
         public void setElementBreakdown(Map<String, Double> elementBreakdown) { this.elementBreakdown = elementBreakdown; }
-        
-        public double getPhysicalElementMultiplier() { return physicalElementMultiplier; }
-        public void setPhysicalElementMultiplier(double physicalElementMultiplier) { this.physicalElementMultiplier = physicalElementMultiplier; }
-        
-        public Map<String, Double> getPhysicalElementBreakdown() { return physicalElementBreakdown; }
-        public void setPhysicalElementBreakdown(Map<String, Double> physicalElementBreakdown) { this.physicalElementBreakdown = physicalElementBreakdown; }
         
         public double getCriticalMultiplier() { return criticalMultiplier; }
         public void setCriticalMultiplier(double criticalMultiplier) { this.criticalMultiplier = criticalMultiplier; }
@@ -220,7 +201,6 @@ public class ElementDamageManager {
         private float finalDamage;
         private double factionModifier;
         private double elementMultiplier;
-        private double physicalElementMultiplier;
         private double criticalMultiplier;
         private double armorReduction;
         private int criticalLevel;
@@ -232,7 +212,6 @@ public class ElementDamageManager {
             this.finalDamage = baseDamage;
             this.factionModifier = 0.0;
             this.elementMultiplier = 1.0;
-            this.physicalElementMultiplier = 1.0;
             this.criticalMultiplier = 1.0;
             this.armorReduction = 1.0;
             this.criticalLevel = 0;
@@ -255,10 +234,6 @@ public class ElementDamageManager {
         
         public double getElementMultiplier() {
             return elementMultiplier;
-        }
-        
-        public double getPhysicalElementMultiplier() {
-            return physicalElementMultiplier;
         }
         
         public double getCriticalMultiplier() {

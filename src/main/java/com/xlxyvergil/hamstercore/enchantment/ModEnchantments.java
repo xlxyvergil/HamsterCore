@@ -78,12 +78,6 @@ public class ModEnchantments {
             "murmur", MurmurElementEnchantment::new);
 
     // 特殊属性附魔
-    public static final RegistryObject<CriticalChanceElementEnchantment> CRITICAL_CHANCE = ENCHANTMENTS.register(
-            "critical_chance", CriticalChanceElementEnchantment::new);
-            
-    public static final RegistryObject<CriticalDamageElementEnchantment> CRITICAL_DAMAGE = ENCHANTMENTS.register(
-            "critical_damage", CriticalDamageElementEnchantment::new);
-            
     public static final RegistryObject<TriggerChanceElementEnchantment> TRIGGER_CHANCE = ENCHANTMENTS.register(
             "trigger_chance", TriggerChanceElementEnchantment::new);
 
@@ -119,8 +113,6 @@ public class ModEnchantments {
         ELEMENT_ENCHANTMENTS.put(ElementType.MURMUR, MURMUR);
         
         // 特殊属性
-        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_CHANCE, CRITICAL_CHANCE);
-        ELEMENT_ENCHANTMENTS.put(ElementType.CRITICAL_DAMAGE, CRITICAL_DAMAGE);
         ELEMENT_ENCHANTMENTS.put(ElementType.TRIGGER_CHANCE, TRIGGER_CHANCE);
     }
     

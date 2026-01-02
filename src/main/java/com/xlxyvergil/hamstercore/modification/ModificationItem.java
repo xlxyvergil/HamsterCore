@@ -13,15 +13,49 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.Optional;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+
+import com.xlxyvergil.hamstercore.modification.client.ModificationItemRenderer;
+
 public class ModificationItem extends Item {
     public static final String TAG_MODIFICATION_ID = "ModificationId";
+    private static final Map<String, Integer> MODIFICATION_CUSTOM_MODEL_DATA = new HashMap<>();
 
     public ModificationItem(Properties properties) {
         super(properties);
+    }
+    
+
+    
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            @OnlyIn(Dist.CLIENT)
+            private BlockEntityWithoutLevelRenderer renderer;
+
+            @Override
+            @OnlyIn(Dist.CLIENT)
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    Minecraft minecraft = Minecraft.getInstance();
+                    renderer = new ModificationItemRenderer(
+                        minecraft.getBlockEntityRenderDispatcher(),
+                        minecraft.getEntityModels()
+                    );
+                }
+                return renderer;
+            }
+        });
     }
 
     public static NonNullList<ItemStack> fillItemCategory() {

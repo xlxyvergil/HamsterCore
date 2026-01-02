@@ -183,18 +183,6 @@ public class EntityInfoDisplayHandler {
                         hasModifierInfo = true;
                     }
                     
-                    // 显示物理元素总倍率
-                    if (modifierResults.getPhysicalElementMultiplier() > 0) {
-                        if (hasModifierInfo) {
-                            message.append(Component.literal(", "));
-                        } else {
-                            message.append(Component.literal("\n  "));
-                        }
-                        message.append(Component.literal("物理元素总倍率: " + String.format("%.2f", modifierResults.getPhysicalElementMultiplier()))
-                            .withStyle(ChatFormatting.BLUE));
-                        hasModifierInfo = true;
-                    }
-                    
                     // 显示护甲减免
                     if (modifierResults.getArmorReduction() < 1.0) {
                         if (hasModifierInfo) {
