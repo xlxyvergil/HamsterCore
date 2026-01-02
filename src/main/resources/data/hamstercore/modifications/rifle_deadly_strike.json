@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_deadly_strike",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "common",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "attributeslib:crit_chance",
+      "operation": "ADDITION",
+      "value": 1.5,
+      "source": "rifle_deadly_strike"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

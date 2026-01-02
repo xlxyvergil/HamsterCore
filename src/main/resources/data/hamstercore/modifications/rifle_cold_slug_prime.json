@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_cold_slug_prime",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "epic",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "hamstercore:cold",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_cold_slug_prime"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

@@ -1,0 +1,49 @@
+{
+  "variant": "hamstercore:rifle_rifling",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "uncommon",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_rifle",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    },
+    {
+      "type": "taa:bullet_gundamage_smg",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    },
+    {
+      "type": "taa:bullet_gundamage_lmg",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    },
+    {
+      "type": "taa:bullet_gundamage_rpg",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    },
+    {
+      "type": "taa:bullet_gundamage_sniper",
+      "operation": "ADDITION",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    },
+    {
+      "type": "attributeslib:arrow_damage",
+      "operation": "MULTIPLY_TOTAL",
+      "value": 1.65,
+      "source": "rifle_rifling"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

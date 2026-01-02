@@ -186,6 +186,10 @@ public class ModificationHelper {
         if (!hasEmptySockets(stack)) {
             return false;
         }
+        // 检查改装件是否适用于该物品
+        if (!modification.canApplyTo(stack, stack)) {
+            return false;
+        }
         List<ModificationInstance> modifications = new ArrayList<>(getModifications(stack).modifications());
         int index = getFirstEmptySocket(stack);
         modifications.set(index, new ModificationInstance(modification));

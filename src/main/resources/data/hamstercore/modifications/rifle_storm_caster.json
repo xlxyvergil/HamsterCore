@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_storm_caster",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "uncommon",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "operation": "ADDITION",
+      "value": 0.9,
+      "source": "rifle_storm_caster"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

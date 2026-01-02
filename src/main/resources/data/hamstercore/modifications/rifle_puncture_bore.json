@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_puncture_bore",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "rare",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "hamstercore:puncture",
+      "operation": "ADDITION",
+      "value": 1.2,
+      "source": "rifle_puncture_bore"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

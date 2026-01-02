@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_serrated_link",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "common",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "operation": "ADDITION",
+      "value": 0.9,
+      "source": "rifle_serrated_link"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

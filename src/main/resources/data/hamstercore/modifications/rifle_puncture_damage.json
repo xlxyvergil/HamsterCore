@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_puncture_damage",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "common",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "hamstercore:puncture",
+      "operation": "ADDITION",
+      "value": 0.9,
+      "source": "rifle_puncture_damage"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

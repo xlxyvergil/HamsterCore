@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:rifle_sprightly_trigger",
+  "weight": 100,
+  "quality": 1.0,
+  "dimensions": [],
+  "category": "general",
+  "rarity": "uncommon",
+  "unique": true,
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "operation": "ADDITION",
+      "value": 0.6,
+      "source": "rifle_sprightly_trigger"
+    }
+  ],
+  "applicableCategories": ["primary"],
+  "applicableTypes": []
+}

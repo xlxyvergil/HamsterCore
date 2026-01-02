@@ -56,12 +56,10 @@ public record Modification(
             return false;
         }
         
-        // 检测武器分类
-        WeaponCategory weaponCategory = weaponType.getCategory();
-        
         // 检查适用分类
         if (!applicableCategories.isEmpty()) {
-            boolean categoryMatch = applicableCategories.contains(weaponCategory);
+            boolean categoryMatch = applicableCategories.stream()
+                    .anyMatch(category -> category.allowsWeaponType(weaponType));
             if (!categoryMatch) {
                 return false;
             }

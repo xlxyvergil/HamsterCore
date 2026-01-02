@@ -68,7 +68,8 @@ public class SocketTooltipRenderer implements ClientTooltipComponent {
         if (!inst.isValid()) {
             return Component.translatable("socket.hamstercore.empty");
         }
-        return Component.literal(inst.modification().id().toString())
+        String modId = inst.modification().id().toString();
+        return Component.translatable("item.hamstercore.modification." + modId)
             .withStyle(inst.modification().rarity().getColor());
     }
 }
