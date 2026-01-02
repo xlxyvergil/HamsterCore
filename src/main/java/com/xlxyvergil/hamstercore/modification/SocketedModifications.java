@@ -30,6 +30,9 @@ public record SocketedModifications(ImmutableList<ModificationInstance> modifica
      * @param stack The item stack to apply modifications to
      */
     public void applyAllModifications(ItemStack stack) {
+        // 先移除所有旧的词缀
+        this.streamValidModifications().forEach(inst -> inst.removeAffixes(stack));
+        // 再应用所有新的词缀
         this.streamValidModifications().forEach(inst -> inst.applyAffixes(stack));
     }
 

@@ -38,6 +38,14 @@ public class AffixManager {
         // 确保elementType包含命名空间，name保持原始名称
         String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
         
+        // 检查是否已经存在相同UUID的词缀，如果存在则不添加，避免重复赋予
+        for (InitialModifierEntry existingEntry : weaponData.getInitialModifiers()) {
+            if (existingEntry.getUuid().equals(uuid)) {
+                // 已经存在相同UUID的词缀，直接返回，不重复添加
+                return;
+            }
+        }
+        
         // 检查是否是该类型第一次加入InitialModifier
         boolean isFirstTime = !hasElementTypeInInitialModifiers(weaponData, namespacedElementType);
         
@@ -47,11 +55,17 @@ public class AffixManager {
         
         // 只有基础元素和复合元素在第一次加入时才添加到Basic层
         if (isFirstTime) {
-            ElementType type = ElementType.byName(name);
+            // 使用简单名称（不带命名空间）来检查ElementType
+            String simpleName = name;
+            if (simpleName.contains(":")) {
+                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
+            }
+            
+            ElementType type = ElementType.byName(simpleName);
             if (type != null && (type.isBasic() || type.isComplex())) {
-                // 使用当前Basic层元素的数量作为order值，保证唯一性和递增性
+                // 使用简单名称作为Basic层的类型，保持一致
                 int order = weaponData.getBasicElements().size();
-                weaponData.addBasicElement(name, source, order);
+                weaponData.addBasicElement(simpleName, source, order);
             }
         }
         

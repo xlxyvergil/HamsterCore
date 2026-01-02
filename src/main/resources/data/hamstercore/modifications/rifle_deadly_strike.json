@@ -9,7 +9,7 @@
   "affixes": [
     {
       "type": "attributeslib:crit_chance",
-      "operation": "ADDITION",
+      "operation": "MULTIPLY_TOTAL",
       "value": 1.5,
       "source": "rifle_deadly_strike"
     }

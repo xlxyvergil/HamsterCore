@@ -7,6 +7,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import com.xlxyvergil.hamstercore.element.ElementCalculationCoordinator;
+import com.xlxyvergil.hamstercore.element.WeaponDataManager;
 
 import java.util.*;
 
@@ -224,6 +226,8 @@ public class ModificationHelper {
         if (afxData != null) {
             afxData.remove(MODIFICATIONS);
         }
+        // 重新计算元素值，确保所有词缀被正确移除
+        ElementCalculationCoordinator.INSTANCE.calculateAndStoreElements(stack, WeaponDataManager.getWeaponData(stack));
     }
 
     /**

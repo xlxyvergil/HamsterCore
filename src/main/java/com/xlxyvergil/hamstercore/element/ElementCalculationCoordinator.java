@@ -66,58 +66,51 @@ public class ElementCalculationCoordinator {
         // 5. 创建属性修饰符条目列表，准备存储到物品NBT中
         List<ElementUsageData.AttributeModifierEntry> modifierEntries = new ArrayList<>();
         
-        // 6. 处理所有InitialModifiers，创建完整的属性修饰符条目
-        for (InitialModifierEntry entry : weaponData.getInitialModifiers()) {
-            String attributeName = entry.getName();
-            String elementType = entry.getElementType();
-            String source = entry.getSource();
-            UUID uuid = entry.getUuid();
-            String operation = entry.getOperation();
+        // 6. 直接基于计算结果创建属性修饰符条目
+        
+        // 处理复合元素结果
+        for (Map.Entry<String, Double> entry : combinedElements.entrySet()) {
+            String elementName = entry.getKey();
+            double value = entry.getValue();
             
-            // 确保elementType包含命名空间
-            String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
+            // 创建唯一的UUID
+            UUID uuid = UUID.nameUUIDFromBytes(("hamstercore:" + elementName + ":modifier").getBytes());
             
-            // 获取计算后的数值
-            double amount;
-            boolean isFromCombinedElements = false;
+            // 创建属性修饰符条目
+            ElementUsageData.AttributeModifierEntry modifierEntry = new ElementUsageData.AttributeModifierEntry(
+                elementName,
+                "hamstercore:" + elementName,
+                value,
+                "ADDITION",
+                uuid,
+                "user"
+            );
             
-            // 提取简单元素名称（不带命名空间）用于查找复合结果
-            String simpleName = elementType;
-            if (simpleName.contains(":")) {
-                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
+            modifierEntries.add(modifierEntry);
+        }
+        
+        // 处理其他属性
+        for (Map.Entry<String, Double> entry : otherAttributes.entrySet()) {
+            String attributeKey = entry.getKey();
+            double value = entry.getValue();
+            
+            // 提取属性名称（不带命名空间）
+            String attributeName = attributeKey;
+            if (attributeName.contains(":")) {
+                attributeName = attributeName.substring(attributeName.lastIndexOf(":") + 1);
             }
             
-            // 检查是否是需要复合计算的元素（使用简单名称查找）
-            if (combinedElements.containsKey(simpleName)) {
-                // 如果是复合元素或基础元素，使用复合后的数值
-                amount = combinedElements.get(simpleName);
-                isFromCombinedElements = true;
-            } else if (otherAttributes.containsKey(namespacedElementType)) {
-                // 如果是其他属性，使用计算后的数值（使用完整命名空间类型查找）
-                amount = otherAttributes.get(namespacedElementType);
-            } else {
-                // 如果没有计算结果，使用原始数值
-                amount = entry.getAmount();
-            }
-            
-            // 只有经过复合处理的元素才需要确保elementType包含命名空间
-            if (isFromCombinedElements) {
-                // 检查是否是HamsterCore的元素
-                ElementType hamsterElementType = ElementType.byName(attributeName);
-                if (hamsterElementType != null && !elementType.contains(":")) {
-                    // 如果是HamsterCore的元素且没有命名空间，添加hamstercore:前缀
-                    elementType = "hamstercore:" + elementType;
-                }
-            }
+            // 创建唯一的UUID
+            UUID uuid = UUID.nameUUIDFromBytes((attributeKey + ":modifier").getBytes());
             
             // 创建属性修饰符条目
             ElementUsageData.AttributeModifierEntry modifierEntry = new ElementUsageData.AttributeModifierEntry(
                 attributeName,
-                elementType,
-                amount,
-                operation,
+                attributeKey,
+                value,
+                "ADDITION",
                 uuid,
-                source
+                "user"
             );
             
             modifierEntries.add(modifierEntry);

@@ -88,8 +88,8 @@ public class FactionDamageHandler {
             // 设置最终伤害（包含病毒和磁力增伤）
             event.setAmount(damageWithMagneticBonus);
             
-            // 处理元素触发效果，直接传递攻击者实体、包含病毒增伤的最终伤害和原始伤害源
-            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, finalDamage, event.getSource());        
+            // 处理元素触发效果，传递原始基础伤害，而不是包含所有倍率的最终伤害
+            ElementTriggerHandler.handleElementTriggers(livingAttacker, target, baseDamage, event.getSource());        
         }
     }
     
