@@ -11,7 +11,7 @@ public enum WeaponType {
     RIFLE("rifle", "步枪", WeaponCategory.PRIMARY, true),
     SMG("smg", "冲锋枪", WeaponCategory.PRIMARY, true),
     LMG("lmg", "机枪", WeaponCategory.PRIMARY, true),
-    LAUNCHER("launcher", "火箭筒", WeaponCategory.PRIMARY, true),
+    RPG("rpg", "火箭筒", WeaponCategory.PRIMARY, true),
     SHOTGUN("shotgun", "霰弹枪", WeaponCategory.PRIMARY, true),
     SNIPER("sniper", "狙击枪", WeaponCategory.PRIMARY, true),
     RANGED("ranged", "远程武器", WeaponCategory.PRIMARY, true),

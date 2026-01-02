@@ -9,10 +9,22 @@ import java.util.List;
  * 定义了游戏中的武器类型分类
  */
 public enum WeaponCategory {
-    // 主要武器 - 远程武器
+    // 主要武器 - 远程武器（步枪类）
     PRIMARY("primary", "主要武器", 
             Arrays.asList(WeaponType.RIFLE, WeaponType.SMG, WeaponType.LMG, 
-                    WeaponType.LAUNCHER, WeaponType.SHOTGUN, WeaponType.SNIPER, WeaponType.RANGED)),
+                    WeaponType.RPG, WeaponType.SNIPER, WeaponType.RANGED)),
+    
+    // 突击步枪
+    ASSAULT_RIFLE("assault_rifle", "突击步枪", 
+            Arrays.asList(WeaponType.RIFLE, WeaponType.SMG, WeaponType.LMG)),
+    
+    // 狙击枪
+    SNIPER_CATEGORY("sniper", "狙击枪", 
+            Arrays.asList(WeaponType.SNIPER)),
+    
+    // 弓箭（除了tacz外的所有远程）
+    BOW("bow", "弓箭", 
+            Arrays.asList(WeaponType.RANGED)),
     
     // 次要武器 - 手枪
     SECONDARY("secondary", "次要武器", 

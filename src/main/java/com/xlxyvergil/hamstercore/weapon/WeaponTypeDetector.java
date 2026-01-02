@@ -92,8 +92,8 @@ public class WeaponTypeDetector {
                     return WeaponType.SMG;
                 case "lmg":
                     return WeaponType.LMG;
-                case "launcher":
-                    return WeaponType.LAUNCHER;
+                case "rpg":
+                    return WeaponType.RPG;
                 case "shotgun":
                     return WeaponType.SHOTGUN;
                 case "sniper":
