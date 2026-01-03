@@ -15,7 +15,10 @@ import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
+@OnlyIn(Dist.CLIENT)
 public class SocketTooltipRenderer implements ClientTooltipComponent {
 
     public static final ResourceLocation SOCKET = new ResourceLocation(HamsterCore.MODID, "textures/gui/socket.png");
@@ -69,8 +72,8 @@ public class SocketTooltipRenderer implements ClientTooltipComponent {
                 
                 // 渲染普通槽位的改装件图标
                 ModificationInstance inst = this.comp.modifications().get(currentIndex);
-                if (inst.isValid()) {
-                    ItemStack modStack = ModificationItem.createModificationStack(inst.modification());
+                if (inst.isValid() && inst.holder() != null && inst.holder().isBound() && inst.holder().getId() != null) {
+                    ItemStack modStack = ModificationItem.createModificationStack(inst.holder().get());
                     PoseStack pose = gfx.pose();
                     pose.pushPose();
                     pose.scale(0.5F, 0.5F, 1);
@@ -95,8 +98,8 @@ public class SocketTooltipRenderer implements ClientTooltipComponent {
                 
                 // 渲染特殊槽位的改装件图标
                 ModificationInstance inst = this.comp.modifications().get(currentIndex);
-                if (inst.isValid()) {
-                    ItemStack modStack = ModificationItem.createModificationStack(inst.modification());
+                if (inst.isValid() && inst.holder() != null && inst.holder().isBound() && inst.holder().getId() != null) {
+                    ItemStack modStack = ModificationItem.createModificationStack(inst.holder().get());
                     PoseStack pose = gfx.pose();
                     pose.pushPose();
                     pose.scale(0.5F, 0.5F, 1);
@@ -149,11 +152,12 @@ public class SocketTooltipRenderer implements ClientTooltipComponent {
     }
 
     public static Component getSocketDesc(ModificationInstance inst) {
-        if (!inst.isValid()) {
+        if (!inst.isValid() || inst.holder() == null || !inst.holder().isBound() || inst.holder().get() == null || inst.holder().getId() == null) {
             return Component.translatable("socket.hamstercore.empty");
         }
-        String modId = inst.modification().id().toString();
+        ResourceLocation id = inst.holder().getId();
+        String modId = id != null ? id.toString() : "unknown"; // 安全处理null ID
         return Component.translatable("item.hamstercore.modification." + modId)
-            .withStyle(inst.modification().rarity().getColor());
+            .withStyle(inst.holder().get().rarity().getColor());
     }
 }

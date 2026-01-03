@@ -72,10 +72,12 @@ public class ElementEffectDataHelper {
      * @return 数据键
      */
     private static String getDataKey(ElementEffect effect) {
+        if (effect == null) return KEY_PREFIX + "unknown";
         ResourceLocation effectId = ForgeRegistries.MOB_EFFECTS.getKey(effect);
-        return KEY_PREFIX + effectId.toString().replace(":", ".");
+        if (effectId == null) return KEY_PREFIX + "unknown";
+        return KEY_PREFIX + effectId.toString().replace(':', '.');
     }
-
+    
     /**
      * 当效果移除时自动清理数据
      * @param entity 实体

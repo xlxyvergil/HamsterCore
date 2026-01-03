@@ -8,11 +8,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * 改装件物品渲染器
  * 参考Apotheosis的GemModel实现
  */
+@OnlyIn(Dist.CLIENT)
 public class ModificationItemRenderer extends BlockEntityWithoutLevelRenderer {
 
     public ModificationItemRenderer(BlockEntityRenderDispatcher pBlockEntityRenderDispatcher, EntityModelSet pEntityModelSet) {

@@ -21,10 +21,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * 改装件模型，参考Apotheosis的GemModel实现
  */
+@OnlyIn(Dist.CLIENT)
 public class ModificationModel implements BakedModel {
     private final BakedModel original;
     private final ItemOverrides overrides;

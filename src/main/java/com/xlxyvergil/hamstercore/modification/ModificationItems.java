@@ -26,10 +26,5 @@ public class ModificationItems {
         () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.hamstercore.modification"))
             .icon(() -> new ItemStack(MODIFICATION.get()))
-            .displayItems((parameters, output) -> {
-                output.acceptAll(ModificationItem.fillItemCategory());
-                output.accept(SIGIL_OF_SOCKETING.get());
-                output.accept(SIGIL_OF_WITHDRAWAL.get());
-            })
             .build());
 }

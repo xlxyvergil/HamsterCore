@@ -249,6 +249,9 @@ public class ModificationHelper {
     public static String getModificationId(ItemStack stack) {
         if (stack.hasTag() && stack.getTag().contains("ModificationId")) {
             String fullId = stack.getTag().getString("ModificationId");
+            if (fullId == null) {
+                return null;
+            }
             // 从完整的资源位置中提取路径部分（去除命名空间）
             if (fullId.contains(":")) {
                 return fullId.substring(fullId.lastIndexOf(":") + 1);

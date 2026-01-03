@@ -23,6 +23,7 @@ public class ModificationRegistry extends SimpleJsonResourceReloadListener {
 
     private static ModificationRegistry INSTANCE;
     private final Map<ResourceLocation, Modification> modifications = new HashMap<>();
+    private final Map<ResourceLocation, DynamicModificationHolder> holders = new HashMap<>();
 
     public ModificationRegistry() {
         super(GSON, DIRECTORY);
@@ -41,16 +42,35 @@ public class ModificationRegistry extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager, ProfilerFiller profiler) {
         this.modifications.clear();
+        this.holders.clear(); // 清除holders缓存
         map.forEach((id, json) -> {
             Modification.CODEC.parse(JsonOps.INSTANCE, json)
-                .resultOrPartial(error -> {})
-                .ifPresent(mod -> this.modifications.put(id, mod));
+                .resultOrPartial(error -> {
+                    // 记录解析错误，避免崩溃
+                    System.out.println("[HamsterCore] Failed to parse modification: " + id + ", Error: " + error);
+                })
+                .ifPresent(mod -> {
+                    // 确保修改件ID不为null
+                    if (mod.id() != null) {
+                        this.modifications.put(id, mod);
+                    } else {
+                        System.out.println("[HamsterCore] Modification has null ID: " + id);
+                    }
+                });
         });
         // 不再需要初始化自定义模型数据映射，使用自定义渲染器
     }
 
     public Optional<Modification> getModification(ResourceLocation id) {
         return Optional.ofNullable(this.modifications.get(id));
+    }
+    
+    public DynamicModificationHolder holder(ResourceLocation id) {
+        return this.holders.computeIfAbsent(id, DynamicModificationHolder::new);
+    }
+    
+    public DynamicModificationHolder emptyHolder() {
+        return DynamicModificationHolder.empty();
     }
 
     public Map<ResourceLocation, Modification> getModifications() {

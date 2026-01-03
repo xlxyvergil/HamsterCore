@@ -25,6 +25,7 @@ import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
 import dev.shadowsoffire.placebo.registry.DeferredHelper;
+import dev.shadowsoffire.placebo.tabs.TabFillingRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -79,16 +80,25 @@ public class HamsterCore {
     private void setup(final FMLCommonSetupEvent event) {
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
-        
+            
         // 注册玩家能力相关事件
         MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
-        
-
-
-        
+            
+            
+        // 注册标签页填充，模仿Apotheosis的Adventure模块
+        event.enqueueWork(() -> {
+            // 注册改装件标签页填充
+            TabFillingRegistry.register(ModificationItems.MODIFICATION_TAB.getKey(), 
+                ModificationItems.SIGIL_OF_SOCKETING, 
+                ModificationItems.SIGIL_OF_WITHDRAWAL);
+            // 注册改装件本身，它实现了ITabFiller接口，会自动填充
+            TabFillingRegistry.register(ModificationItems.MODIFICATION_TAB.getKey(), 
+                ModificationItems.MODIFICATION);
+        });
+            
         // 加载客户端配置
         ClientConfig.load();
-
+    
     }
     
     
