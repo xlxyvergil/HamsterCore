@@ -27,6 +27,8 @@ import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializ
 import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.RegisterEvent;
 
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -41,6 +43,7 @@ public class HamsterCore {
 
     // 使用与Apothic-Attributes相同的模式：在@Mod主类中创建DeferredHelper
     public static final DeferredHelper R = DeferredHelper.create(MODID);
+    
 
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -55,8 +58,10 @@ public class HamsterCore {
         // 注册属性
         EntityAttributeRegistry.ATTRIBUTES.register(modEventBus);
         
-        // 注册元素效果
-        // ElementEffectRegistry使用HamsterCore的R进行注册，无需在此处重复注册
+        // 初始化元素效果注册
+        ElementEffectRegistry.Effects.bootstrap();
+        
+
         
         // 注册改装系统物品
         ModificationItems.ITEMS.register(modEventBus);

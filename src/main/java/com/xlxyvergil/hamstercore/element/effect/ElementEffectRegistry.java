@@ -16,10 +16,12 @@ import com.xlxyvergil.hamstercore.element.effect.effects.SlashEffect;
 import com.xlxyvergil.hamstercore.element.effect.effects.ToxinEffect;
 import com.xlxyvergil.hamstercore.element.effect.effects.ViralEffect;
 import com.xlxyvergil.hamstercore.HamsterCore;
-import dev.shadowsoffire.placebo.registry.DeferredHelper;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.RegistryObject;
 
 import static com.xlxyvergil.hamstercore.HamsterCore.R;
+
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * 元素效果注册类
@@ -27,7 +29,17 @@ import static com.xlxyvergil.hamstercore.HamsterCore.R;
  */
 public class ElementEffectRegistry {
     
-    public static final class Effects {
+
+
+
+    
+    @SuppressWarnings("unused")
+    private static void bootstrap() {
+        // 触发Effects类的静态初始化，确保所有RegistryObject都被创建
+        Effects.bootstrap();
+    }
+    
+    public static class Effects {
         // 物理元素效果
         public static final RegistryObject<ImpactEffect> IMPACT = R.effect("impact", ImpactEffect::new);
         public static final RegistryObject<SlashEffect> SLASH = R.effect("slash", SlashEffect::new);
@@ -48,5 +60,8 @@ public class ElementEffectRegistry {
         public static final RegistryObject<MagneticEffect> MAGNETIC = R.effect("magnetic", MagneticEffect::new);
         public static final RegistryObject<RadiationEffect> RADIATION = R.effect("radiation", RadiationEffect::new);
         public static final RegistryObject<ViralEffect> VIRAL = R.effect("viral", ViralEffect::new);
+        
+        @ApiStatus.Internal
+        public static void bootstrap() {}
     }
 }
