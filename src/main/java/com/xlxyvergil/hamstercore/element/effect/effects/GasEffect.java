@@ -1,7 +1,7 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.Effects;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;

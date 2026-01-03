@@ -5,6 +5,7 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabili
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.network.EntityShieldSyncToClient;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -218,8 +219,8 @@ public class ShieldEvents {
      */
     private static void handleMagneticShieldBreak(LivingEntity entity, LivingHurtEvent event) {
         // 检查目标是否具有磁力效果
-        if (entity.hasEffect(com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.MAGNETIC.get())) {
-            net.minecraft.world.effect.MobEffectInstance magneticEffect = entity.getEffect(com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.MAGNETIC.get());
+        if (entity.hasEffect(ElementEffectRegistry.Effects.MAGNETIC.get())) {
+            net.minecraft.world.effect.MobEffectInstance magneticEffect = entity.getEffect(ElementEffectRegistry.Effects.MAGNETIC.get());
             if (magneticEffect != null) {
                 int amplifier = magneticEffect.getAmplifier();
                 

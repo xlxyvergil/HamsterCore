@@ -2,7 +2,7 @@ package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.GasManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.Effects;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -69,36 +69,36 @@ public class GasCloudEffect extends ElementEffect {
         
         // 首先为中心实体（目标实体）添加毒气状态效果
         if (!(entity instanceof Player)) { // 排除玩家
-            if (entity.hasEffect(ElementEffectRegistry.GAS.get())) {
+            if (entity.hasEffect(Effects.GAS.get())) {
                 // 如果目标实体已有毒气效果，延长持续时间而不是添加新效果
-                MobEffectInstance existingEffect = entity.getEffect(ElementEffectRegistry.GAS.get());
+                MobEffectInstance existingEffect = entity.getEffect(Effects.GAS.get());
                 int currentDuration = existingEffect.getDuration();
                 int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
                 
                 // 重新应用效果，保持最高等级和最长持续时间
                 int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
                 entity.addEffect(new MobEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     newDuration,
                     newAmplifier
                 ));
                 // 存储伤害数据
                 com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
                     entity,
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     baseDamage
                 );
             } else {
                 // 如果目标实体没有毒气效果，则添加新效果
                 entity.addEffect(new MobEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.GAS.get(), // GasEffect
+                    (ElementEffect) Effects.GAS.get(), // GasEffect
                     CLOUD_DURATION, // 持续时间
                     amplifier // 保持原始等级
                 ));
                 // 存储伤害数据
                 com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
                     entity,
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     baseDamage
                 );
             }
@@ -112,36 +112,36 @@ public class GasCloudEffect extends ElementEffect {
             }
             
             // 检查目标是否已经有相同效果，如果有则延长持续时间而不是叠加
-            if (livingEntity.hasEffect(ElementEffectRegistry.GAS.get())) {
+            if (livingEntity.hasEffect(Effects.GAS.get())) {
                 // 如果已有毒气效果，延长持续时间而不是添加新效果
-                MobEffectInstance existingEffect = livingEntity.getEffect(ElementEffectRegistry.GAS.get());
+                MobEffectInstance existingEffect = livingEntity.getEffect(Effects.GAS.get());
                 int currentDuration = existingEffect.getDuration();
                 int newDuration = Math.max(currentDuration, CLOUD_DURATION); // 取较大值，确保不会缩短已有的效果
                 
                 // 重新应用效果，保持最高等级和最长持续时间
                 int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
                 livingEntity.addEffect(new MobEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     newDuration,
                     newAmplifier
                 ));
                 // 存储伤害数据
                 com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
                     livingEntity,
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     baseDamage
                 );
             } else {
                 // 如果没有相同效果，则添加新效果
                 livingEntity.addEffect(new MobEffectInstance(
-                    (ElementEffect) ElementEffectRegistry.GAS.get(), // GasEffect
+                    (ElementEffect) Effects.GAS.get(), // GasEffect
                     CLOUD_DURATION, // 持续时间
                     amplifier // 保持原始等级
                 ));
                 // 存储伤害数据
                 com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
                     livingEntity,
-                    (ElementEffect) ElementEffectRegistry.GAS.get(),
+                    (ElementEffect) Effects.GAS.get(),
                     baseDamage
                 );
             }

@@ -6,6 +6,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
+import net.minecraftforge.registries.ForgeRegistries;
+
 /**
  * 元素效果数据辅助类
  * 使用实体的PersistentData存储额外的效果数据（如伤害值、伤害源等）
@@ -70,7 +72,7 @@ public class ElementEffectDataHelper {
      * @return 数据键
      */
     private static String getDataKey(ElementEffect effect) {
-        ResourceLocation effectId = ElementEffectRegistry.getEffectId(effect);
+        ResourceLocation effectId = ForgeRegistries.MOB_EFFECTS.getKey(effect);
         return KEY_PREFIX + effectId.toString().replace(":", ".");
     }
 

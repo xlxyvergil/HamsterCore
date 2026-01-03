@@ -24,6 +24,7 @@ import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
+import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 
@@ -37,6 +38,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
     public static final String MODID = "hamstercore";
+
+    // 使用与Apothic-Attributes相同的模式：在@Mod主类中创建DeferredHelper
+    public static final DeferredHelper R = DeferredHelper.create(MODID);
 
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -52,7 +56,7 @@ public class HamsterCore {
         EntityAttributeRegistry.ATTRIBUTES.register(modEventBus);
         
         // 注册元素效果
-        ElementEffectRegistry.register();
+        // ElementEffectRegistry使用HamsterCore的R进行注册，无需在此处重复注册
         
         // 注册改装系统物品
         ModificationItems.ITEMS.register(modEventBus);
@@ -75,6 +79,7 @@ public class HamsterCore {
         MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
         
 
+
         
         // 加载客户端配置
         ClientConfig.load();
@@ -83,8 +88,7 @@ public class HamsterCore {
     
     
     
-    
-    
+
     /**
      * 服务器启动完成事件处理
      * 在这个阶段，所有模组的物品都已完成注册和初始化，可以安全获取

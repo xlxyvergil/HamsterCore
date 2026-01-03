@@ -1,7 +1,7 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.Effects;
 import com.xlxyvergil.hamstercore.faction.Faction;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -51,7 +51,7 @@ public class RadiationEffect extends ElementEffect {
      * @return 是否受辐射影响
      */
     public static boolean isRadiated(LivingEntity entity) {
-        return entity.hasEffect(ElementEffectRegistry.RADIATION.get());
+        return entity.hasEffect(Effects.RADIATION.get());
     }
     
     /**

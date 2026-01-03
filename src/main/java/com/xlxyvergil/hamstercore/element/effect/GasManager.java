@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -121,10 +123,10 @@ public class GasManager {
                     // 给实体添加GasEffect状态效果，持续120 ticks（6秒）
                     // 等级为amplifier
                     MobEffectInstance effectInstance = new MobEffectInstance(
-                            (ElementEffect) ElementEffectRegistry.GAS.get(), 120, amplifier);
+                            (ElementEffect) ElementEffectRegistry.Effects.GAS.get(), 120, amplifier);
                     livingEntity.addEffect(effectInstance);
                     // 存储伤害数据
-                    ElementEffectDataHelper.setEffectDamage(livingEntity, (ElementEffect) ElementEffectRegistry.GAS.get(), gasDamage);
+                    ElementEffectDataHelper.setEffectDamage(livingEntity, (ElementEffect) ElementEffectRegistry.Effects.GAS.get(), gasDamage);
                 }
             }
         }

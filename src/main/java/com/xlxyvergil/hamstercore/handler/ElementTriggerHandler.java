@@ -11,7 +11,7 @@ import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry.Effects;
 import com.xlxyvergil.hamstercore.element.effect.effects.*;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
@@ -298,11 +298,11 @@ public class ElementTriggerHandler {
      */
     private static void applyElectricCloudEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给ElectricCloudEffect
-        if (ElementEffectRegistry.ELECTRIC_CLOUD.get() instanceof ElectricCloudEffect) {
+        if (Effects.ELECTRIC_CLOUD.get() instanceof ElectricCloudEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.ELECTRIC_CLOUD.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.ELECTRIC_CLOUD.get());
+            if (target.hasEffect(Effects.ELECTRIC_CLOUD.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.ELECTRIC_CLOUD.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -312,12 +312,12 @@ public class ElementTriggerHandler {
                 int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
 
                 // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.ELECTRIC_CLOUD.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.ELECTRIC_CLOUD.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.ELECTRIC_CLOUD.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.ELECTRIC_CLOUD.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.ELECTRIC_CLOUD.get(), finalDamage);
             }
         }
     }
@@ -330,11 +330,11 @@ public class ElementTriggerHandler {
      */
     private static void applyGasCloudEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给GasCloudEffect
-        if (ElementEffectRegistry.GAS_CLOUD.get() instanceof GasCloudEffect) {
+        if (Effects.GAS_CLOUD.get() instanceof GasCloudEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.GAS_CLOUD.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.GAS_CLOUD.get());
+            if (target.hasEffect(Effects.GAS_CLOUD.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.GAS_CLOUD.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -344,12 +344,12 @@ public class ElementTriggerHandler {
                 int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
 
                 // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.GAS_CLOUD.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.GAS_CLOUD.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.GAS_CLOUD.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.GAS_CLOUD.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.GAS_CLOUD.get(), finalDamage);
             }
         }
     }
@@ -367,11 +367,11 @@ public class ElementTriggerHandler {
         LivingEntity attacker = (LivingEntity) damageSource.getEntity();
         if (attacker != null) {
             // 直接应用击退效果
-            ((ImpactEffect) ElementEffectRegistry.IMPACT.get()).applyKnockback(target, attacker);
+            ((ImpactEffect) Effects.IMPACT.get()).applyKnockback(target, attacker);
         }
         // 同时仍然应用状态效果以保持一致性
-        target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.IMPACT.get(), 120, 0));
-        ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.IMPACT.get(), finalDamage);
+        target.addEffect(new MobEffectInstance((ElementEffect) Effects.IMPACT.get(), 120, 0));
+        ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.IMPACT.get(), finalDamage);
     }    
     
     /**
@@ -384,8 +384,8 @@ public class ElementTriggerHandler {
         // 应用穿刺效果，最大等级5，持续6秒（120 ticks）
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.PUNCTURE.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.PUNCTURE.get());
+        if (target.hasEffect(Effects.PUNCTURE.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.PUNCTURE.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -395,10 +395,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(4, currentAmplifier + 1); // amplifier从0开始，对应等级1-5
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.PUNCTURE.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.PUNCTURE.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.PUNCTURE.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.PUNCTURE.get(), 120, 0));
         }
     }
     
@@ -410,11 +410,11 @@ public class ElementTriggerHandler {
      */
     private static void applyBleedingEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给SlashEffect
-        if (ElementEffectRegistry.SLASH.get() instanceof SlashEffect) {
+        if (Effects.SLASH.get() instanceof SlashEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.SLASH.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.SLASH.get());
+            if (target.hasEffect(Effects.SLASH.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.SLASH.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -425,12 +425,12 @@ public class ElementTriggerHandler {
 
                 // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // SlashEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.SLASH.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.SLASH.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.SLASH.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.SLASH.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.SLASH.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.SLASH.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.SLASH.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.SLASH.get(), finalDamage);
             }
         }
     }
@@ -445,8 +445,8 @@ public class ElementTriggerHandler {
         // 冰冻效果通过addAttributeModifiers处理，不需要额外的DoT伤害
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.COLD.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.COLD.get());
+        if (target.hasEffect(Effects.COLD.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.COLD.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -456,10 +456,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.COLD.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.COLD.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.COLD.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.COLD.get(), 120, 0));
         }
     }
     
@@ -471,11 +471,11 @@ public class ElementTriggerHandler {
      */
     private static void applyShockEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给ElectricityEffect
-        if (ElementEffectRegistry.ELECTRICITY.get() instanceof ElectricityEffect) {
+        if (Effects.ELECTRICITY.get() instanceof ElectricityEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.ELECTRICITY.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.ELECTRICITY.get());
+            if (target.hasEffect(Effects.ELECTRICITY.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.ELECTRICITY.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -486,12 +486,12 @@ public class ElementTriggerHandler {
 
                 // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // ElectricityEffect的addAttributeModifiers会处理范围效果
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.ELECTRICITY.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.ELECTRICITY.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.ELECTRICITY.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.ELECTRICITY.get(), finalDamage);
             }
         }
     }
@@ -504,11 +504,11 @@ public class ElementTriggerHandler {
      */
     private static void applyFireEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给HeatEffect
-        if (ElementEffectRegistry.HEAT.get() instanceof HeatEffect) {
+        if (Effects.HEAT.get() instanceof HeatEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.HEAT.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.HEAT.get());
+            if (target.hasEffect(Effects.HEAT.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.HEAT.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -519,12 +519,12 @@ public class ElementTriggerHandler {
 
                 // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // HeatEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.HEAT.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.HEAT.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.HEAT.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.HEAT.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.HEAT.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.HEAT.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.HEAT.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.HEAT.get(), finalDamage);
             }
         }
     }
@@ -537,11 +537,11 @@ public class ElementTriggerHandler {
      */
     private static void applyToxinEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给ToxinEffect
-        if (ElementEffectRegistry.TOXIN.get() instanceof ToxinEffect) {
+        if (Effects.TOXIN.get() instanceof ToxinEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.TOXIN.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.TOXIN.get());
+            if (target.hasEffect(Effects.TOXIN.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.TOXIN.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -552,12 +552,12 @@ public class ElementTriggerHandler {
 
                 // 对于DoT效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // ToxinEffect的applyEffectTick会处理实际伤害
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.TOXIN.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.TOXIN.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.TOXIN.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.TOXIN.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.TOXIN.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.TOXIN.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.TOXIN.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.TOXIN.get(), finalDamage);
             }
         }
     }
@@ -570,11 +570,11 @@ public class ElementTriggerHandler {
      */
     private static void applyExplosionEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给BlastEffect
-        if (ElementEffectRegistry.BLAST.get() instanceof BlastEffect) {
+        if (Effects.BLAST.get() instanceof BlastEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.BLAST.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.BLAST.get());
+            if (target.hasEffect(Effects.BLAST.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.BLAST.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -585,12 +585,12 @@ public class ElementTriggerHandler {
 
                 // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // BlastEffect的addAttributeModifiers会处理范围伤害
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.BLAST.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.BLAST.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.BLAST.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.BLAST.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.BLAST.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.BLAST.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.BLAST.get(), finalDamage);
             }
         }
     }
@@ -605,8 +605,8 @@ public class ElementTriggerHandler {
         // 腐蚀效果通过addAttributeModifiers处理，不需要额外的DoT伤害
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.CORROSIVE.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.CORROSIVE.get());
+        if (target.hasEffect(Effects.CORROSIVE.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.CORROSIVE.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -616,10 +616,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.CORROSIVE.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.CORROSIVE.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.CORROSIVE.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.CORROSIVE.get(), 120, 0));
         }
     }
     
@@ -631,11 +631,11 @@ public class ElementTriggerHandler {
      */
     private static void applyGasEffect(LivingEntity target, float finalDamage, DamageSource damageSource) {
         // 使用我们自己的公式计算伤害值，然后传递给GasEffect
-        if (ElementEffectRegistry.GAS.get() instanceof GasEffect) {
+        if (Effects.GAS.get() instanceof GasEffect) {
             // 检查目标是否已有相同效果
             int currentAmplifier = 0;
-            if (target.hasEffect(ElementEffectRegistry.GAS.get())) {
-                MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.GAS.get());
+            if (target.hasEffect(Effects.GAS.get())) {
+                MobEffectInstance existingEffect = target.getEffect(Effects.GAS.get());
                 currentAmplifier = existingEffect.getAmplifier();
 
                 // 获取当前持续时间
@@ -646,12 +646,12 @@ public class ElementTriggerHandler {
 
                 // 对于范围效果，直接使用计算出的等级作为amplifier，固定持续时间为6秒（120 ticks）
                 // GasEffect的addAttributeModifiers会处理范围伤害
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, newAmplifier));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.GAS.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.GAS.get(), 120, newAmplifier));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.GAS.get(), finalDamage);
             } else {
                 // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-                target.addEffect(new MobEffectInstance((ElementEffect) ElementEffectRegistry.GAS.get(), 120, 0));
-                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) ElementEffectRegistry.GAS.get(), finalDamage);
+                target.addEffect(new MobEffectInstance((ElementEffect) Effects.GAS.get(), 120, 0));
+                ElementEffectDataHelper.setEffectDamage(target, (ElementEffect) Effects.GAS.get(), finalDamage);
             }
         }
     }
@@ -666,8 +666,8 @@ public class ElementTriggerHandler {
         // 磁力效果通过addAttributeModifiers处理，不需要额外的DoT伤害
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.MAGNETIC.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.MAGNETIC.get());
+        if (target.hasEffect(Effects.MAGNETIC.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.MAGNETIC.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -677,10 +677,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.MAGNETIC.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.MAGNETIC.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.MAGNETIC.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.MAGNETIC.get(), 120, 0));
         }
     }
     
@@ -694,8 +694,8 @@ public class ElementTriggerHandler {
         // 辐射效果通过事件监听器处理，不需要额外的DoT伤害
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.RADIATION.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.RADIATION.get());
+        if (target.hasEffect(Effects.RADIATION.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.RADIATION.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -705,10 +705,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.RADIATION.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.RADIATION.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.RADIATION.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.RADIATION.get(), 120, 0));
         }
     }
     
@@ -722,8 +722,8 @@ public class ElementTriggerHandler {
         // 病毒效果通过addAttributeModifiers处理，不需要额外的DoT伤害
         // 检查目标是否已有相同效果
         int currentAmplifier = 0;
-        if (target.hasEffect(ElementEffectRegistry.VIRAL.get())) {
-            MobEffectInstance existingEffect = target.getEffect(ElementEffectRegistry.VIRAL.get());
+        if (target.hasEffect(Effects.VIRAL.get())) {
+            MobEffectInstance existingEffect = target.getEffect(Effects.VIRAL.get());
             currentAmplifier = existingEffect.getAmplifier();
             
             // 获取当前持续时间
@@ -733,10 +733,10 @@ public class ElementTriggerHandler {
             int newAmplifier = Math.min(9, currentAmplifier + 1); // amplifier从0开始，对应等级1-10
             
             // 应用新效果，固定持续时间为6秒（120 ticks），提升等级
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.VIRAL.get(), 120, newAmplifier));
+            target.addEffect(new MobEffectInstance(Effects.VIRAL.get(), 120, newAmplifier));
         } else {
             // 如果没有相同效果，则应用新效果，初始等级为0（对应1级）
-            target.addEffect(new MobEffectInstance(ElementEffectRegistry.VIRAL.get(), 120, 0));
+            target.addEffect(new MobEffectInstance(Effects.VIRAL.get(), 120, 0));
         }
     }
     
