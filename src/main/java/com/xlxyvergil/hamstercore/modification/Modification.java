@@ -21,7 +21,8 @@ public record Modification(
     ModificationRarity rarity,
     List<ModificationAffix> affixes,
     List<WeaponCategory> applicableCategories,
-    List<WeaponType> applicableTypes
+    List<WeaponType> applicableTypes,
+    Set<String> mutualExclusionGroups
 ) {
     public static final Codec<Modification> CODEC = RecordCodecBuilder.create(inst -> inst.group(
         ResourceLocation.CODEC.fieldOf("variant").forGetter(Modification::id),
@@ -33,19 +34,33 @@ public record Modification(
         ModificationRarity.CODEC.fieldOf("rarity").forGetter(Modification::rarity),
         ModificationAffix.LIST_CODEC.fieldOf("affixes").forGetter(Modification::affixes),
         WeaponCategory.CODEC.listOf().optionalFieldOf("applicableCategories", List.of()).forGetter(Modification::applicableCategories),
-        WeaponType.CODEC.listOf().optionalFieldOf("applicableTypes", List.of()).forGetter(Modification::applicableTypes)
+        WeaponType.CODEC.listOf().optionalFieldOf("applicableTypes", List.of()).forGetter(Modification::applicableTypes),
+        Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("mutualExclusionGroups", Set.<String>of()).forGetter(Modification::mutualExclusionGroups)
     ).apply(inst, Modification::new));
 
     public boolean canApplyTo(ItemStack socketed, ItemStack modification) {
+        // 获取物品上已有的所有改装件
+        List<Modification> existingMods = ModificationHelper.getModifications(socketed).streamValidModifications()
+            .map(ModificationInstance::modification)
+            .toList();
+        
         // 检查唯一性
         if (this.unique) {
-            List<Modification> mods = ModificationHelper.getModifications(socketed).streamValidModifications()
-                .map(ModificationInstance::modification)
-                .toList();
-            
-            for (Modification mod : mods) {
+            for (Modification mod : existingMods) {
                 if (mod.id().equals(this.id())) {
                     return false;
+                }
+            }
+        }
+        
+        // 检查互斥组
+        if (!this.mutualExclusionGroups.isEmpty()) {
+            for (Modification existingMod : existingMods) {
+                // 检查现有改装件是否与当前改装件共享任何互斥组
+                for (String group : this.mutualExclusionGroups) {
+                    if (existingMod.mutualExclusionGroups().contains(group)) {
+                        return false;
+                    }
                 }
             }
         }

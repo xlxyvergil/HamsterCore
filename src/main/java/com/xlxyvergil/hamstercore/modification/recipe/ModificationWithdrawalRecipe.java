@@ -19,9 +19,9 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
-
 public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implements ReactiveSmithingRecipe {
     private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("hamstercore", "withdrawal");
+    private static final int TEMPLATE = 0;
     private static final int BASE = 1;
     private static final int ADDITION = 2;
 
@@ -84,6 +84,11 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
     @Override
     public boolean isSpecial() {
         return true;
+    }
+
+    @Override
+    public boolean isBaseIngredient(ItemStack pStack) {
+        return !ModificationHelper.getModifications(pStack).streamValidModifications().toList().isEmpty();
     }
 
     public static class Serializer implements RecipeSerializer<ModificationWithdrawalRecipe> {

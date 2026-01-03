@@ -15,5 +15,6 @@
     }
   ],
   "applicableCategories": ["primary"],
-  "applicableTypes": []
+  "applicableTypes": [],
+  "mutualExclusionGroups": ["rifle_cold_slug_group"]
 }

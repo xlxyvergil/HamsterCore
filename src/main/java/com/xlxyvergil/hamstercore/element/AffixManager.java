@@ -38,10 +38,10 @@ public class AffixManager {
         // 确保elementType包含命名空间，name保持原始名称
         String namespacedElementType = elementType.contains(":") ? elementType : "hamstercore:" + elementType;
         
-        // 检查是否已经存在相同UUID的词缀，如果存在则不添加，避免重复赋予
+        // 检查是否已经存在相同UUID和相同elementType的词缀，如果存在则不添加，避免重复赋予
         for (InitialModifierEntry existingEntry : weaponData.getInitialModifiers()) {
-            if (existingEntry.getUuid().equals(uuid)) {
-                // 已经存在相同UUID的词缀，直接返回，不重复添加
+            if (existingEntry.getUuid().equals(uuid) && existingEntry.getElementType().equals(namespacedElementType)) {
+                // 已经存在相同UUID和相同elementType的词缀，直接返回，不重复添加
                 return;
             }
         }

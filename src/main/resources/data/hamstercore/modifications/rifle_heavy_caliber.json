@@ -40,7 +40,7 @@
     {
       "type": "taa:inaccuracy",
       "operation": "ADDITION",
-      "value": 0.55,
+      "value": 2,
       "source": "inaccuracy"
     },
     {
