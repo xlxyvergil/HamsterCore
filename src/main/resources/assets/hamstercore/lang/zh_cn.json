@@ -207,11 +207,6 @@
   "effect.hamstercore.viral.description": "降低目标最大生命值",
   
   "item.hamstercore.modification": "改装件",
-  "item.hamstercore.modification.hamstercore:attack_damage_boost_common": "攻击伤害提升",
-  "item.hamstercore.modification.hamstercore:attack_damage_boost_rare": "强力攻击提升",
-  "item.hamstercore.modification.hamstercore:critical_strike_uncommon": "暴击打击",
-  "item.hamstercore.modification.hamstercore:legendary_power": "传说之力",
-  "item.hamstercore.modification.hamstercore:ultimate_enhancement_epic": "终极强化",
   "item.hamstercore.sigil_of_socketing": "改装工具",
   "item.hamstercore.sigil_of_withdrawal": "卸载工具",
   
@@ -245,5 +240,7 @@
   "hamstercore.modification.unique": "唯一",
   "hamstercore.modification.socketable_into": "适用于",
   "hamstercore.modification.when_modified": "改装后",
-  "hamstercore.modification.dot_prefix": "• %s"
+  "hamstercore.modification.dot_prefix": "• %s",
+  "hamstercore.modification.normal_sockets": "普通槽位",
+  "hamstercore.modification.special_sockets": "特殊槽位"
 }

@@ -238,4 +238,23 @@ public class ModificationHelper {
     public static void applyAllModifications(ItemStack stack) {
         getModifications(stack).applyAllModifications(stack);
     }
+    
+    /**
+     * Gets the modification ID from an ItemStack, extracting just the path part (without namespace).
+     * This is used for model selection.
+     *
+     * @param stack The stack being queried.
+     * @return The modification ID path, or null if not found.
+     */
+    public static String getModificationId(ItemStack stack) {
+        if (stack.hasTag() && stack.getTag().contains("ModificationId")) {
+            String fullId = stack.getTag().getString("ModificationId");
+            // 从完整的资源位置中提取路径部分（去除命名空间）
+            if (fullId.contains(":")) {
+                return fullId.substring(fullId.lastIndexOf(":") + 1);
+            }
+            return fullId;
+        }
+        return null;
+    }
 }

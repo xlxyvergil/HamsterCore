@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -17,13 +18,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.Optional;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
-import com.xlxyvergil.hamstercore.modification.client.ModificationItemRenderer;
+
+
 
 public class ModificationItem extends Item {
     public static final String TAG_MODIFICATION_ID = "ModificationId";
@@ -34,26 +31,9 @@ public class ModificationItem extends Item {
     
 
     
-    @Override
-    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
-        consumer.accept(new IClientItemExtensions() {
-            @OnlyIn(Dist.CLIENT)
-            private BlockEntityWithoutLevelRenderer renderer;
 
-            @Override
-            @OnlyIn(Dist.CLIENT)
-            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
-                if (renderer == null) {
-                    Minecraft minecraft = Minecraft.getInstance();
-                    renderer = new ModificationItemRenderer(
-                        minecraft.getBlockEntityRenderDispatcher(),
-                        minecraft.getEntityModels()
-                    );
-                }
-                return renderer;
-            }
-        });
-    }
+    
+
 
     public static NonNullList<ItemStack> fillItemCategory() {
         NonNullList<ItemStack> stacks = NonNullList.create();
@@ -65,6 +45,8 @@ public class ModificationItem extends Item {
             });
         return stacks;
     }
+    
+
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {

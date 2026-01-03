@@ -317,9 +317,6 @@ tasks.withType(JavaCompile).configureEach {
 // Mixin configuration
 mixin {
     disableAnnotationProcessorCheck()
-}
-
-// Mixin configuration
-mixin {
-    disableAnnotationProcessorCheck()
+    config "hamstercore.mixins.json"
+    add sourceSets.main, "hamstercore.refmap.json"
 }
