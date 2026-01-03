@@ -4,7 +4,7 @@ package com.xlxyvergil.hamstercore.handler;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityFactionCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.faction.Faction;
 
@@ -65,7 +65,7 @@ public class FactionDamageHandler {
             
             // 检查目标是否具有病毒效果，如果有则增加对目标的伤害
             // 病毒效果没有对应的原版属性，因此需要手动处理
-            ElementEffectInstance viralEffect = ElementEffectManager.getEffect(target, ElementType.VIRAL);
+            var viralEffect = target.getEffect(ElementEffectRegistry.VIRAL.get());
             if (viralEffect != null) {
                 // 计算病毒伤害增幅：第1级+100%，后续每级+25%，最大+325%
                 int amplifier = viralEffect.getAmplifier();
@@ -76,7 +76,7 @@ public class FactionDamageHandler {
             
             // 检查目标是否具有磁力效果，如果有则对总伤害进行增伤
             float damageWithMagneticBonus = finalDamage;
-            ElementEffectInstance magneticEffect = ElementEffectManager.getEffect(target, ElementType.MAGNETIC);
+            var magneticEffect = target.getEffect(ElementEffectRegistry.MAGNETIC.get());
             if (magneticEffect != null && hasShield(target)) {
                 // 计算伤害增幅：第1级+100%，后续每级+25%，最大+325%
                 int amplifier = magneticEffect.getAmplifier();

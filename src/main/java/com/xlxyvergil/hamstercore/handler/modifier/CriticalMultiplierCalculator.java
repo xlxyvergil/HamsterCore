@@ -2,7 +2,7 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectManager;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
+import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -59,16 +59,16 @@ public class CriticalMultiplierCalculator {
         double criticalDamage = AttributeHelper.getCriticalDamage(attacker);
         
         // 检查被攻击者是否具有穿刺效果，如果有则增加暴击几率
-        ElementEffectInstance punctureEffect = ElementEffectManager.getEffect(target, ElementType.PUNCTURE);
+        var punctureEffect = target.getEffect(ElementEffectRegistry.PUNCTURE.get());
         if (punctureEffect != null) {
             // 每级获得5%暴击几率，最大层数时总共增加25%
             int amplifier = punctureEffect.getAmplifier();
             double punctureCriticalBonus = amplifier * 0.05;
             criticalChance += punctureCriticalBonus;
         }
-        
+
         // 检查被攻击者是否具有冰冻效果，如果有则增加暴击伤害
-        ElementEffectInstance coldEffect = ElementEffectManager.getEffect(target, ElementType.COLD);
+        var coldEffect = target.getEffect(ElementEffectRegistry.COLD.get());
         if (coldEffect != null) {
             // 每级获得20%暴击伤害，最大层数时总共增加120%
             int amplifier = coldEffect.getAmplifier();

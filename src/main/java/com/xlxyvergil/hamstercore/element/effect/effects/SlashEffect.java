@@ -4,7 +4,6 @@ import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 
 /**
  * 切割元素效果
@@ -28,13 +27,15 @@ public class SlashEffect extends ElementEffect {
     @Override
     public void applyEffectTick(LivingEntity entity, int amplifier) {
         // 实现出血DoT效果，每2秒造成一次伤害
-        // 获取ElementEffectInstance以访问原始伤害值
-        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
-        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
-        
+        // 使用ElementEffectDataHelper获取存储的伤害值
+        float baseDamage = this.getEffectDamage(entity);
+        if (baseDamage <= 0.0F) {
+            baseDamage = 1.0F;
+        }
+
         // 计算DoT伤害：基础伤害 * (25% + 等级*10%)
         float dotDamage = baseDamage * (0.25F + amplifier * 0.1F);
-        
+
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
         // 同时ElementDamageManager会检查这个标志，跳过暴击计算，避免双重暴击
         ElementTriggerHandler.setProcessingDotDamage(true);

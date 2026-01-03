@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -33,14 +32,16 @@ public class GasEffect extends ElementEffect {
     @Override
     public void applyEffectTick(LivingEntity entity, int amplifier) {
         // 实现毒气DoT效果，每2秒造成一次伤害
-        // 获取ElementEffectInstance以访问原始伤害值
-        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
-        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
-        DamageSource originalDamageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
-        
+        // 使用ElementEffectDataHelper获取存储的伤害值
+        float baseDamage = this.getEffectDamage(entity);
+        if (baseDamage <= 0.0F) {
+            baseDamage = 1.0F;
+        }
+        DamageSource originalDamageSource = entity.damageSources().generic();
+
         // 计算DoT伤害：基础伤害 * 30% * (1 + 等级/10) - 提高伤害
         float dotDamage = baseDamage * 0.30F * (1.0F + amplifier * 0.1F);
-        
+
         // 设置正在处理DoT伤害的标志，防止DoT伤害触发新的元素效果
         ElementTriggerHandler.setProcessingDotDamage(true);
         try {

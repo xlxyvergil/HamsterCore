@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.element.effect;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
 import com.xlxyvergil.hamstercore.element.ElementType;
 import com.xlxyvergil.hamstercore.element.effect.effects.*;
 
@@ -12,10 +13,10 @@ import java.util.Map;
  * 管理元素效果的施加、更新和移除，与项目现有的ElementType系统集成
  */
 public class ElementEffectManager {
-    
+
     // 存储实体身上的元素效果
-    private static final Map<LivingEntity, Map<ElementType, ElementEffectInstance>> entityEffects = new HashMap<>();
-    
+    private static final Map<LivingEntity, Map<ElementType, MobEffectInstance>> entityEffects = new HashMap<>();
+
     /**
      * 为实体添加元素效果，根据规则处理等级叠加（带伤害参数）
      * @param entity 实体
@@ -30,78 +31,80 @@ public class ElementEffectManager {
         // 直接应用效果到实体，不进行等级管理
         // 等级提升逻辑在ElementTriggerHandler中处理
         // 持续时间固定为6秒（120 ticks）
-        ElementEffectInstance effectInstance = new ElementEffectInstance(effect, 120, 0, finalDamage);
+        MobEffectInstance effectInstance = new MobEffectInstance(effect, duration, 0);
         entity.addEffect(effectInstance);
+        // 使用ElementEffectDataHelper存储伤害数据
+        ElementEffectDataHelper.setEffectDamage(entity, effect, finalDamage);
     }
-    
+
     /**
      * 为实体添加元素效果
      * @param entity 实体
      * @param elementType 元素类型
      * @param effectInstance 效果实例
      */
-    public static void addEffect(LivingEntity entity, ElementType elementType, ElementEffectInstance effectInstance) {
+    public static void addEffect(LivingEntity entity, ElementType elementType, MobEffectInstance effectInstance) {
         entityEffects.computeIfAbsent(entity, k -> new HashMap<>())
                     .put(elementType, effectInstance);
         // 应用效果到实体
         entity.addEffect(effectInstance);
     }
-    
+
     /**
      * 获取实体身上的指定元素效果
      * @param entity 实体
      * @param elementType 元素类型
      * @return 效果实例，如果不存在则返回null
      */
-    public static ElementEffectInstance getEffect(LivingEntity entity, ElementType elementType) {
-        Map<ElementType, ElementEffectInstance> effects = entityEffects.get(entity);
+    public static MobEffectInstance getEffect(LivingEntity entity, ElementType elementType) {
+        Map<ElementType, MobEffectInstance> effects = entityEffects.get(entity);
         if (effects != null) {
             return effects.get(elementType);
         }
         return null;
     }
-    
+
     /**
      * 移除实体身上的指定元素效果
      * @param entity 实体
      * @param elementType 元素类型
      */
     public static void removeEffect(LivingEntity entity, ElementType elementType) {
-        Map<ElementType, ElementEffectInstance> effects = entityEffects.get(entity);
+        Map<ElementType, MobEffectInstance> effects = entityEffects.get(entity);
         if (effects != null) {
-            ElementEffectInstance instance = effects.remove(elementType);
+            MobEffectInstance instance = effects.remove(elementType);
             if (instance != null) {
                 // 从实体移除效果
                 entity.removeEffect(instance.getEffect());
             }
-            
+
             // 如果该实体没有任何效果了，清理map
             if (effects.isEmpty()) {
                 entityEffects.remove(entity);
             }
         }
     }
-    
+
     /**
      * 更新实体身上的所有元素效果
      * @param entity 实体
      */
     public static void updateEffects(LivingEntity entity) {
-        Map<ElementType, ElementEffectInstance> effects = entityEffects.get(entity);
+        Map<ElementType, MobEffectInstance> effects = entityEffects.get(entity);
         if (effects != null) {
             // 更新逻辑可以在这里实现
         }
     }
-    
+
     /**
      * 清理实体身上的所有元素效果
      * @param entity 实体
      */
     public static void clearEffects(LivingEntity entity) {
-        Map<ElementType, ElementEffectInstance> effects = entityEffects.get(entity);
+        Map<ElementType, MobEffectInstance> effects = entityEffects.get(entity);
         if (effects != null) {
             // 移除所有效果
-            for (ElementEffectInstance instance : effects.values()) {
+            for (MobEffectInstance instance : effects.values()) {
                 entity.removeEffect(instance.getEffect());
             }
             effects.clear();

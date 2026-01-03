@@ -8,7 +8,6 @@ import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilit
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
 import net.minecraft.world.effect.MobEffect;

@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.BlastManager;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -30,21 +29,23 @@ public class BlastEffect extends ElementEffect {
     @Override
     public void addAttributeModifiers(LivingEntity entity, net.minecraft.world.entity.ai.attributes.AttributeMap attributeMap, int amplifier) {
         super.addAttributeModifiers(entity, attributeMap, amplifier);
-        
+
         // 检查是否正在处理DoT伤害，防止连锁反应
         if (ElementTriggerHandler.isProcessingDotDamage()) {
             return;
         }
-        
+
         // 当添加爆炸效果时，将其添加到BlastManager进行范围伤害管理
-        // 从ElementEffectInstance获取原始伤害值
-        ElementEffectInstance elementEffectInstance = getElementEffectInstance(entity);
-        float baseDamage = elementEffectInstance != null ? elementEffectInstance.getFinalDamage() : 1.0F;
-        DamageSource damageSource = elementEffectInstance != null ? elementEffectInstance.getDamageSource() : entity.damageSources().generic();
-        
+        // 使用ElementEffectDataHelper获取存储的伤害值
+        float baseDamage = this.getEffectDamage(entity);
+        if (baseDamage <= 0.0F) {
+            baseDamage = 1.0F;
+        }
+        DamageSource damageSource = entity.damageSources().generic();
+
         // 计算爆炸伤害：基础伤害 * 30% * (1 + 等级/10)
         float blastDamage = baseDamage * 0.30F * (1.0F + amplifier * 0.1F);
-        
+
         // 添加到爆炸管理器，等待1.5秒后爆炸
         BlastManager.addBlast(entity, blastDamage, amplifier, damageSource);
     }

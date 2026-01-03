@@ -41,9 +41,5 @@ public class PacketHandler {
             PlayerLevelSyncToClient::toBytes,
             PlayerLevelSyncToClient::new,
             PlayerLevelSyncToClient::handle);
-        NETWORK.registerMessage(id++, SyncEntityEffectsPacket.class,
-            SyncEntityEffectsPacket::encode,
-            SyncEntityEffectsPacket::decode,
-            SyncEntityEffectsPacket::handle);
     }
 }

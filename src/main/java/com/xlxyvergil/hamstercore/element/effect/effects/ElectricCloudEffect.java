@@ -1,7 +1,6 @@
 package com.xlxyvergil.hamstercore.element.effect.effects;
 
 import com.xlxyvergil.hamstercore.element.effect.ElementEffect;
-import com.xlxyvergil.hamstercore.element.effect.ElementEffectInstance;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.handler.ElementTriggerHandler;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -60,11 +59,11 @@ public class ElectricCloudEffect extends ElementEffect {
         List<LivingEntity> entities = new ArrayList<>(serverLevel.getEntitiesOfClass(LivingEntity.class, boundingBox));
         
         // 从当前云效果获取原始伤害值
-        ElementEffectInstance electricityEffectInstance = 
-            getElementEffectInstance(entity);
-        float baseDamage = electricityEffectInstance != null ? electricityEffectInstance.getFinalDamage() : 1.0F;
-        net.minecraft.world.damagesource.DamageSource damageSource = electricityEffectInstance != null ? 
-            electricityEffectInstance.getDamageSource() : entity.damageSources().generic();
+        float baseDamage = this.getEffectDamage(entity);
+        if (baseDamage <= 0.0F) {
+            baseDamage = 1.0F;
+        }
+        net.minecraft.world.damagesource.DamageSource damageSource = entity.damageSources().generic();
         
         // 首先为中心实体（目标实体）添加电击状态效果
         if (!(entity instanceof Player)) { // 排除玩家
@@ -76,24 +75,31 @@ public class ElectricCloudEffect extends ElementEffect {
                 
                 // 重新应用效果，保持最高等级和最长持续时间
                 int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
-                entity.addEffect(new ElementEffectInstance(
+                // 使用标准MobEffectInstance，并存储额外数据
+                entity.addEffect(new MobEffectInstance(
                     (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
                     newDuration,
-                    newAmplifier,
-                    baseDamage,
-                    damageSource
+                    newAmplifier
                 ));
+                // 存储伤害数据
+                com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
+                    entity,
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    baseDamage
+                );
             } else {
                 // 如果目标实体没有电击效果，则添加新效果
-                ElementEffectInstance effectInstance = 
-                    new ElementEffectInstance(
-                        (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
-                        CLOUD_DURATION, // 持续时间
-                        amplifier, // 保持原始等级
-                        baseDamage, // 保持原始伤害
-                        damageSource // 伤害源
-                    );
-                entity.addEffect(effectInstance);
+                entity.addEffect(new MobEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
+                    CLOUD_DURATION, // 持续时间
+                    amplifier // 保持原始等级
+                ));
+                // 存储伤害数据
+                com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
+                    entity,
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    baseDamage
+                );
             }
         }
         
@@ -113,24 +119,30 @@ public class ElectricCloudEffect extends ElementEffect {
                 
                 // 重新应用效果，保持最高等级和最长持续时间
                 int newAmplifier = Math.max(existingEffect.getAmplifier(), amplifier);
-                livingEntity.addEffect(new ElementEffectInstance(
+                livingEntity.addEffect(new MobEffectInstance(
                     (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
                     newDuration,
-                    newAmplifier,
-                    baseDamage,
-                    damageSource
+                    newAmplifier
                 ));
+                // 存储伤害数据
+                com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
+                    livingEntity,
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    baseDamage
+                );
             } else {
                 // 如果没有相同效果，则添加新效果
-                ElementEffectInstance effectInstance = 
-                    new ElementEffectInstance(
-                        (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
-                        CLOUD_DURATION, // 持续时间
-                        amplifier, // 保持原始等级
-                        baseDamage, // 保持原始伤害
-                        damageSource // 伤害源
-                    );
-                livingEntity.addEffect(effectInstance);
+                livingEntity.addEffect(new MobEffectInstance(
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(), // ElectricityEffect
+                    CLOUD_DURATION, // 持续时间
+                    amplifier // 保持原始等级
+                ));
+                // 存储伤害数据
+                com.xlxyvergil.hamstercore.element.effect.ElementEffectDataHelper.setEffectDamage(
+                    livingEntity,
+                    (ElementEffect) ElementEffectRegistry.ELECTRICITY.get(),
+                    baseDamage
+                );
             }
         }
     }

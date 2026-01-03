@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -116,14 +117,14 @@ public class GasManager {
                 if (distance <= totalRadius) {
                     // 计算毒气DoT伤害：基础伤害 * 10% * (1 + 等级/10)
                     float gasDamage = baseDamage * 0.10F * (1.0F + amplifier * 0.1F);
-                    
+
                     // 给实体添加GasEffect状态效果，持续120 ticks（6秒）
                     // 等级为amplifier
-                    // 使用ElementEffectInstance以支持范围效果
-                    ElementEffectInstance effectInstance = 
-                        new ElementEffectInstance(
-                            (ElementEffect) ElementEffectRegistry.GAS.get(), 120, amplifier, gasDamage, damageSource);
+                    MobEffectInstance effectInstance = new MobEffectInstance(
+                            (ElementEffect) ElementEffectRegistry.GAS.get(), 120, amplifier);
                     livingEntity.addEffect(effectInstance);
+                    // 存储伤害数据
+                    ElementEffectDataHelper.setEffectDamage(livingEntity, (ElementEffect) ElementEffectRegistry.GAS.get(), gasDamage);
                 }
             }
         }

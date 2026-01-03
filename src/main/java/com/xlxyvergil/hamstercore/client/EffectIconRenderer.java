@@ -6,7 +6,6 @@ import com.xlxyvergil.hamstercore.HamsterCore;
 
 import com.xlxyvergil.hamstercore.client.renderer.EntityEffectRenderer;
 import com.xlxyvergil.hamstercore.client.util.RenderUtils;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityEffectManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -60,12 +59,12 @@ public class EffectIconRenderer {
                 boolean isBlocked = RenderUtils.raytrace(living);
                 if (isBlocked) return;
 
-                // 从管理器中获取缓存的状态效果
-                java.util.List<MobEffectInstance> cachedEffects = EntityEffectManager.getEntityEffects(living.getId());
-                
+                // 直接从实体获取状态效果（Minecraft 原生已自动同步）
+                java.util.List<MobEffectInstance> allEffects = new java.util.ArrayList<>(living.getActiveEffects());
+
                 // 过滤只保留HamsterCore的状态效果
                 java.util.List<MobEffectInstance> hamsterCoreEffects = new java.util.ArrayList<>();
-                for (MobEffectInstance effect : cachedEffects) {
+                for (MobEffectInstance effect : allEffects) {
                     if (isHamsterCoreEffect(effect.getEffect())) {
                         hamsterCoreEffects.add(effect);
                     }
