@@ -11,7 +11,7 @@
       "type": "hamstercore:toxin",
       "operation": "ADDITION",
       "value": 0.9,
-      "source": "rifle_contaminated_magazine"
+      "source": "toxin"
     }
   ],
   "applicableCategories": ["primary"],

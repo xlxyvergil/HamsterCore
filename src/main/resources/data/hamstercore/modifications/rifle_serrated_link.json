@@ -11,7 +11,7 @@
       "type": "hamstercore:slash",
       "operation": "ADDITION",
       "value": 0.9,
-      "source": "rifle_serrated_link"
+      "source": "slash"
     }
   ],
   "applicableCategories": ["primary"],

@@ -55,17 +55,12 @@ public class AffixManager {
         
         // 只有基础元素和复合元素在第一次加入时才添加到Basic层
         if (isFirstTime) {
-            // 使用简单名称（不带命名空间）来检查ElementType
-            String simpleName = name;
-            if (simpleName.contains(":")) {
-                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
-            }
-            
-            ElementType type = ElementType.byName(simpleName);
+            // 使用ElementType.byName直接判断是否为基础元素或复合元素
+            ElementType type = ElementType.byName(name);
             if (type != null && (type.isBasic() || type.isComplex())) {
-                // 使用简单名称作为Basic层的类型，保持一致
+                // 使用名称作为Basic层的类型，保持一致
                 int order = weaponData.getBasicElements().size();
-                weaponData.addBasicElement(simpleName, source, order);
+                weaponData.addBasicElement(name, source, order);
             }
         }
         
@@ -134,12 +129,19 @@ public class AffixManager {
         if (removedElementType != null) {
             boolean shouldRemove = shouldRemoveFromBasicLayer(weaponData, removedElementType);
             if (shouldRemove) {
-                ElementType type = ElementType.byName(removedElementType);
+                // 从removedElementType中提取简单名称（不带命名空间）
+                String simpleName = removedElementType;
+                if (simpleName.contains(":")) {
+                    simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
+                }
+                
+                // 使用ElementType.byName直接判断是否为基础元素或复合元素
+                ElementType type = ElementType.byName(simpleName);
                 if (type != null && (type.isBasic() || type.isComplex())) {
-                    removeFromBasicLayer(weaponData, removedElementType);
+                    removeFromBasicLayer(weaponData, simpleName);
                     
                     // 额外的日志记录，用于调试
-                    System.out.println("从Basic层移除了元素: " + removedElementType);
+                    System.out.println("从Basic层移除了元素: " + simpleName);
                 }
             }
         }

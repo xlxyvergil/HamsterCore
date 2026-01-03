@@ -68,9 +68,10 @@ public record ModificationInstance(
 
     public void applyAffixes(ItemStack stack) {
         for (ModificationAffix affix : this.modification.affixes()) {
+            // 直接使用json里affixes的source参数作为属性名
             AffixAPI.addAffix(
                 stack,
-                this.modification.id().toString(),
+                affix.source(),
                 affix.type(),
                 affix.value(),
                 affix.operation(),

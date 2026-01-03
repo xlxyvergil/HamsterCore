@@ -34,24 +34,31 @@ public class ElementCalculationCoordinator {
         // 1. 调用ElementCalculator从InitialModifiers层计算所有元素值（包括通用属性）
         Map<String, Double> elementValues = ElementCalculator.INSTANCE.calculateElementValuesFromInitialModifiers(weaponData);
         
-        // 2. 分离需要复合计算的元素和其他通用属性
+        // 2. 创建elementType到name的映射，用于获取每个元素类型对应的名称
+        Map<String, String> elementTypeToNameMap = new HashMap<>();
+        for (InitialModifierEntry modifierEntry : weaponData.getInitialModifiers()) {
+            // 使用第一个遇到的name作为该elementType的名称
+            if (!elementTypeToNameMap.containsKey(modifierEntry.getElementType())) {
+                elementTypeToNameMap.put(modifierEntry.getElementType(), modifierEntry.getName());
+            }
+        }
+        
+        // 3. 分离需要复合计算的元素和其他通用属性
         Map<String, Double> elementsForCombination = new HashMap<>();
         Map<String, Double> otherAttributes = new HashMap<>(); // 存储其他通用属性（包括HamsterCore的非复合元素和其他mod属性）
         
         for (Map.Entry<String, Double> entry : elementValues.entrySet()) {
-            String attributeKey = entry.getKey();
+            String attributeKey = entry.getKey(); // 带命名空间的elementType
             double value = entry.getValue();
             
-            // 提取简单元素名称（不带命名空间）
-            String simpleName = attributeKey;
-            if (simpleName.contains(":")) {
-                simpleName = simpleName.substring(simpleName.lastIndexOf(":") + 1);
-            }
+            // 从elementTypeToNameMap中获取对应的name
+            String name = elementTypeToNameMap.getOrDefault(attributeKey, attributeKey);
             
-            ElementType type = ElementType.byName(simpleName);
+            // 使用ElementType.byName直接判断是否为基础元素或复合元素
+            ElementType type = ElementType.byName(name);
             if (type != null && (type.isBasic() || type.isComplex())) {
-                // 需要复合计算的元素，使用简单名称
-                elementsForCombination.put(simpleName, value);
+                // 需要复合计算的元素，使用name
+                elementsForCombination.put(name, value);
             } else {
                 // 其他所有属性（包括HamsterCore的非复合元素和其他mod属性）统一存储，使用原始键
                 otherAttributes.put(attributeKey, value);

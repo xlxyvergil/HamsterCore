@@ -11,7 +11,7 @@
       "type": "hamstercore:puncture",
       "operation": "ADDITION",
       "value": 0.9,
-      "source": "rifle_puncture_damage"
+      "source": "puncture"
     }
   ],
   "applicableCategories": ["primary"],

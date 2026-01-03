@@ -11,7 +11,7 @@
       "type": "hamstercore:cold",
       "operation": "ADDITION",
       "value": 1.65,
-      "source": "rifle_cold_slug_prime"
+      "source": "cold"
     }
   ],
   "applicableCategories": ["primary"],

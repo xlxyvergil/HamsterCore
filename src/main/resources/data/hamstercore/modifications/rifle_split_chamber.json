@@ -11,7 +11,7 @@
       "type": "taa:bullet_count",
       "operation": "ADDITION",
       "value": 0.9,
-      "source": "rifle_split_chamber"
+      "source": "bullet_count"
     }
   ],
   "applicableCategories": ["primary"],
