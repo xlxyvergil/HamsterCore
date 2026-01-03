@@ -55,31 +55,58 @@ public class SocketTooltipRenderer implements ClientTooltipComponent {
         int normalSockets = ModificationHelper.getSockets(this.comp.socketed());
         int specialSockets = ModificationHelper.getSpecialSockets(this.comp.socketed());
         int currentY = y;
+        int currentIndex = 0;
         
-        // 渲染普通槽位和特殊槽位的文字标示
+        // 渲染普通槽位文字标示
         if (normalSockets > 0) {
             currentY += this.spacing;
         }
+        
+        // 渲染普通槽位的槽位图标
+        for (int i = 0; i < normalSockets; i++) {
+            if (currentIndex < this.comp.modifications().size()) {
+                gfx.blit(SOCKET, x, currentY, 0, 0, 0, 9, 9, 9, 9);
+                
+                // 渲染普通槽位的改装件图标
+                ModificationInstance inst = this.comp.modifications().get(currentIndex);
+                if (inst.isValid()) {
+                    ItemStack modStack = ModificationItem.createModificationStack(inst.modification());
+                    PoseStack pose = gfx.pose();
+                    pose.pushPose();
+                    pose.scale(0.5F, 0.5F, 1);
+                    gfx.renderFakeItem(modStack, 2 * x + 1, 2 * currentY + 1);
+                    pose.popPose();
+                }
+                
+                currentY += this.spacing;
+                currentIndex++;
+            }
+        }
+        
+        // 渲染特殊槽位文字标示
         if (specialSockets > 0) {
             currentY += this.spacing;
         }
         
-        // 渲染槽位图标
-        for (int i = 0; i < this.comp.modifications().size(); i++) {
-            gfx.blit(SOCKET, x, currentY + this.spacing * i, 0, 0, 0, 9, 9, 9, 9);
-        }
-        
-        // 渲染改装件图标
-        for (ModificationInstance inst : this.comp.modifications()) {
-            if (inst.isValid()) {
-                ItemStack modStack = ModificationItem.createModificationStack(inst.modification());
-                PoseStack pose = gfx.pose();
-                pose.pushPose();
-                pose.scale(0.5F, 0.5F, 1);
-                gfx.renderFakeItem(modStack, 2 * x + 1, 2 * currentY + 1);
-                pose.popPose();
+        // 渲染特殊槽位的槽位图标
+        for (int i = 0; i < specialSockets; i++) {
+            if (currentIndex < this.comp.modifications().size()) {
+                gfx.blit(SOCKET, x, currentY, 0, 0, 0, 9, 9, 9, 9);
+                
+                // 渲染特殊槽位的改装件图标
+                ModificationInstance inst = this.comp.modifications().get(currentIndex);
+                if (inst.isValid()) {
+                    ItemStack modStack = ModificationItem.createModificationStack(inst.modification());
+                    PoseStack pose = gfx.pose();
+                    pose.pushPose();
+                    pose.scale(0.5F, 0.5F, 1);
+                    gfx.renderFakeItem(modStack, 2 * x + 1, 2 * currentY + 1);
+                    pose.popPose();
+                }
+                
+                currentY += this.spacing;
+                currentIndex++;
             }
-            currentY += this.spacing;
         }
     }
 
