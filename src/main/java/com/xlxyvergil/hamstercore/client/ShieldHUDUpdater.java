@@ -98,7 +98,8 @@ public class ShieldHUDUpdater {
         
         // 计算缩放后的文本宽度和位置
         float scaledLeft = (left + (82 - Minecraft.getInstance().font.width(shieldText)) / 2) / 0.8F;
-        float scaledTop = (top - 2) / 0.8F;
+        // 确保护文字的中心点在护盾条的中心位置（护盾条高度为6像素，中心点垂直位置是top + 3）
+        float scaledTop = (top + 3) / 0.8F - (Minecraft.getInstance().font.lineHeight / 2);
         
         guiGraphics.drawString(
             Minecraft.getInstance().font,

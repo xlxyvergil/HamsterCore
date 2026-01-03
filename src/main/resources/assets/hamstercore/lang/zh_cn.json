@@ -237,10 +237,10 @@
   "item.hamstercore.modification.hamstercore:rifle_puncture_bore": "穿甲口径",
   "item.hamstercore.modification.hamstercore:rifle_serrated_link": "锯齿弹链",
   "item.hamstercore.modification.hamstercore:rifle_puncture_damage": "穿甲伤害",
-  "hamstercore.modification.unique": "唯一",
   "hamstercore.modification.socketable_into": "适用于",
   "hamstercore.modification.when_modified": "改装后",
   "hamstercore.modification.dot_prefix": "• %s",
   "hamstercore.modification.normal_sockets": "普通槽位",
-  "hamstercore.modification.special_sockets": "特殊槽位"
+  "hamstercore.modification.special_sockets": "特殊槽位",
+  "hamstercore.modification.press_ctrl_shift": "按下Ctrl+Shift查看"
 }

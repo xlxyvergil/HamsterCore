@@ -2,10 +2,6 @@ package com.xlxyvergil.hamstercore.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.xlxyvergil.hamstercore.client.util.RenderUtils;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;

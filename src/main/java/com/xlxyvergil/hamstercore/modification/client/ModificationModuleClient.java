@@ -3,11 +3,9 @@ package com.xlxyvergil.hamstercore.modification.client;
 import java.util.Set;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
-import com.xlxyvergil.hamstercore.modification.ModificationItems;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
