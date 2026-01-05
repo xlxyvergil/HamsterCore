@@ -1,164 +1,86 @@
 package com.xlxyvergil.hamstercore.modification;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Live instance of socketed modifications on an item. The size of the list is equal to the number of sockets on the object.
- * Additionally, this list may contain empty or invalid modification instances.
+ * 已安装改装件集合 - 模仿 Apotheosis 的 SocketedGems
  */
-public record SocketedModifications(ImmutableList<ModificationInstance> modifications) implements List<ModificationInstance> {
-
-    public static final SocketedModifications EMPTY = new SocketedModifications(ImmutableList.of());
+public class SocketedModifications {
+    private final List<ModificationInstance> modifications;
 
     public SocketedModifications(List<ModificationInstance> modifications) {
-        this(ImmutableList.copyOf(modifications));
+        this.modifications = modifications;
     }
 
     /**
-     * Returns a stream of all socketed modification instances that are {@link ModificationInstance#isValid()}.
+     * 获取改装件列表
      */
-    public Stream<ModificationInstance> streamValidModifications() {
-        return this.modifications.stream().filter(ModificationInstance::isValid);
+    public List<ModificationInstance> modifications() {
+        return modifications;
     }
 
     /**
-     * Applies all valid modifications to the given item stack using AffixAPI.
-     * @param stack The item stack to apply modifications to
+     * 获取改装件数量
      */
-    public void applyAllModifications(ItemStack stack) {
-        // 先移除所有旧的词缀
-        this.streamValidModifications().forEach(inst -> inst.removeAffixes(stack));
-        // 再应用所有新的词缀
-        this.streamValidModifications().forEach(inst -> inst.applyAffixes(stack));
-    }
-
-    // List interface methods below this line
-
-    @Override
     public int size() {
-        return this.modifications.size();
+        return modifications.size();
     }
 
-    @Override
-    public boolean isEmpty() {
-        return this.modifications.isEmpty();
+    /**
+     * 获取有效的改装件流
+     */
+    public java.util.stream.Stream<ModificationInstance> streamValidModifications() {
+        return modifications.stream().filter(ModificationInstance::isValid);
+    }
+    
+    /**
+     * 获取改装件流
+     */
+    public java.util.stream.Stream<ModificationInstance> stream() {
+        return modifications.stream();
     }
 
-    @Override
-    public boolean contains(Object o) {
-        return this.modifications.contains(o);
-    }
-
-    @Override
-    public Iterator<ModificationInstance> iterator() {
-        return this.modifications.iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return this.modifications.toArray();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-        return this.modifications.toArray(a);
-    }
-
-    @Override
-    @Deprecated
-    public boolean add(ModificationInstance e) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @Deprecated
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        return this.modifications.containsAll(c);
-    }
-
-    @Override
-    @Deprecated
-    public boolean addAll(Collection<? extends ModificationInstance> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @Deprecated
-    public boolean addAll(int index, Collection<? extends ModificationInstance> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        return false;
-    }
-
-    @Override
-    @Deprecated
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @Deprecated
-    public void clear() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
+    /**
+     * 获取指定索引的改装件
+     */
     public ModificationInstance get(int index) {
-        return this.modifications.get(index);
+        if (index < 0 || index >= modifications.size()) {
+            return ModificationInstance.EMPTY;
+        }
+        return modifications.get(index);
     }
 
-    @Override
-    @Deprecated
-    public ModificationInstance set(int index, ModificationInstance element) {
-        throw new UnsupportedOperationException();
+    /**
+     * 设置指定索引的改装件
+     */
+    public SocketedModifications set(int index, ModificationInstance instance) {
+        List<ModificationInstance> newMods = new java.util.ArrayList<>(this.modifications);
+        newMods.set(index, instance);
+        return new SocketedModifications(newMods);
     }
 
-    @Override
-    @Deprecated
-    public void add(int index, ModificationInstance element) {
-        throw new UnsupportedOperationException();
+    /**
+     * 应用所有改装件的词缀
+     */
+    public void applyAllModifications(ItemStack stack, net.minecraft.world.entity.player.Player player) {
+        for (ModificationInstance inst : modifications) {
+            if (inst.isValid()) {
+                inst.applyAffixes(stack, player);
+            }
+        }
     }
 
-    @Override
-    @Deprecated
-    public ModificationInstance remove(int index) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        return this.modifications.indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        return this.modifications.lastIndexOf(o);
-    }
-
-    @Override
-    public ListIterator<ModificationInstance> listIterator() {
-        return this.modifications.listIterator();
-    }
-
-    @Override
-    public ListIterator<ModificationInstance> listIterator(int index) {
-        return this.modifications.listIterator(index);
-    }
-
-    @Override
-    public List<ModificationInstance> subList(int fromIndex, int toIndex) {
-        return this.modifications.subList(fromIndex, toIndex);
+    /**
+     * 移除所有改装件的词缀
+     */
+    public void removeAllAffixes(ItemStack stack) {
+        for (ModificationInstance inst : modifications) {
+            if (inst.isValid()) {
+                inst.removeAffixes(stack);
+            }
+        }
     }
 }

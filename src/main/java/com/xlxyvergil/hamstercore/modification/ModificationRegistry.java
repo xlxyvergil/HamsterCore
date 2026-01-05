@@ -1,79 +1,66 @@
 package com.xlxyvergil.hamstercore.modification;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.mojang.serialization.JsonOps;
+import com.xlxyvergil.hamstercore.HamsterCore;
+import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
-@Mod.EventBusSubscriber(modid = "hamstercore")
-public class ModificationRegistry extends SimpleJsonResourceReloadListener {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String DIRECTORY = "modifications";
+/**
+ * 改装件注册表 - 完全模仿 Apotheosis 的 GemRegistry
+ */
+public class ModificationRegistry extends WeightedDynamicRegistry<Modification> {
 
-    private static ModificationRegistry INSTANCE;
-    private final Map<ResourceLocation, Modification> modifications = new HashMap<>();
-    private final Map<ResourceLocation, DynamicModificationHolder> holders = new HashMap<>();
+    private static final Logger LOGGER = LogManager.getLogger("HamsterCore : Modification");
+    public static final ModificationRegistry INSTANCE = new ModificationRegistry();
 
     public ModificationRegistry() {
-        super(GSON, DIRECTORY);
-    }
-
-    @SubscribeEvent
-    public static void onAddReloadListener(AddReloadListenerEvent event) {
-        INSTANCE = new ModificationRegistry();
-        event.addListener(INSTANCE);
-    }
-
-    public static ModificationRegistry getInstance() {
-        return INSTANCE;
+        super(LOGGER, "modifications", true, false);
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager, ProfilerFiller profiler) {
-        this.modifications.clear();
-        this.holders.clear(); // 清除holders缓存
-        map.forEach((id, json) -> {
-            Modification.CODEC.parse(JsonOps.INSTANCE, json)
-                .resultOrPartial(error -> {
-                    // 记录解析错误，避免崩溃
-                    System.out.println("[HamsterCore] Failed to parse modification: " + id + ", Error: " + error);
-                })
-                .ifPresent(mod -> {
-                    // 确保修改件ID不为null
-                    if (mod.id() != null) {
-                        this.modifications.put(id, mod);
-                    } else {
-                        System.out.println("[HamsterCore] Modification has null ID: " + id);
-                    }
-                });
-        });
-        // 不再需要初始化自定义模型数据映射，使用自定义渲染器
+    protected void registerBuiltinCodecs() {
+        this.registerDefaultCodec(new ResourceLocation(HamsterCore.MODID + ":modification"), Modification.CODEC);
     }
 
-    public Optional<Modification> getModification(ResourceLocation id) {
-        return Optional.ofNullable(this.modifications.get(id));
-    }
-    
-    public DynamicModificationHolder holder(ResourceLocation id) {
-        return this.holders.computeIfAbsent(id, DynamicModificationHolder::new);
-    }
-    
-    public DynamicModificationHolder emptyHolder() {
-        return DynamicModificationHolder.empty();
+    /**
+     * 创建随机改装件物品堆
+     */
+    public static ItemStack createRandomModificationStack(RandomSource rand, ServerLevel level) {
+        // 获取当前维度ID
+        ResourceLocation dimensionId = level.dimension().location();
+        
+        // 过滤出适合当前维度的改装件
+        List<Modification> validMods = new ArrayList<>();
+        for (Modification mod : INSTANCE.getValues()) {
+            // 如果维度列表为空，或者包含当前维度，则有效
+            if (mod.dimensions().isEmpty() || mod.dimensions().contains(dimensionId)) {
+                validMods.add(mod);
+            }
+        }
+        
+        // 如果没有有效改装件，返回空
+        if (validMods.isEmpty()) return ItemStack.EMPTY;
+        
+        // 从有效改装件中随机选择
+        Modification mod = validMods.get(rand.nextInt(validMods.size()));
+        
+        ItemStack stack = ModificationItem.createModificationStack(mod);
+        return stack;
     }
 
-    public Map<ResourceLocation, Modification> getModifications() {
-        return new HashMap<>(this.modifications);
+    /**
+     * 创建指定改装件的物品堆
+     */
+    public static ItemStack createModificationStack(Modification modification) {
+        ItemStack stack = new ItemStack(com.xlxyvergil.hamstercore.modification.ModificationItems.MODIFICATION.get());
+        ModificationItem.setModification(stack, modification);
+        return stack;
     }
 }

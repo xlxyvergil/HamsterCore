@@ -1,55 +1,56 @@
 {
-  "variant": "hamstercore:rifle_heavy_caliber",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "rare",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "taa:bullet_gundamage_rifle",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_rifle"
-    },
-    {
-      "type": "taa:bullet_gundamage_smg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_smg"
-    },
-    {
-      "type": "taa:bullet_gundamage_lmg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_lmg"
-    },
-    {
-      "type": "taa:bullet_gundamage_rpg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_rpg"
-    },
-    {
-      "type": "taa:bullet_gundamage_sniper",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_sniper"
-    },
-    {
-      "type": "taa:inaccuracy",
-      "operation": "ADDITION",
-      "value": -0.55,
-      "source": "inaccuracy"
-    },
-    {
-      "type": "attributeslib:arrow_damage",
-      "operation": "MULTIPLY_TOTAL",
-      "value": 1.65,
-      "source": "arrow_damage"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_heavy_caliber",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "rare",
+    "affixes": [
+        {
+            "type": "taa:bullet_gundamage_rifle",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_rifle"
+        },
+        {
+            "type": "taa:bullet_gundamage_smg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_smg"
+        },
+        {
+            "type": "taa:bullet_gundamage_lmg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_lmg"
+        },
+        {
+            "type": "taa:bullet_gundamage_rpg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_rpg"
+        },
+        {
+            "type": "taa:bullet_gundamage_sniper",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_sniper"
+        },
+        {
+            "type": "taa:inaccuracy",
+            "operation": "ADDITION",
+            "value": -0.55,
+            "name": "inaccuracy"
+        },
+        {
+            "type": "attributeslib:arrow_damage",
+            "operation": "MULTIPLY_TOTAL",
+            "value": 1.65,
+            "name": "arrow_damage"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_caliber_group"
+    ]
 }

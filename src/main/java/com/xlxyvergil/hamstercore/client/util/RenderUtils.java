@@ -11,6 +11,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +20,7 @@ import java.util.Set;
 /**
  * 简化版的 RenderUtils，参考 battery_shield 实现
  */
+@OnlyIn(Dist.CLIENT)
 public class RenderUtils {
     
     public static final Set<ResourceLocation> blendedHeadTextures = new HashSet<>();

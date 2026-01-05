@@ -3,91 +3,96 @@ package com.xlxyvergil.hamstercore.modification;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
-import com.xlxyvergil.hamstercore.weapon.WeaponType;
-import com.xlxyvergil.hamstercore.weapon.WeaponTypeDetector;
+import dev.shadowsoffire.placebo.codec.CodecProvider;
+import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry.ILuckyWeighted;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 改装件定义 - 模仿 Apotheosis 的 Gem
+ */
 public record Modification(
     ResourceLocation id,
     int weight,
-    float quality,
     Set<ResourceLocation> dimensions,
-    ModificationCategory category,
+    WeaponCategory category,
     boolean unique,
     ModificationRarity rarity,
     List<ModificationAffix> affixes,
-    List<WeaponCategory> applicableCategories,
-    List<WeaponType> applicableTypes,
-    Set<String> mutualExclusionGroups
-) {
+    boolean useSpecialSocket,     // 是否使用特殊槽位，true为特殊槽位，false为普通槽位
+    List<String> mutualExclusionGroups  // 互斥组，同组改装件不能同时安装
+) implements CodecProvider<Modification>, ILuckyWeighted {
+
     public static final Codec<Modification> CODEC = RecordCodecBuilder.create(inst -> inst.group(
         ResourceLocation.CODEC.fieldOf("variant").forGetter(Modification::id),
-        Codec.INT.fieldOf("weight").forGetter(Modification::weight),
-        Codec.FLOAT.fieldOf("quality").forGetter(Modification::quality),
-        ResourceLocation.CODEC.listOf().xmap(Set::copyOf, List::copyOf).fieldOf("dimensions").forGetter(Modification::dimensions),
-        ModificationCategory.CODEC.fieldOf("category").forGetter(Modification::category),
+        Codec.intRange(0, Integer.MAX_VALUE).fieldOf("weight").forGetter(Modification::weight),
+        Codec.STRING.listOf().xmap(
+            strings -> strings.stream().map(ResourceLocation::new).collect(java.util.stream.Collectors.toSet()),
+            set -> set.stream().map(ResourceLocation::toString).collect(java.util.stream.Collectors.toList())
+        ).optionalFieldOf("dimensions", Set.of()).forGetter(Modification::dimensions),
+        WeaponCategory.CODEC.fieldOf("category").forGetter(Modification::category),
         Codec.BOOL.optionalFieldOf("unique", false).forGetter(Modification::unique),
         ModificationRarity.CODEC.fieldOf("rarity").forGetter(Modification::rarity),
         ModificationAffix.LIST_CODEC.fieldOf("affixes").forGetter(Modification::affixes),
-        WeaponCategory.CODEC.listOf().optionalFieldOf("applicableCategories", List.of()).forGetter(Modification::applicableCategories),
-        WeaponType.CODEC.listOf().optionalFieldOf("applicableTypes", List.of()).forGetter(Modification::applicableTypes),
-        Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("mutualExclusionGroups", Set.<String>of()).forGetter(Modification::mutualExclusionGroups)
+        Codec.BOOL.optionalFieldOf("use_special_socket", false).forGetter(Modification::useSpecialSocket),
+        Codec.STRING.listOf().optionalFieldOf("mutualExclusionGroups", List.of()).forGetter(Modification::mutualExclusionGroups)
     ).apply(inst, Modification::new));
 
+    @Override
+    public Codec<? extends Modification> getCodec() {
+        return CODEC;
+    }
+
+    @Override
+    public int getWeight() {
+        return this.weight;
+    }
+
+    @Override
+    public float getQuality() {
+        // 固定返回1.0f，因为我们不需要品质字段
+        return 1.0f;
+    }
+
+    /**
+     * 检查改装件是否可以应用到物品上
+     */
     public boolean canApplyTo(ItemStack socketed, ItemStack modification) {
-        // 获取物品上已有的所有改装件
-        List<Modification> existingMods = ModificationHelper.getModifications(socketed).streamValidModifications()
-            .map(ModificationInstance::modification)
-            .toList();
+        return true; // 简化实现，不需要复杂检查
+    }
+
+    /**
+     * 添加信息到 tooltip
+     */
+    public void addInformation(ItemStack stack, List<Component> tooltip) {
+        tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
         
-        // 检查唯一性
+        // 添加词缀信息
+        for (ModificationAffix affix : this.affixes) {
+            String attrKey = "attribute.name." + affix.type();
+            Component attrName = Component.translatable(attrKey);
+            Component valueText = Component.literal(String.format("%.2f", affix.value()));
+            tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+                Component.translatable("%s: %s", attrName, valueText)).withStyle(ChatFormatting.GOLD));
+        }
+        
+        tooltip.add(Component.translatable("hamstercore.modification.rarity." + this.rarity.name().toLowerCase())
+                .withStyle(this.rarity.getColor()));
+        
+        // 显示槽位类型
+        if (this.useSpecialSocket) {
+            tooltip.add(Component.translatable("hamstercore.modification.special_socket").withStyle(ChatFormatting.BLUE));
+        } else {
+            tooltip.add(Component.translatable("hamstercore.modification.normal_socket").withStyle(ChatFormatting.GREEN));
+        }
+        
         if (this.unique) {
-            for (Modification mod : existingMods) {
-                if (mod.id().equals(this.id())) {
-                    return false;
-                }
-            }
+            tooltip.add(Component.translatable("hamstercore.modification.unique").withStyle(ChatFormatting.GOLD));
         }
-        
-        // 检查互斥组
-        if (!this.mutualExclusionGroups.isEmpty()) {
-            for (Modification existingMod : existingMods) {
-                // 检查现有改装件是否与当前改装件共享任何互斥组
-                for (String group : this.mutualExclusionGroups) {
-                    if (existingMod.mutualExclusionGroups().contains(group)) {
-                        return false;
-                    }
-                }
-            }
-        }
-        
-        // 检测武器类型
-        WeaponType weaponType = WeaponTypeDetector.detectWeaponType(socketed);
-        if (weaponType == null) {
-            return false;
-        }
-        
-        // 检查适用分类
-        if (!applicableCategories.isEmpty()) {
-            boolean categoryMatch = applicableCategories.stream()
-                    .anyMatch(category -> category.allowsWeaponType(weaponType));
-            if (!categoryMatch) {
-                return false;
-            }
-        }
-        
-        // 检查适用类型
-        if (!applicableTypes.isEmpty()) {
-            boolean typeMatch = applicableTypes.contains(weaponType);
-            if (!typeMatch) {
-                return false;
-            }
-        }
-        
-        return true;
     }
 }

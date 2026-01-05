@@ -1,189 +1,143 @@
 package com.xlxyvergil.hamstercore.modification;
 
+
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import dev.shadowsoffire.placebo.tabs.ITabFiller;
+import dev.shadowsoffire.placebo.reload.DynamicHolder;
+import java.util.List;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.Optional;
 
-import dev.shadowsoffire.placebo.tabs.ITabFiller;
-
+/**
+ * 改装件物品类 - 模仿 Apotheosis 的 GemItem
+ */
 public class ModificationItem extends Item implements ITabFiller {
-    public static final String TAG_MODIFICATION_ID = "ModificationId";
+    public static final String MODIFICATION = "modification";
 
     public ModificationItem(Properties properties) {
         super(properties);
     }
-    
 
-    
+    @Override
+    public void appendHoverText(@Nullable ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        ModificationInstance inst = getModification(stack);
+        if (!inst.isValid()) {
+            tooltip.add(Component.literal("Invalid Modification").withStyle(ChatFormatting.GRAY));
+            return;
+        }
 
-    
+        Modification modification = getModificationDefinition(stack);
+        if (modification == null) {
+            return;
+        }
 
+        modification.addInformation(stack, tooltip);
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        Modification modification = getModificationDefinition(stack);
+        if (modification == null) {
+            return super.getName(stack);
+        }
+
+        Component baseName = Component.translatable("item.hamstercore.modification." + modification.id().getPath());
+        return baseName.copy().withStyle(modification.rarity().getColor());
+    }
+
+    @Override
+    public String getDescriptionId(ItemStack stack) {
+        Modification modification = getModificationDefinition(stack);
+        if (modification == null) {
+            return super.getDescriptionId(stack);
+        }
+        return "item.hamstercore.modification." + modification.id().getPath();
+    }
+
+    @Override
+    public boolean isFoil(@Nullable ItemStack stack) {
+        Modification modification = getModificationDefinition(stack);
+        if (modification == null) {
+            return super.isFoil(stack);
+        }
+        return modification.rarity() == com.xlxyvergil.hamstercore.modification.ModificationRarity.MYTHIC;
+    }
 
     @Override
     public void fillItemCategory(CreativeModeTab group, CreativeModeTab.Output out) {
-        // 完全模仿Apotheosis的宝石系统
-        ModificationRegistry.getInstance().getModifications().values().stream()
-            .sorted(Comparator.comparing(m -> m.id() != null ? m.id().toString() : ""))
+        ModificationRegistry.INSTANCE.getValues().stream()
+            .sorted((m1, m2) -> m1.id().compareTo(m2.id()))
             .forEach(modification -> {
                 ItemStack stack = createModificationStack(modification);
                 out.accept(stack);
             });
     }
-    
 
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(TAG_MODIFICATION_ID)) {
-            String id = tag.getString(TAG_MODIFICATION_ID);
-            // 确保ID不为null或空
-            if (id != null && !id.isEmpty()) {
-                ResourceLocation location = net.minecraft.resources.ResourceLocation.tryParse(id);
-                if (location != null) {  // 防止tryParse返回null
-                    Optional<Modification> mod = ModificationRegistry.getInstance().getModification(location);
-                    if (mod.isPresent()) {
-                        Modification modification = mod.get();
-                        
-                        // 添加唯一标记
-                        if (modification.unique()) {
-                            tooltip.add(Component.translatable("hamstercore.modification.unique").withStyle(Style.EMPTY.withColor(0xC73912)));
-                            tooltip.add(CommonComponents.EMPTY);
-                        }
-                        
-                        // 添加"适用于"部分
-                        Style style = Style.EMPTY.withColor(0x0AFF0A);
-                        tooltip.add(Component.translatable("hamstercore.modification.socketable_into").withStyle(style));
-                        
-                        // 显示适用分类
-                        if (!modification.applicableCategories().isEmpty()) {
-                            List<Component> categoryComponents = modification.applicableCategories().stream()
-                                    .map(category -> (Component) Component.literal(category.getDisplayName()))
-                                    .distinct()
-                                    .toList();
-                            addTypeInfo(tooltip::add, categoryComponents.toArray());
-                        }
-                        
-                        // 显示适用类型
-                        if (!modification.applicableTypes().isEmpty()) {
-                            List<Component> typeComponents = modification.applicableTypes().stream()
-                                    .map(type -> (Component) Component.literal(type.getDisplayName()))
-                                    .distinct()
-                                    .toList();
-                            addTypeInfo(tooltip::add, typeComponents.toArray());
-                        }
-                        
-                        tooltip.add(CommonComponents.EMPTY);
-                        
-                        // 添加"改装后"部分
-                        tooltip.add(Component.translatable("hamstercore.modification.when_modified").withStyle(ChatFormatting.GOLD));
-                        
-                        // 显示属性
-                        for (ModificationAffix affix : modification.affixes()) {
-                            // 直接显示属性信息，使用更简洁的格式
-                            String attributeKey = "attribute.name." + affix.type().replace(':', '.');
-                            Component affixName = Component.translatable(attributeKey);
-                            Component valueText = Component.literal(String.format("%.2f", affix.value()));
-                            
-                            Component bonusText = Component.translatable("hamstercore.modification.dot_prefix", 
-                                    Component.translatable("%s: %s", affixName, valueText)).withStyle(ChatFormatting.GOLD);
-                            tooltip.add(bonusText);
-                        }
-                        
-                        // 添加稀有度信息
-                        tooltip.add(CommonComponents.EMPTY);
-                        tooltip.add(Component.translatable("hamstercore.modification.rarity." + modification.rarity().name().toLowerCase())
-                                .withStyle(modification.rarity().getColor()));
-
-                    }
-                }
-            }
-        }
-    }
-    
     /**
-     * 添加类型信息到tooltip
+     * 创建改装件物品堆
      */
-    private static void addTypeInfo(Consumer<Component> list, Object... types) {
-        Style style = Style.EMPTY.withColor(0x0AFF0A);
-        if (types.length > 0) {
-            int i = 0;
-            while (i < types.length) {
-                int rem = Math.min(3, types.length - i);
-                StringBuilder sb = new StringBuilder();
-                Object[] args = new Object[rem];
-                for (int r = 0; r < rem; r++) {
-                    if (r > 0) {
-                        sb.append(", ");
-                    }
-                    sb.append("%s");
-                    args[r] = types[i + r];
-                }
-                list.accept(Component.translatable("hamstercore.modification.dot_prefix", 
-                        Component.translatable(sb.toString(), args)).withStyle(style));
-                i += rem;
-            }
-        }
-    }
-
-    @Override
-    public Component getName(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(TAG_MODIFICATION_ID)) {
-            String id = tag.getString(TAG_MODIFICATION_ID);
-            // 确保ID不为null或空
-            if (id != null && !id.isEmpty()) {
-                return Component.translatable("item.hamstercore.modification." + id);
-            }
-        }
-        return super.getName(stack);
-    }
-
-    @Override
-    public String getDescriptionId(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains(TAG_MODIFICATION_ID)) {
-            String id = tag.getString(TAG_MODIFICATION_ID);
-            // 确保ID不为null或空
-            if (id != null && !id.isEmpty()) {
-                ResourceLocation location = net.minecraft.resources.ResourceLocation.tryParse(id);
-                if (location != null) {  // 防止tryParse返回null
-                    Optional<Modification> mod = ModificationRegistry.getInstance().getModification(location);
-                    if (mod.isPresent()) {
-                        Modification modification = mod.get();
-                        // TACZ风格：基于variant名称生成唯一描述ID
-                        // 例如：hamstercore:rifle_cold_slug_prime → item.hamstercore.modification.rifle_cold_slug_prime
-                        if (modification.id() != null && modification.id().getPath() != null) {
-                            return "item.hamstercore.modification." + modification.id().getPath();
-                        }
-                    }
-                }
-            }
-        }
-        // 默认使用基础模型
-        return super.getDescriptionId(stack);
-    }
-
     public static ItemStack createModificationStack(Modification modification) {
-        ItemStack stack = new ItemStack(ModificationItems.MODIFICATION.get());
-        if (modification != null && modification.id() != null) {
-            stack.getOrCreateTag().putString(TAG_MODIFICATION_ID, modification.id().toString());
-        }
+        ItemStack stack = new ItemStack(com.xlxyvergil.hamstercore.modification.ModificationItems.MODIFICATION.get());
+        setModification(stack, modification);
         return stack;
+    }
+
+    /**
+     * 获取物品中的改装件 ID
+     */
+    public static String getModificationId(ItemStack stack) {
+        if (!stack.hasTag()) {
+            return null;
+        }
+        return stack.getOrCreateTag().getString(MODIFICATION);
+    }
+
+    /**
+     * 设置物品中的改装件 ID
+     */
+    public static void setModification(ItemStack stack, String id) {
+        stack.getOrCreateTag().putString(MODIFICATION, id);
+    }
+
+    /**
+     * 设置物品中的改装件
+     */
+    public static void setModification(ItemStack stack, Modification modification) {
+        setModification(stack, modification.id().toString());
+    }
+
+    /**
+     * 获取物品中的改装件实例
+     */
+    public static ModificationInstance getModification(ItemStack stack) {
+        String id = getModificationId(stack);
+        if (id == null || id.isEmpty()) {
+            return ModificationInstance.EMPTY;
+        }
+        return new ModificationInstance(id, stack.getOrCreateTag().getUUID("ModificationUUID"));
+    }
+
+    /**
+     * 获取改装件定义
+     */
+    public static Modification getModificationDefinition(ItemStack stack) {
+        String id = getModificationId(stack);
+        if (id == null || id.isEmpty()) {
+            return null;
+        }
+
+        DynamicHolder<Modification> holder = ModificationRegistry.INSTANCE.holder(
+            new net.minecraft.resources.ResourceLocation(id));
+        
+        if (!holder.isBound()) {
+            return null;
+        }
+        return holder.get();
     }
 }

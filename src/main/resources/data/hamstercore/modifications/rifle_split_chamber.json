@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_split_chamber",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "rare",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "taa:bullet_count",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "bullet_count"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_split_chamber",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "rare",
+    "affixes": [
+        {
+            "type": "taa:bullet_count",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "bullet_count"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_chamber_group"
+    ]
 }

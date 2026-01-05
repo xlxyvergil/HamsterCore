@@ -96,4 +96,13 @@ public class WeaponCategoryHelper {
         }
         return type.getDisplayName();
     }
+    
+    /**
+     * 检查物品是否是武器
+     * @param stack 物品栈
+     * @return 是否是武器
+     */
+    public static boolean isWeapon(ItemStack stack) {
+        return WeaponTypeDetector.detectWeaponType(stack) != null;
+    }
 }

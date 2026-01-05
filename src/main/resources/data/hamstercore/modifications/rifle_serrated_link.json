@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_serrated_link",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "common",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:slash",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "slash"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_serrated_link",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "common",
+    "affixes": [
+        {
+            "type": "hamstercore:slash",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "slash"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_link_group"
+    ]
 }

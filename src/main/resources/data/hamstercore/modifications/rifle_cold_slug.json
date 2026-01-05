@@ -1,20 +1,20 @@
 {
-  "variant": "hamstercore:rifle_cold_slug",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "uncommon",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:cold",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "cold"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": [],
-  "mutualExclusionGroups": ["rifle_cold_slug_group"]
+    "variant": "hamstercore:rifle_cold_slug",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "hamstercore:cold",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "cold"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_cold_slug_group"
+    ]
 }

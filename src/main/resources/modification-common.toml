@@ -1,0 +1,18 @@
+# HamsterCore 改装件系统配置
+# 该文件包含改装件掉落规则的配置
+
+[modifications]
+# 改装件掉落规则列表
+# 格式：domain:pattern|chance 或 pattern|chance
+# - domain: 可选，modid，匹配特定模组的战利品表
+# - pattern: 必填，正则表达式，匹配战利品表路径
+# - chance: 必填，浮点数 0-1，掉落概率
+# 注意：只有MONSTER分类的生物会掉落改装件
+# 示例：
+# modification_loot_rules = [
+#   "minecraft:entities.*|0.05",  # 所有minecraft实体掉落表，5%概率
+#   "modid:entities/special_mobs.*|0.1"  # 特定模组特殊生物，10%概率
+# ]
+modification_loot_rules = [
+  "minecraft:entities.*|0.05"  # 所有minecraft实体掉落表，5%概率
+]

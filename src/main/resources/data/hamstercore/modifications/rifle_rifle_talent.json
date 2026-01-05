@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_rifle_talent",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "uncommon",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:trigger_chance",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "trigger_chance"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_rifle_talent",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "hamstercore:trigger_chance",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "trigger_chance"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_talent_group"
+    ]
 }

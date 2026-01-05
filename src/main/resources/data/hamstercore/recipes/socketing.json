@@ -1,3 +1,8 @@
 {
-  "type": "hamstercore:socketing"
+  "type": "minecraft:smithing",
+  "addition": {
+    "item": "hamstercore:modification"
+  },
+  "base": [],
+  "result": {}
 }

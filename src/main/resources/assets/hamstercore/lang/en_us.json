@@ -207,6 +207,8 @@
   "effect.hamstercore.viral.description": "Reduces target maximum health",
   
   "item.hamstercore.modification": "Modification",
+  "item.hamstercore.tool_augmenter": "Tool Augmenter",
+  "item.hamstercore.precision_screwdriver": "Precision Screwdriver",
   "item.hamstercore.sigil_of_socketing": "Socketing Tool",
   "item.hamstercore.sigil_of_withdrawal": "Withdrawal Tool",
   

@@ -1,49 +1,50 @@
 {
-  "variant": "hamstercore:rifle_rifling",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "uncommon",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "taa:bullet_gundamage_rifle",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_rifle"
-    },
-    {
-      "type": "taa:bullet_gundamage_smg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_smg"
-    },
-    {
-      "type": "taa:bullet_gundamage_lmg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_lmg"
-    },
-    {
-      "type": "taa:bullet_gundamage_rpg",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_rpg"
-    },
-    {
-      "type": "taa:bullet_gundamage_sniper",
-      "operation": "ADDITION",
-      "value": 1.65,
-      "source": "bullet_gundamage_sniper"
-    },
-    {
-      "type": "attributeslib:arrow_damage",
-      "operation": "MULTIPLY_TOTAL",
-      "value": 1.65,
-      "source": "arrow_damage"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_rifling",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "taa:bullet_gundamage_rifle",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_rifle"
+        },
+        {
+            "type": "taa:bullet_gundamage_smg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_smg"
+        },
+        {
+            "type": "taa:bullet_gundamage_lmg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_lmg"
+        },
+        {
+            "type": "taa:bullet_gundamage_rpg",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_rpg"
+        },
+        {
+            "type": "taa:bullet_gundamage_sniper",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "bullet_gundamage_sniper"
+        },
+        {
+            "type": "attributeslib:arrow_damage",
+            "operation": "MULTIPLY_TOTAL",
+            "value": 1.65,
+            "name": "arrow_damage"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_barrel_group"
+    ]
 }

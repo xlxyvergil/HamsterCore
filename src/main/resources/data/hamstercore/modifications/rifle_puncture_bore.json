@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_puncture_bore",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "rare",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:puncture",
-      "operation": "ADDITION",
-      "value": 1.2,
-      "source": "puncture"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_puncture_bore",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "rare",
+    "affixes": [
+        {
+            "type": "hamstercore:puncture",
+            "operation": "ADDITION",
+            "value": 1.2,
+            "name": "puncture"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_bore_group"
+    ]
 }

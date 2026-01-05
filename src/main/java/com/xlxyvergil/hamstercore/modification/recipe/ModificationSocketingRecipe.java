@@ -1,102 +1,132 @@
 package com.xlxyvergil.hamstercore.modification.recipe;
 
-import com.xlxyvergil.hamstercore.modification.Modification;
-import com.xlxyvergil.hamstercore.modification.ModificationHelper;
+import com.xlxyvergil.hamstercore.modification.ModificationInstance;
 import com.xlxyvergil.hamstercore.modification.ModificationItem;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
-import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
-import com.google.gson.JsonObject;
+import com.xlxyvergil.hamstercore.modification.SocketHelper;
+import com.xlxyvergil.hamstercore.modification.SocketedModifications;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.Level;
 
-import java.util.Optional;
+import java.util.List;
 
+/**
+ * 安装配方 - 模仿 Apotheosis 的 SocketingRecipe
+ */
 public class ModificationSocketingRecipe extends SmithingTransformRecipe {
-    private static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("hamstercore", "socketing");
-    private static final int BASE = 1;
-    private static final int ADDITION = 2;
 
-    public ModificationSocketingRecipe() {
-        super(ID, Ingredient.EMPTY, Ingredient.EMPTY, Ingredient.of(ModificationItems.MODIFICATION.get()), ItemStack.EMPTY);
+    public static final ResourceLocation RECIPE_ID = new ResourceLocation("hamstercore", "socketing");
+    
+    // Forge smithing slot indices
+    public static final int TEMPLATE = 0, BASE = 1, ADDITION = 2;
+
+    public ModificationSocketingRecipe(ResourceLocation id) {
+        super(id, Ingredient.EMPTY, 
+            Ingredient.EMPTY, 
+            Ingredient.of(ModificationItems.MODIFICATION.get()), 
+            ItemStack.EMPTY);
     }
 
     @Override
-    public boolean matches(Container inv, Level level) {
-        ItemStack input = inv.getItem(BASE);
-        ItemStack modificationStack = inv.getItem(ADDITION);
+    public boolean matches(Container container, Level level) {
+        ItemStack base = container.getItem(BASE);
+        ItemStack add = container.getItem(ADDITION);
 
-        if (!modificationStack.hasTag() || !modificationStack.getTag().contains(ModificationItem.TAG_MODIFICATION_ID)) {
+        // 基础物品必须有槽位
+        if (!SocketHelper.hasEmptySockets(base)) {
             return false;
         }
 
-        String id = modificationStack.getTag().getString(ModificationItem.TAG_MODIFICATION_ID);
-        Optional<Modification> mod = ModificationRegistry.getInstance().getModification(ResourceLocation.tryParse(id));
-        if (mod.isEmpty()) {
+        // 添加物品必须是改装件
+        if (!isModification(add)) {
             return false;
         }
 
-        Modification modification = mod.get();
-        // 使用ModificationHelper检查是否可以添加改装件
-        return ModificationHelper.hasEmptySockets(input) && modification.canApplyTo(input, modificationStack);
-    }
-
-    @Override
-    public ItemStack assemble(Container inv, RegistryAccess regs) {
-        ItemStack input = inv.getItem(BASE);
-        ItemStack modificationStack = inv.getItem(ADDITION);
-
-        ItemStack result = input.copy();
-        result.setCount(1);
-
-        String id = modificationStack.getTag().getString(ModificationItem.TAG_MODIFICATION_ID);
-        Optional<Modification> mod = ModificationRegistry.getInstance().getModification(ResourceLocation.tryParse(id));
-        if (mod.isPresent()) {
-            Modification modification = mod.get();
-            // 使用ModificationHelper添加改装件
-            ModificationHelper.addModification(result, modification);
-        }
-
-        return result;
-    }
-
-    @Override
-    public RecipeSerializer<?> getSerializer() {
-        return Serializer.INSTANCE;
-    }
-
-    @Override
-    public RecipeType<?> getType() {
-        return RecipeType.SMITHING;
-    }
-
-    @Override
-    public boolean isSpecial() {
         return true;
+    }
+
+    /**
+     * 检查是否是改装件
+     */
+    private boolean isModification(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        return stack.getItem() == ModificationItems.MODIFICATION.get();
+    }
+
+    @Override
+    public ItemStack assemble(Container container, RegistryAccess registryAccess) {
+        ItemStack base = container.getItem(BASE).copy();
+        ItemStack add = container.getItem(ADDITION).copy();
+
+        // 找到第一个空槽位
+        int slot = SocketHelper.getFirstEmptySocket(base);
+        if (slot < 0) {
+            return ItemStack.EMPTY;
+        }
+
+        // 获取当前改装件列表
+        SocketedModifications mods = SocketHelper.getModifications(base);
+        List<ModificationInstance> modificationList = new java.util.ArrayList<>(mods.modifications());
+
+        // 获取改装件ID
+        String modId = ModificationItem.getModificationId(add);
+        if (modId == null || modId.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        // 创建新的改装件实例（保持原base的NBT）
+        ModificationInstance newInst = new ModificationInstance(modId, java.util.UUID.randomUUID());
+        
+        // 替换指定槽位的改装件
+        modificationList.set(slot, newInst);
+
+        // 应用新改装件的词缀
+        SocketHelper.setModifications(base, modificationList);
+        new SocketedModifications(modificationList).applyAllModifications(base, null);
+
+        return base;
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return width * height >= 2;
+    }
+
+    @Override
+    public ItemStack getResultItem(RegistryAccess registryAccess) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public ResourceLocation getId() {
+        return RECIPE_ID;
     }
 
     public static class Serializer implements RecipeSerializer<ModificationSocketingRecipe> {
         public static Serializer INSTANCE = new Serializer();
 
         @Override
-        public ModificationSocketingRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            return new ModificationSocketingRecipe();
+        public ModificationSocketingRecipe fromJson(ResourceLocation pRecipeId, com.google.gson.JsonObject pJson) {
+            return new ModificationSocketingRecipe(pRecipeId);
         }
 
         @Override
-        public ModificationSocketingRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-            return new ModificationSocketingRecipe();
+        public ModificationSocketingRecipe fromNetwork(ResourceLocation pRecipeId, net.minecraft.network.FriendlyByteBuf pBuffer) {
+            return new ModificationSocketingRecipe(pRecipeId);
         }
 
         @Override
-        public void toNetwork(FriendlyByteBuf buffer, ModificationSocketingRecipe recipe) {
+        public void toNetwork(net.minecraft.network.FriendlyByteBuf pBuffer, ModificationSocketingRecipe pRecipe) {
         }
     }
 }
+
+

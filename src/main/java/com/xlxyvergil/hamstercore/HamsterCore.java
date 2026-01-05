@@ -12,6 +12,10 @@ import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvid
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
+import com.xlxyvergil.hamstercore.modification.ModificationEvents;
+import com.xlxyvergil.hamstercore.modification.ModificationItems;
+import com.xlxyvergil.hamstercore.modification.loot.ModificationLootModifier;
+import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.util.SlashBladeItemsFetcher;
 import com.xlxyvergil.hamstercore.enchantment.ModEnchantments;
@@ -22,17 +26,15 @@ import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
-import com.xlxyvergil.hamstercore.modification.ModificationItems;
-import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
 import dev.shadowsoffire.placebo.registry.DeferredHelper;
-import dev.shadowsoffire.placebo.tabs.TabFillingRegistry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 
 import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -53,6 +55,7 @@ public class HamsterCore {
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::registerCapabilities);
         
+        
         // 注册附魔
         ModEnchantments.register(modEventBus);
         
@@ -62,43 +65,41 @@ public class HamsterCore {
         // 初始化元素效果注册
         ElementEffectRegistry.Effects.bootstrap();
         
-
-        
-        // 注册改装系统物品
-        ModificationItems.ITEMS.register(modEventBus);
-        
-        // 注册改装系统创造模式标签页
-        ModificationItems.CREATIVE_MODE_TABS.register(modEventBus);
+        // 注册改装系统
+        ModificationItems.bootstrap();
         
         // 注册改装系统配方序列化器
-        ModificationRecipeSerializers.SERIALIZERS.register(modEventBus);
-                
+        ModificationRecipeSerializers.register(modEventBus);
+        
+        // 注册改装系统事件处理
+        modEventBus.register(ModificationEvents.class);
+        
+        // 注册改装件战利品修改器
+        modEventBus.addListener(this::registerLootModifiers);
+        
         // 初始化网络包
         PacketHandler.init();
     }
+    
+
 
     private void setup(final FMLCommonSetupEvent event) {
+        
+        // 注册事件监听器 - 模仿 Apotheosis 的实现
+        MinecraftForge.EVENT_BUS.register(new com.xlxyvergil.hamstercore.modification.ModificationEvents());
+
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
             
         // 注册玩家能力相关事件
         MinecraftForge.EVENT_BUS.register(PlayerCapabilityEvents.class);
-            
-            
-        // 注册标签页填充，模仿Apotheosis的Adventure模块
-        event.enqueueWork(() -> {
-            // 注册改装件标签页填充
-            TabFillingRegistry.register(ModificationItems.MODIFICATION_TAB.getKey(), 
-                ModificationItems.SIGIL_OF_SOCKETING, 
-                ModificationItems.SIGIL_OF_WITHDRAWAL);
-            // 注册改装件本身，它实现了ITabFiller接口，会自动填充
-            TabFillingRegistry.register(ModificationItems.MODIFICATION_TAB.getKey(), 
-                ModificationItems.MODIFICATION);
-        });
-            
+
         // 加载客户端配置
         ClientConfig.load();
-    
+
+        // 注册改装件注册表 - 完全模仿 Apotheosis 的实现
+        // 在 FMLCommonSetupEvent 中调用 registerToBus() 确保在资源加载前注册
+        com.xlxyvergil.hamstercore.modification.ModificationRegistry.INSTANCE.registerToBus();
     }
     
     
@@ -168,5 +169,18 @@ public class HamsterCore {
         event.register(EntityLevelCapabilityProvider.class);
         event.register(EntityArmorCapabilityProvider.class);
         event.register(PlayerLevelCapabilityProvider.class);
+    }
+    
+    /**
+     * 注册改装件战利品修改器
+     */
+    private void registerLootModifiers(final RegisterEvent event) {
+        // 使用Apotheosis的方式注册GlobalLootModifier
+        if (event.getForgeRegistry() == (Object) ForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS.get()) {
+            event.getForgeRegistry().register(
+                new ResourceLocation(HamsterCore.MODID, "modification_loot"),
+                ModificationLootModifier.CODEC
+            );
+        }
     }
 }

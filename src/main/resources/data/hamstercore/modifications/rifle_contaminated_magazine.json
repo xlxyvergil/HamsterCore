@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_contaminated_magazine",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "uncommon",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:toxin",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "toxin"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_contaminated_magazine",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "hamstercore:toxin",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "toxin"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_magazine_group"
+    ]
 }

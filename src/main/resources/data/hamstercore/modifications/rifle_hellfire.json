@@ -1,19 +1,20 @@
 {
-  "variant": "hamstercore:rifle_hellfire",
-  "weight": 100,
-  "quality": 1.0,
-  "dimensions": [],
-  "category": "general",
-  "rarity": "uncommon",
-  "unique": true,
-  "affixes": [
-    {
-      "type": "hamstercore:heat",
-      "operation": "ADDITION",
-      "value": 0.9,
-      "source": "heat"
-    }
-  ],
-  "applicableCategories": ["primary"],
-  "applicableTypes": []
+    "variant": "hamstercore:rifle_hellfire",
+    "weight": 100,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "hamstercore:heat",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "heat"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_fire_group"
+    ]
 }

@@ -1,30 +1,48 @@
 package com.xlxyvergil.hamstercore.modification;
 
-import net.minecraft.core.registries.Registries;
+import com.xlxyvergil.hamstercore.HamsterCore;
+import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+/**
+ * 改装件物品注册类 - 模仿 Apotheosis 的 Adventure.Items
+ */
 public class ModificationItems {
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, "hamstercore");
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "hamstercore");
 
-    public static final RegistryObject<Item> MODIFICATION = ITEMS.register("modification",
-        () -> new ModificationItem(new Item.Properties().stacksTo(64)));
+    public static final DeferredHelper R = DeferredHelper.create(HamsterCore.MODID);
 
-    public static final RegistryObject<Item> SIGIL_OF_SOCKETING = ITEMS.register("sigil_of_socketing",
-        () -> new Item(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+    public static final Item.Properties MODIFICATION_PROPS = new Item.Properties();
 
-    public static final RegistryObject<Item> SIGIL_OF_WITHDRAWAL = ITEMS.register("sigil_of_withdrawal",
-        () -> new Item(new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.UNCOMMON)));
+    public static final Item.Properties TOOL_AUGMENTER_PROPS = new Item.Properties()
+        .stacksTo(1);
 
-    public static final RegistryObject<CreativeModeTab> MODIFICATION_TAB = CREATIVE_MODE_TABS.register("modification",
-        () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.hamstercore.modification"))
+    public static final Item.Properties PRECISION_SCREWDRIVER_PROPS = new Item.Properties()
+        .stacksTo(1);
+
+    public static final RegistryObject<Item> MODIFICATION = R.item("modification", () -> new ModificationItem(MODIFICATION_PROPS));
+
+    public static final RegistryObject<Item> TOOL_AUGMENTER = R.item("tool_augmenter", () -> new ToolAugmenterItem(TOOL_AUGMENTER_PROPS));
+
+    public static final RegistryObject<Item> PRECISION_SCREWDRIVER = R.item("precision_screwdriver", () -> new PrecisionScrewdriverItem(PRECISION_SCREWDRIVER_PROPS));
+
+    public static final RegistryObject<CreativeModeTab> MODIFICATION_TAB = R.tab("modifications", () -> {
+        return CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.hamstercore.modifications"))
             .icon(() -> new ItemStack(MODIFICATION.get()))
-            .build());
+            .build();
+    });
+
+    public static final RegistryObject<CreativeModeTab> TOOLS_TAB = R.tab("tools", () -> {
+        return CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.hamstercore.tools"))
+            .icon(() -> new ItemStack(TOOL_AUGMENTER.get()))
+            .build();
+    });
+
+    public static void bootstrap() {
+    }
 }

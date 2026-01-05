@@ -1,55 +1,60 @@
 package com.xlxyvergil.hamstercore.modification;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.mojang.serialization.Codec;
+import dev.shadowsoffire.placebo.codec.CodecProvider;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.ExtraCodecs;
 
-public enum ModificationRarity {
-    COMMON(0, ChatFormatting.WHITE, 10, "common"),
-    UNCOMMON(1, ChatFormatting.YELLOW, 8, "uncommon"),
-    RARE(2, ChatFormatting.AQUA, 6, "rare"),
-    EPIC(3, ChatFormatting.LIGHT_PURPLE, 4, "epic"),
-    MYTHIC(4, ChatFormatting.GOLD, 2, "mythic");
+/**
+ * 改装件稀有度定义
+ */
+public enum ModificationRarity implements CodecProvider<ModificationRarity> {
+    COMMON("common", 0, ChatFormatting.WHITE),
+    UNCOMMON("uncommon", 1, ChatFormatting.YELLOW),
+    RARE("rare", 2, ChatFormatting.BLUE),
+    EPIC("epic", 3, ChatFormatting.DARK_PURPLE),
+    MYTHIC("mythic", 4, ChatFormatting.GOLD);
 
-    private static final Map<String, ModificationRarity> BY_ID = new HashMap<>();
+    public static final Codec<ModificationRarity> CODEC = Codec.STRING.xmap(
+        ModificationRarity::fromString,
+        ModificationRarity::getName
+    );
 
-    static {
-        for (ModificationRarity rarity : values()) {
-            BY_ID.put(rarity.name, rarity);
-        }
+    private final String name;
+    private final int rarityLevel;
+    private final ChatFormatting color;
+
+    ModificationRarity(String name, int rarityLevel, ChatFormatting color) {
+        this.name = name;
+        this.rarityLevel = rarityLevel;
+        this.color = color;
     }
 
-    public static final Codec<ModificationRarity> CODEC = ExtraCodecs.stringResolverCodec(ModificationRarity::getName, ModificationRarity::byId);
+    public String getName() {
+        return name;
+    }
 
-    private final ChatFormatting color;
-    private final int weight;
-    private final String name;
-
-    ModificationRarity(int ordinal, ChatFormatting color, int weight, String name) {
-        this.color = color;
-        this.weight = weight;
-        this.name = name;
+    public int getRarityLevel() {
+        return rarityLevel;
     }
 
     public ChatFormatting getColor() {
         return color;
     }
 
-    public int getWeight() {
-        return weight;
+    /**
+     * 从字符串获取稀有度
+     */
+    public static ModificationRarity fromString(String name) {
+        for (ModificationRarity rarity : values()) {
+            if (rarity.name.equals(name)) {
+                return rarity;
+            }
+        }
+        return COMMON; // 默认返回普通
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    @Nullable
-    public static ModificationRarity byId(String name) {
-        return BY_ID.get(name);
+    @Override
+    public Codec<? extends ModificationRarity> getCodec() {
+        return CODEC;
     }
 }

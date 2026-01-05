@@ -3,10 +3,13 @@ package com.xlxyvergil.hamstercore.client.util;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
  * 简化版的 AssetsManager，参考 battery_shield 实现
  */
+@OnlyIn(Dist.CLIENT)
 public class AssetsManager {
     
     public static class ImageAssets {

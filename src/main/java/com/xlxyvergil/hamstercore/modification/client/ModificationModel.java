@@ -5,8 +5,11 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
-import com.xlxyvergil.hamstercore.modification.ModificationHelper;
+import com.xlxyvergil.hamstercore.modification.Modification;
+import com.xlxyvergil.hamstercore.modification.ModificationItem;
+import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
 
+import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -25,16 +28,18 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
- * 改装件模型，参考Apotheosis的GemModel实现
+ * 改装件模型类 - 模仿 Apotheosis 的 GemModel
+ * 根据改装件ID动态加载对应的JSON模型
  */
 @OnlyIn(Dist.CLIENT)
 public class ModificationModel implements BakedModel {
     private final BakedModel original;
     private final ItemOverrides overrides;
 
+    @SuppressWarnings("deprecation")
     public ModificationModel(BakedModel original, ModelBakery loader) {
         this.original = original;
-        this.overrides = new ItemOverrides() {
+        this.overrides = new ItemOverrides(){
             @Override
             public BakedModel resolve(BakedModel original, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
                 BakedModel specific = ModificationModel.this.resolve(original, stack, world, entity, seed);
@@ -44,16 +49,13 @@ public class ModificationModel implements BakedModel {
     }
 
     public BakedModel resolve(BakedModel original, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-        // 从ItemStack中获取改装件ID
-        String modificationId = ModificationHelper.getModificationId(stack);
-        if (modificationId != null) {
-            // 构建模型资源位置
-            // 模型路径格式：hamstercore:item/modification/{modelPath}
-            ResourceLocation modelLocation = new ResourceLocation(
-                HamsterCore.MODID,
-                "item/modification/" + modificationId
-            );
-            return Minecraft.getInstance().getModelManager().getModel(modelLocation);
+        String id = ModificationItem.getModificationId(stack);
+        if (id != null && !id.isEmpty()) {
+            DynamicHolder<Modification> holder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(id));
+            if (holder.isBound()) {
+                // 加载对应的改装件模型
+                return Minecraft.getInstance().getModelManager().getModel(ResourceLocation.parse(HamsterCore.MODID + ":item/modifications/" + holder.getId().getPath()));
+            }
         }
         return original;
     }
@@ -64,7 +66,8 @@ public class ModificationModel implements BakedModel {
     }
 
     @Override
-    public List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pDirection, RandomSource pRandom) {
+    @Deprecated
+    public List<BakedQuad> getQuads(BlockState pState, Direction pDirection, RandomSource pRandom) {
         return this.original.getQuads(pState, pDirection, pRandom);
     }
 
@@ -89,11 +92,13 @@ public class ModificationModel implements BakedModel {
     }
 
     @Override
+    @Deprecated
     public TextureAtlasSprite getParticleIcon() {
         return this.original.getParticleIcon();
     }
 
     @Override
+    @Deprecated
     public ItemTransforms getTransforms() {
         return this.original.getTransforms();
     }

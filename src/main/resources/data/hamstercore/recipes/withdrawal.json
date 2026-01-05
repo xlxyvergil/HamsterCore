@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:smithing",
+  "addition": {
+    "item": "hamstercore:precision_screwdriver"
+  },
+  "base": [],
+  "result": {}
+}
