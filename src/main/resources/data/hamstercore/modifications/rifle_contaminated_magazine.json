@@ -16,5 +16,6 @@
     "use_special_socket": false,
     "mutualExclusionGroups": [
         "rifle_magazine_group"
-    ]
+    ],
+    "uuid": "e8bfbb11-bc40-4fea-8a51-9cd281f00cd3"
 }

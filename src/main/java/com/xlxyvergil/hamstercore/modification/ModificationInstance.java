@@ -55,6 +55,13 @@ public record ModificationInstance(
     public static ModificationInstance fromModificationStack(ItemStack modificationStack) {
         return ModificationItem.getModification(modificationStack);
     }
+    
+    /**
+     * 从改装件定义创建实例
+     */
+    public static ModificationInstance fromModification(Modification modification) {
+        return new ModificationInstance(modification.id().toString(), modification.uuid());
+    }
 
     /**
      * 检查是否有效

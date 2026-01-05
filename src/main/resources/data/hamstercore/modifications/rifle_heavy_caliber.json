@@ -52,5 +52,6 @@
     "use_special_socket": false,
     "mutualExclusionGroups": [
         "rifle_caliber_group"
-    ]
+    ],
+    "uuid": "93de5d45-c7af-415d-b490-4b0ec81b521c"
 }

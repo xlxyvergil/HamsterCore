@@ -17,10 +17,7 @@ public class PrecisionScrewdriverItem extends Item implements ITabFiller {
 
     @Override
     public void fillItemCategory(CreativeModeTab group, CreativeModeTab.Output out) {
-        // 只在工具标签页中显示
-        if (group == com.xlxyvergil.hamstercore.modification.ModificationItems.TOOLS_TAB.get()) {
-            ItemStack stack = new ItemStack(this);
-            out.accept(stack);
-        }
+        ItemStack stack = new ItemStack(this);
+        out.accept(stack);
     }
 }

@@ -16,5 +16,6 @@
     "use_special_socket": false,
     "mutualExclusionGroups": [
         "rifle_trigger_group"
-    ]
+    ],
+    "uuid": "d7246d35-fe52-479d-be7f-727ed2ea01bb"
 }

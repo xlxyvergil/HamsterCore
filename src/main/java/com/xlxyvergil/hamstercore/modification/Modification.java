@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * 改装件定义 - 模仿 Apotheosis 的 Gem
@@ -25,7 +26,8 @@ public record Modification(
     ModificationRarity rarity,
     List<ModificationAffix> affixes,
     boolean useSpecialSocket,     // 是否使用特殊槽位，true为特殊槽位，false为普通槽位
-    List<String> mutualExclusionGroups  // 互斥组，同组改装件不能同时安装
+    List<String> mutualExclusionGroups,  // 互斥组，同组改装件不能同时安装
+    UUID uuid                           // 改装件UUID，用于词缀生成
 ) implements CodecProvider<Modification>, ILuckyWeighted {
 
     public static final Codec<Modification> CODEC = RecordCodecBuilder.create(inst -> inst.group(
@@ -40,7 +42,8 @@ public record Modification(
         ModificationRarity.CODEC.fieldOf("rarity").forGetter(Modification::rarity),
         ModificationAffix.LIST_CODEC.fieldOf("affixes").forGetter(Modification::affixes),
         Codec.BOOL.optionalFieldOf("use_special_socket", false).forGetter(Modification::useSpecialSocket),
-        Codec.STRING.listOf().optionalFieldOf("mutualExclusionGroups", List.of()).forGetter(Modification::mutualExclusionGroups)
+        Codec.STRING.listOf().optionalFieldOf("mutualExclusionGroups", List.of()).forGetter(Modification::mutualExclusionGroups),
+        Codec.STRING.xmap(UUID::fromString, UUID::toString).optionalFieldOf("uuid", UUID.randomUUID()).forGetter(Modification::uuid)
     ).apply(inst, Modification::new));
 
     @Override

@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import dev.shadowsoffire.placebo.tabs.ITabFiller;
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -110,6 +111,8 @@ public class ModificationItem extends Item implements ITabFiller {
      */
     public static void setModification(ItemStack stack, Modification modification) {
         setModification(stack, modification.id().toString());
+        // 使用改装件定义中的UUID
+        stack.getOrCreateTag().putUUID("ModificationUUID", modification.uuid());
     }
 
     /**
@@ -120,7 +123,26 @@ public class ModificationItem extends Item implements ITabFiller {
         if (id == null || id.isEmpty()) {
             return ModificationInstance.EMPTY;
         }
-        return new ModificationInstance(id, stack.getOrCreateTag().getUUID("ModificationUUID"));
+        
+        // 获取改装件定义
+        Modification modification = getModificationDefinition(stack);
+        UUID uuid;
+        
+        if (modification != null) {
+            // 使用改装件定义中的UUID
+            uuid = modification.uuid();
+            // 更新物品标签中的UUID，确保一致性
+            stack.getOrCreateTag().putUUID("ModificationUUID", uuid);
+        } else if (stack.getOrCreateTag().hasUUID("ModificationUUID")) {
+            // 如果没有改装件定义，但物品标签中有UUID，使用它
+            uuid = stack.getOrCreateTag().getUUID("ModificationUUID");
+        } else {
+            // 兜底：生成随机UUID
+            uuid = UUID.randomUUID();
+            stack.getOrCreateTag().putUUID("ModificationUUID", uuid);
+        }
+        
+        return new ModificationInstance(id, uuid);
     }
 
     /**

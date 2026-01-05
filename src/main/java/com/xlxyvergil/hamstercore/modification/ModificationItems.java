@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.modification;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
 import dev.shadowsoffire.placebo.registry.DeferredHelper;
+import dev.shadowsoffire.placebo.tabs.TabFillingRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -44,5 +45,8 @@ public class ModificationItems {
     });
 
     public static void bootstrap() {
+        // 使用 TabFillingRegistry 将物品注册到对应的创造模式标签页
+        TabFillingRegistry.register(MODIFICATION_TAB.getKey(), MODIFICATION);
+        TabFillingRegistry.register(TOOLS_TAB.getKey(), TOOL_AUGMENTER, PRECISION_SCREWDRIVER);
     }
 }
