@@ -50,9 +50,6 @@ public class WeaponAttributeRenderer {
         
         // 显示派系元素
         addFactionAttributesToTooltip(stack, tooltipElements);
-        
-        // 显示其他数据
-        addOtherAttributesToTooltip(stack, tooltipElements);
     }
     
     /**
@@ -155,24 +152,44 @@ public class WeaponAttributeRenderer {
         Map<String, Double> allElements = ElementNBTUtils.readAllElementValues(stack);
         
         // 处理暴击相关属性
+        Map<String, Double> criticalStats = ElementNBTUtils.readCriticalStats(stack);
         String[] criticalAttributes = {"crit_chance", "crit_damage", "trigger_chance"};
         for (String attribute : criticalAttributes) {
-            // 查找匹配的元素类型（支持完整匹配或后缀匹配）
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                String elementType = entry.getKey();
-                double value = entry.getValue();
-                
-                if ((elementType.equals(attribute) || elementType.endsWith(":" + attribute)) && value > 0) {
+            if (criticalStats.containsKey(attribute)) {
+                double value = criticalStats.get(attribute);
+                if (value > 0) {
+                    // 查找匹配的元素类型（用于获取完整的elementType以生成翻译键）
+                    String fullElementType = findMatchingElementType(allElements, attribute);
+                    if (fullElementType == null) {
+                        fullElementType = attribute;
+                    }
+                    
                     // 格式化数值
                     String formattedValue = String.format("%.1f%%", value * 100);
                     
-                    // 使用包含命名空间的elementType获取显示名称
+                    // 获取显示名称，使用正确的翻译键格式（如attribute.name.attributeslib.crit_chance）
+                    String translationKey;
+                    if (fullElementType.contains(":")) {
+                        // 将elementType按冒号分割为命名空间和属性名，转换为点号格式
+                        String[] parts = fullElementType.split(":");
+                        translationKey = "attribute.name." + parts[0] + "." + parts[1];
+                    } else {
+                        // 对于没有命名空间的属性，直接使用
+                        translationKey = "attribute.name." + fullElementType;
+                    }
+                    MutableComponent displayName = Component.translatable(translationKey);
+                    
+                    // 设置颜色
+                    ChatFormatting color = ChatFormatting.RED;
+                    if (attribute.equals("trigger_chance")) {
+                        color = ChatFormatting.YELLOW;
+                    }
+                    
                     MutableComponent component = Component.literal("  ")
-                            .append(Component.translatable("attribute.name." + attribute).withStyle(ChatFormatting.RED))
+                            .append(displayName.withStyle(color))
                             .append(Component.literal(": "))
                             .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
                     tooltipElements.add(Either.left(component));
-                    break;
                 }
             }
         }
@@ -180,12 +197,11 @@ public class WeaponAttributeRenderer {
         // 处理攻击速度和攻击范围
         String[] speedRangeAttributes = {"generic.attack_speed", "player.block_interaction_range"};
         for (String attribute : speedRangeAttributes) {
-            // 查找匹配的元素类型（支持完整匹配或后缀匹配）
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                String elementType = entry.getKey();
-                double value = entry.getValue();
-                
-                if ((elementType.equals(attribute) || elementType.endsWith(":" + attribute)) && value != 0) {
+            // 查找匹配的元素类型
+            String fullElementType = findMatchingElementType(allElements, attribute);
+            if (fullElementType != null) {
+                double value = allElements.get(fullElementType);
+                if (value != 0) {
                     // 格式化数值
                     String formattedValue;
                     if (attribute.equals("player.block_interaction_range")) {
@@ -194,16 +210,41 @@ public class WeaponAttributeRenderer {
                         formattedValue = String.format("%.2f", value);
                     }
                     
-                    // 使用包含命名空间的elementType获取显示名称
+                    // 获取显示名称，使用正确的翻译键格式（如attribute.name.minecraft.generic.attack_speed）
+                    String translationKey;
+                    if (fullElementType.contains(":")) {
+                        // 将elementType按冒号分割为命名空间和属性名，转换为点号格式
+                        String[] parts = fullElementType.split(":");
+                        translationKey = "attribute.name." + parts[0] + "." + parts[1];
+                    } else {
+                        // 对于没有命名空间的属性，直接使用
+                        translationKey = "attribute.name." + fullElementType;
+                    }
+                    MutableComponent displayName = Component.translatable(translationKey);
+                    
                     MutableComponent component = Component.literal("  ")
-                            .append(Component.translatable("attribute.name." + attribute).withStyle(ChatFormatting.AQUA))
+                            .append(displayName.withStyle(ChatFormatting.AQUA))
                             .append(Component.literal(": "))
                             .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
                     tooltipElements.add(Either.left(component));
-                    break;
                 }
             }
         }
+    }
+    
+    /**
+     * 查找匹配的元素类型（支持完整匹配或后缀匹配）
+     * @param allElements 所有元素数据
+     * @param attribute 属性名称
+     * @return 匹配的完整元素类型，如果没有匹配则返回null
+     */
+    private static String findMatchingElementType(Map<String, Double> allElements, String attribute) {
+        for (String elementType : allElements.keySet()) {
+            if (elementType.equals(attribute) || elementType.endsWith(":" + attribute)) {
+                return elementType;
+            }
+        }
+        return null;
     }
     
     /**
@@ -238,129 +279,6 @@ public class WeaponAttributeRenderer {
                     tooltipElements.add(Either.left(component));
                 }
             }
-        }
-    }
-    
-    /**
-     * 显示其他数据（除了已经显示的属性之外的数据）
-     */
-    private static void addOtherAttributesToTooltip(ItemStack stack, List<Either<FormattedText, TooltipComponent>> tooltipElements) {
-        // 获取所有元素数据
-        Map<String, Double> allElements = ElementNBTUtils.readAllElementValues(stack);
-        if (allElements.isEmpty()) {
-            return;
-        }
-        
-        // 已经显示过的属性集合（使用后缀形式，如"crit_chance"）
-        Set<String> displayedAttributes = new HashSet<>();
-        
-        // 添加物理元素到已显示集合
-        String[] physicalTypes = {"impact", "puncture", "slash"};
-        for (String type : physicalTypes) {
-            displayedAttributes.add(type);
-        }
-        
-        // 添加基础元素到已显示集合
-        String[] basicTypes = {"cold", "electricity", "heat", "toxin"};
-        for (String type : basicTypes) {
-            displayedAttributes.add(type);
-        }
-        
-        // 添加复合元素到已显示集合
-        String[] complexTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
-        for (String type : complexTypes) {
-            displayedAttributes.add(type);
-        }
-        
-        // 添加派系元素到已显示集合
-        String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmum"};
-        for (String type : factionTypes) {
-            displayedAttributes.add(type);
-        }
-        
-        // 添加特殊属性到已显示集合
-        String[] specialTypes = {"crit_chance", "crit_damage", "trigger_chance", "generic.attack_speed", "player.block_interaction_range"};
-        for (String type : specialTypes) {
-            displayedAttributes.add(type);
-        }
-        
-        // 过滤出未显示的属性
-        boolean hasOtherAttributes = false;
-        Map<String, Double> otherAttributes = new HashMap<>();
-        
-        for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-            String elementType = entry.getKey();
-            double value = entry.getValue();
-            
-            // 跳过零值
-            if (value == 0) {
-                continue;
-            }
-            
-            // 获取元素类型的后缀（不含命名空间）
-            String attributeSuffix = elementType.substring(elementType.lastIndexOf(":") + 1);
-            
-            // 检查是否是已显示属性
-            boolean isDisplayed = displayedAttributes.contains(attributeSuffix);
-            
-            if (!isDisplayed) {
-                hasOtherAttributes = true;
-                otherAttributes.put(elementType, value);
-            }
-        }
-        
-        // 如果没有其他属性，直接返回
-        if (!hasOtherAttributes) {
-            return;
-        }
-        
-        // 添加其他属性标题
-        tooltipElements.add(Either.left(Component.translatable("hamstercore.ui.other_attributes").withStyle(ChatFormatting.BOLD, ChatFormatting.GRAY)));
-        
-        // 显示其他属性
-        for (Map.Entry<String, Double> entry : otherAttributes.entrySet()) {
-            String elementType = entry.getKey();
-            double value = entry.getValue();
-            
-            // 格式化数值
-            String formattedValue;
-            if (elementType.contains("chance") || elementType.contains("rate")) {
-                // 对于百分比类型的属性，乘以100并添加百分号
-                formattedValue = String.format("%.1f%%", value * 100);
-            } else {
-                // 其他数值类型，保留两位小数
-                formattedValue = String.format("%.2f", value);
-            }
-            
-            // 尝试使用翻译键获取显示名称
-            MutableComponent displayName;
-            try {
-                // 首先尝试完整的elementType作为翻译键
-                displayName = Component.translatable("attribute.name." + elementType);
-                // 如果翻译失败，尝试使用属性名的最后一部分
-                if (displayName.getString().equals("attribute.name." + elementType)) {
-                    // 生成显示名称（使用elementType的最后一部分）
-                    String simpleName = elementType.substring(elementType.lastIndexOf(":") + 1);
-                    simpleName = simpleName.replace('.', ' ');
-                    simpleName = java.util.regex.Pattern.compile("(?<!^)(?=[A-Z])").matcher(simpleName).replaceAll(" ");
-                    simpleName = simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1);
-                    displayName = Component.literal(simpleName);
-                }
-            } catch (Exception e) {
-                // 如果翻译失败，生成默认显示名称
-                String simpleName = elementType.substring(elementType.lastIndexOf(":") + 1);
-                simpleName = simpleName.replace('.', ' ');
-                simpleName = java.util.regex.Pattern.compile("(?<!^)(?=[A-Z])").matcher(simpleName).replaceAll(" ");
-                simpleName = simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1);
-                displayName = Component.literal(simpleName);
-            }
-            
-            // 添加到工具提示
-            MutableComponent component = Component.literal("  ")
-                    .append(displayName.withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(": "))
-                    .append(Component.literal(formattedValue).withStyle(ChatFormatting.WHITE));
-            tooltipElements.add(Either.left(component));
         }
     }
 }

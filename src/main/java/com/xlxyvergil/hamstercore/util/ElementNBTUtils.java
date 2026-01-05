@@ -23,17 +23,16 @@ public class ElementNBTUtils {
     }
     
     /**
-     * 从物品中读取物理元素数据
+     * 从物品中读取指定类型的元素数据
      * @param stack 物品栈
-     * @return 物理元素数据映射
+     * @param elementTypes 元素类型数组
+     * @return 元素数据映射
      */
-    public static Map<String, Double> readPhysicalElements(ItemStack stack) {
+    private static Map<String, Double> readElementsByTypes(ItemStack stack, String[] elementTypes) {
         Map<String, Double> elements = new HashMap<>();
         Map<String, Double> allElements = readAllElementValues(stack);
         
-        // 物理元素类型
-        String[] physicalTypes = {"impact", "puncture", "slash"};
-        for (String type : physicalTypes) {
+        for (String type : elementTypes) {
             // 检查完整匹配或后缀匹配
             for (Map.Entry<String, Double> entry : allElements.entrySet()) {
                 if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
@@ -47,37 +46,31 @@ public class ElementNBTUtils {
     }
     
     /**
+     * 从物品中读取物理元素数据
+     * @param stack 物品栈
+     * @return 物理元素数据映射
+     */
+    public static Map<String, Double> readPhysicalElements(ItemStack stack) {
+        // 物理元素类型
+        String[] physicalTypes = {"impact", "puncture", "slash"};
+        return readElementsByTypes(stack, physicalTypes);
+    }
+    
+    /**
      * 从物品中读取复合元素数据
      * @param stack 物品栈
      * @return 复合元素数据映射
      */
     public static Map<String, Double> readCombinedElements(ItemStack stack) {
         Map<String, Double> elements = new HashMap<>();
-        Map<String, Double> allElements = readAllElementValues(stack);
         
         // 复合元素类型
         String[] combinedTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
-        for (String type : combinedTypes) {
-            // 检查完整匹配或后缀匹配
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
-                    elements.put(type, entry.getValue());
-                    break;
-                }
-            }
-        }
+        elements.putAll(readElementsByTypes(stack, combinedTypes));
         
         // 基础元素类型
         String[] basicTypes = {"cold", "electricity", "heat", "toxin"};
-        for (String type : basicTypes) {
-            // 检查完整匹配或后缀匹配
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
-                    elements.put(type, entry.getValue());
-                    break;
-                }
-            }
-        }
+        elements.putAll(readElementsByTypes(stack, basicTypes));
         
         return elements;
     }
@@ -88,22 +81,9 @@ public class ElementNBTUtils {
      * @return 派系元素数据映射
      */
     public static Map<String, Double> readFactionElements(ItemStack stack) {
-        Map<String, Double> elements = new HashMap<>();
-        Map<String, Double> allElements = readAllElementValues(stack);
-        
         // 派系元素类型
         String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmum"};
-        for (String type : factionTypes) {
-            // 检查完整匹配或后缀匹配
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
-                    elements.put(type, entry.getValue());
-                    break;
-                }
-            }
-        }
-        
-        return elements;
+        return readElementsByTypes(stack, factionTypes);
     }
     
     /**
@@ -112,22 +92,9 @@ public class ElementNBTUtils {
      * @return 暴击相关统计数据映射
      */
     public static Map<String, Double> readCriticalStats(ItemStack stack) {
-        Map<String, Double> stats = new HashMap<>();
-        Map<String, Double> allElements = readAllElementValues(stack);
-        
         // 暴击相关统计
         String[] criticalTypes = {"crit_chance", "crit_damage", "trigger_chance"};
-        for (String type : criticalTypes) {
-            // 检查完整匹配或后缀匹配
-            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
-                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
-                    stats.put(type, entry.getValue());
-                    break;
-                }
-            }
-        }
-        
-        return stats;
+        return readElementsByTypes(stack, criticalTypes);
     }
     
     /**
