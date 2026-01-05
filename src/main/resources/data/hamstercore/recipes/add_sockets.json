@@ -1,7 +1,7 @@
 {
   "type": "hamstercore:add_sockets",
   "input": {
-    "item": "hamstercore:tool_augmenter"
+    "tag": "hamstercore:tool_augmenters"
   },
   "max_sockets": 9
 }

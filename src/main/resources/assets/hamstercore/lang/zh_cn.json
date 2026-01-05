@@ -206,10 +206,9 @@
   "effect.hamstercore.viral.description": "降低目标最大生命值",
   
   "item.hamstercore.modification": "改装件",
-  "item.hamstercore.tool_augmenter": "改装工具",
-  "item.hamstercore.precision_screwdriver": "卸载工具",
-  "item.hamstercore.sigil_of_socketing": "改装工具",
-  "item.hamstercore.sigil_of_withdrawal": "卸载工具",
+  "item.hamstercore.tool_augmenter": "改造工具",
+  "item.hamstercore.specialized_tool_augmenter": "特殊改造工具",
+  "item.hamstercore.precision_screwdriver": "精密螺丝刀",
   
   "hamstercore.modification.category.general": "通用",
   "hamstercore.modification.category.special": "特殊",
@@ -241,9 +240,8 @@
   "hamstercore.modification.socketable_into": "适用于",
   "hamstercore.modification.when_modified": "改装后",
   "hamstercore.modification.dot_prefix": "• %s",
-  "hamstercore.modification.normal_sockets": "普通槽位",
-  "hamstercore.modification.special_sockets": "特殊槽位",
+  "hamstercore.modification.normal_socket": "通用改装",
+  "hamstercore.modification.special_socket": "特殊改装",
   "hamstercore.modification.press_ctrl_shift": "按下Ctrl+Shift查看",
-  "itemGroup.hamstercore.modifications": "改装件",
-  "itemGroup.hamstercore.tools": "改装工具"
+  "itemGroup.hamstercore.modifications": "改装件"
 }

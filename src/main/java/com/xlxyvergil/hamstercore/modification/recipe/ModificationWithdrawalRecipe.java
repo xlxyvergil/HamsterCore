@@ -5,6 +5,7 @@ import com.xlxyvergil.hamstercore.modification.ModificationInstance;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
 import com.xlxyvergil.hamstercore.modification.SocketedModifications;
+import java.util.List;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -37,17 +38,16 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         ItemStack base = container.getItem(BASE);
         ItemStack add = container.getItem(ADDITION);
 
-        // 基础物品必须有已安装的改装件
-        if (SocketHelper.getModifications(base).stream().noneMatch(ModificationInstance::isValid)) {
-            return false;
-        }
-
         // 添加物品必须是卸载工具（精密螺丝刀）
         if (!isWithdrawalTool(add)) {
             return false;
         }
 
-        return true;
+        // 基础物品必须有已安装的改装件（特殊或通用）
+        boolean hasValidNormalMods = SocketHelper.getModifications(base).stream().anyMatch(ModificationInstance::isValid);
+        boolean hasValidSpecialMods = SocketHelper.getSpecialModifications(base).stream().anyMatch(ModificationInstance::isValid);
+        
+        return hasValidNormalMods || hasValidSpecialMods;
     }
 
     /**
@@ -64,12 +64,21 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
     public ItemStack assemble(Container container, RegistryAccess registryAccess) {
         ItemStack base = container.getItem(BASE).copy();
 
-        // 移除所有词缀
-        SocketedModifications mods = SocketHelper.getModifications(base);
-        mods.removeAllAffixes(base);
+        // 移除所有词缀（通用和特殊改装件）
+        SocketedModifications normalMods = SocketHelper.getModifications(base);
+        normalMods.removeAllAffixes(base);
+        
+        // 移除特殊改装件的词缀
+        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
+        for (ModificationInstance specialMod : specialMods) {
+            if (specialMod.isValid()) {
+                specialMod.removeAffixes(base);
+            }
+        }
 
         // 清除 NBT 中的改装件数据
         SocketHelper.setModifications(base, Lists.newArrayList());
+        SocketHelper.setSpecialModifications(base, Lists.newArrayList());
 
         return base;
     }
@@ -92,11 +101,27 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
     @Override
     public void onCraft(Container inv, Player player, ItemStack output) {
         ItemStack base = inv.getItem(BASE);
-        SocketedModifications mods = SocketHelper.getModifications(base);
+        
+        // 获取所有已安装的改装件（通用和特殊）
+        SocketedModifications normalMods = SocketHelper.getModifications(base);
+        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
 
-        // 将所有改装件返还给玩家
-        for (int i = 0; i < mods.size(); i++) {
-            ItemStack stack = mods.get(i).modificationStack();
+        // 将通用改装件返还给玩家
+        for (int i = 0; i < normalMods.size(); i++) {
+            ItemStack stack = normalMods.get(i).modificationStack();
+            if (!stack.isEmpty()) {
+                if (!player.addItem(stack)) {
+                    // 如果玩家背包满了，掉落到地上
+                    net.minecraft.world.entity.item.ItemEntity entity = new net.minecraft.world.entity.item.ItemEntity(
+                        player.level(), player.getX(), player.getY(), player.getZ(), stack);
+                    player.level().addFreshEntity(entity);
+                }
+            }
+        }
+        
+        // 将特殊改装件返还给玩家
+        for (ModificationInstance specialMod : specialMods) {
+            ItemStack stack = specialMod.modificationStack();
             if (!stack.isEmpty()) {
                 if (!player.addItem(stack)) {
                     // 如果玩家背包满了，掉落到地上
@@ -109,6 +134,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
 
         // 清除基础物品的改装件数据（防止无限循环）
         SocketHelper.setModifications(base, Lists.newArrayList());
+        SocketHelper.setSpecialModifications(base, Lists.newArrayList());
     }
 
     public static class Serializer implements RecipeSerializer<ModificationWithdrawalRecipe> {

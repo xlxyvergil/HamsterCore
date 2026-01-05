@@ -140,8 +140,6 @@ public class AffixManager {
                 if (type != null && (type.isBasic() || type.isComplex())) {
                     removeFromBasicLayer(weaponData, simpleName);
                     
-                    // 额外的日志记录，用于调试
-                    System.out.println("从Basic层移除了元素: " + simpleName);
                 }
             }
         }

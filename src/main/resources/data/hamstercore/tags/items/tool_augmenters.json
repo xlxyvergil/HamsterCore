@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hamstercore:tool_augmenter",
+    "hamstercore:specialized_tool_augmenter"
+  ]
+}

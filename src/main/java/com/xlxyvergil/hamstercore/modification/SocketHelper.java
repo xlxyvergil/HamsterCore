@@ -61,10 +61,50 @@ public class SocketHelper {
     }
 
     /**
-     * 获取改装件列表
+     * 获取改装件列表（通用槽位）
      */
     public static SocketedModifications getModifications(ItemStack stack) {
         return CachedObjectSource.getOrCreate(stack, MODIFICATIONS_CACHED_OBJECT, SocketHelper::getModificationsImpl, SocketHelper::hashSockets);
+    }
+
+    /**
+     * 获取特殊槽位改装件列表
+     */
+    public static List<ModificationInstance> getSpecialModifications(ItemStack stack) {
+        int specialSockets = getSpecialSockets(stack);
+        if (specialSockets <= 0 || stack.isEmpty()) return Collections.emptyList();
+
+        List<ModificationInstance> modifications = new java.util.ArrayList<>();
+        CompoundTag afxData = stack.getTagElement(AFFIX_DATA);
+        if (afxData != null && afxData.contains("specialModifications")) {
+            ListTag modData = afxData.getList("specialModifications", Tag.TAG_COMPOUND);
+            for (Tag tag : modData) {
+                CompoundTag compound = (CompoundTag) tag;
+                ModificationInstance inst = ModificationInstance.fromNBT(compound);
+                modifications.add(inst);
+            }
+        }
+        
+        // 确保列表大小正确，填充EMPTY
+        while (modifications.size() < specialSockets) {
+            modifications.add(ModificationInstance.EMPTY);
+        }
+        
+        return modifications;
+    }
+
+    /**
+     * 设置特殊槽位改装件列表
+     */
+    public static void setSpecialModifications(ItemStack stack, List<ModificationInstance> modifications) {
+        CompoundTag afxData = stack.getOrCreateTagElement(AFFIX_DATA);
+        ListTag list = new ListTag();
+        for (ModificationInstance inst : modifications) {
+            if (inst.isValid()) {
+                list.add(inst.toNBT());
+            }
+        }
+        afxData.put("specialModifications", list);
     }
 
     /**
@@ -128,6 +168,6 @@ public class SocketHelper {
         for (int socket = 0; socket < mods.size(); socket++) {
             if (!mods.get(socket).isValid()) return socket;
         }
-        return 0;
+        return mods.size() > 0 ? 0 : -1;
     }
 }

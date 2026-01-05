@@ -48,7 +48,7 @@ public class ModificationItem extends Item implements ITabFiller {
             return super.getName(stack);
         }
 
-        Component baseName = Component.translatable("item.hamstercore.modification." + modification.id().getPath());
+        Component baseName = Component.translatable("item.hamstercore.modification:" + modification.id().getPath());
         return baseName.copy().withStyle(modification.rarity().getColor());
     }
 
@@ -58,7 +58,7 @@ public class ModificationItem extends Item implements ITabFiller {
         if (modification == null) {
             return super.getDescriptionId(stack);
         }
-        return "item.hamstercore.modification." + modification.id().getPath();
+        return "item.hamstercore.modification:" + modification.id().getPath();
     }
 
     @Override

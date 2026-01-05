@@ -7,11 +7,11 @@ import net.minecraft.world.item.ItemStack;
 import dev.shadowsoffire.placebo.tabs.ITabFiller;
 
 /**
- * 打孔符文物品类 - Tool Augmenter
+ * 特殊打孔符文物品类 - Specialized Tool Augmenter
  */
-public class ToolAugmenterItem extends Item implements ITabFiller {
+public class SpecializedToolAugmenterItem extends Item implements ITabFiller {
 
-    public ToolAugmenterItem(Properties properties) {
+    public SpecializedToolAugmenterItem(Properties properties) {
         super(properties);
     }
 

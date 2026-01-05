@@ -73,11 +73,14 @@ public record Modification(
      * 添加信息到 tooltip
      */
     public void addInformation(ItemStack stack, List<Component> tooltip) {
-        tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
+        // 只有当改装件是装备上的一部分时才显示"已安装"
+        if (stack.getItem() != com.xlxyvergil.hamstercore.modification.ModificationItems.MODIFICATION.get()) {
+            tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
+        }
         
         // 添加词缀信息
         for (ModificationAffix affix : this.affixes) {
-            String attrKey = "attribute.name." + affix.type();
+            String attrKey = "attribute.name." + affix.type().replace(':', '.');
             Component attrName = Component.translatable(attrKey);
             Component valueText = Component.literal(String.format("%.2f", affix.value()));
             tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",

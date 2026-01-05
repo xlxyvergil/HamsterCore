@@ -28,6 +28,8 @@ public class ModificationItems {
 
     public static final RegistryObject<Item> TOOL_AUGMENTER = R.item("tool_augmenter", () -> new ToolAugmenterItem(TOOL_AUGMENTER_PROPS));
 
+    public static final RegistryObject<Item> SPECIALIZED_TOOL_AUGMENTER = R.item("specialized_tool_augmenter", () -> new SpecializedToolAugmenterItem(TOOL_AUGMENTER_PROPS));
+
     public static final RegistryObject<Item> PRECISION_SCREWDRIVER = R.item("precision_screwdriver", () -> new PrecisionScrewdriverItem(PRECISION_SCREWDRIVER_PROPS));
 
     public static final RegistryObject<CreativeModeTab> MODIFICATION_TAB = R.tab("modifications", () -> {
@@ -46,7 +48,9 @@ public class ModificationItems {
 
     public static void bootstrap() {
         // 使用 TabFillingRegistry 将物品注册到对应的创造模式标签页
-        TabFillingRegistry.register(MODIFICATION_TAB.getKey(), MODIFICATION);
-        TabFillingRegistry.register(TOOLS_TAB.getKey(), TOOL_AUGMENTER, PRECISION_SCREWDRIVER);
+        TabFillingRegistry.register(MODIFICATION, MODIFICATION_TAB.getKey());
+        TabFillingRegistry.register(TOOL_AUGMENTER, TOOLS_TAB.getKey());
+        TabFillingRegistry.register(SPECIALIZED_TOOL_AUGMENTER, TOOLS_TAB.getKey());
+        TabFillingRegistry.register(PRECISION_SCREWDRIVER, TOOLS_TAB.getKey());
     }
 }

@@ -176,16 +176,10 @@ public record ModificationInstance(
 
         Modification modification = modHolder.get();
         
-        // 构建tooltip，显示所有词缀
-        StringBuilder sb = new StringBuilder();
-        for (ModificationAffix affix : modification.affixes()) {
-            if (!sb.isEmpty()) {
-                sb.append(", ");
-            }
-            sb.append(affix.name()).append(": ").append(affix.value());
-        }
-        
-        return Component.literal(sb.toString()).withStyle(ChatFormatting.GREEN);
+        // 使用语言文件中的翻译键获取本地化名称
+        String modId = modification.id().toString();
+        String translationKey = "item." + modId.replace(':', '.');
+        return Component.translatable(translationKey).withStyle(ChatFormatting.GREEN);
     }
 
     /**

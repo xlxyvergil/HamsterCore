@@ -54,7 +54,7 @@ public class ModificationModel implements BakedModel {
             DynamicHolder<Modification> holder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(id));
             if (holder.isBound()) {
                 // 加载对应的改装件模型
-                return Minecraft.getInstance().getModelManager().getModel(ResourceLocation.parse(HamsterCore.MODID + ":item/modifications/" + holder.getId().getPath()));
+                return Minecraft.getInstance().getModelManager().getModel(ResourceLocation.parse(HamsterCore.MODID + ":item/modification/" + holder.getId().getPath()));
             }
         }
         return original;

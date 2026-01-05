@@ -1,5 +1,6 @@
 package com.xlxyvergil.hamstercore.modification.recipe;
 
+import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
 import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
 import com.xlxyvergil.hamstercore.weapon.WeaponType;
@@ -37,29 +38,43 @@ public class AddSocketsRecipe extends SmithingTransformRecipe implements Reactiv
         ItemStack base = container.getItem(BASE);
         ItemStack add = container.getItem(ADDITION);
 
-        // 物品必须有有效的类别
-        WeaponType type = com.xlxyvergil.hamstercore.weapon.WeaponTypeDetector.detectWeaponType(base);
-        if (type == null) {
-            return false;
-        }
-        // 使用 category 变量来验证武器分类（可根据需要添加具体逻辑）
-        WeaponCategory category = type.getCategory();
-        if (category == null) {
-            return false;
-        }
-
-        // 检查是否已达到最大槽位
-        if (SocketHelper.getSockets(base) >= this.getMaxSockets()) {
-            return false;
-        }
-
         // 检查添加物品是否是打孔符文
-        return this.getInput().test(add);
+        if (!this.getInput().test(add)) {
+            return false;
+        }
+
+        // 检查是普通Tool Augmenter还是Specialized Tool Augmenter
+        boolean isSpecialized = add.getItem() == ModificationItems.SPECIALIZED_TOOL_AUGMENTER.get();
+        
+        if (isSpecialized) {
+            // Specialized Tool Augmenter：检查是否已达到最大特殊槽位（1个）
+            return SocketHelper.getSpecialSockets(base) < 1;
+        } else {
+            // 普通Tool Augmenter：检查是否已达到最大通用槽位（8个）
+            return SocketHelper.getSockets(base) < 8;
+        }
     }
 
     @Override
     public ItemStack assemble(Container container, RegistryAccess registryAccess) {
         ItemStack stack = container.getItem(BASE).copy();
+        ItemStack add = container.getItem(ADDITION);
+        
+        // 检查是普通Tool Augmenter还是Specialized Tool Augmenter
+        boolean isSpecialized = add.getItem() == ModificationItems.SPECIALIZED_TOOL_AUGMENTER.get();
+        
+        if (isSpecialized) {
+            // Specialized Tool Augmenter：添加1个特殊槽位（最多1个）
+            if (SocketHelper.getSpecialSockets(stack) < 1) {
+                SocketHelper.setSpecialSockets(stack, 1);
+            }
+        } else {
+            // 普通Tool Augmenter：添加8个通用槽位（最多8个）
+            if (SocketHelper.getSockets(stack) < 8) {
+                SocketHelper.setSockets(stack, 8);
+            }
+        }
+        
         return stack;
     }
 
@@ -88,14 +103,7 @@ public class AddSocketsRecipe extends SmithingTransformRecipe implements Reactiv
 
     @Override
     public void onCraft(Container inv, Player player, ItemStack output) {
-        ItemStack stack = inv.getItem(BASE).copy();
-
-        // 增加槽位：1 个特殊槽位 + 8 个通用槽位
-        int currentSockets = SocketHelper.getSockets(stack);
-        int currentSpecialSockets = SocketHelper.getSpecialSockets(stack);
-
-        SocketHelper.setSpecialSockets(stack, currentSpecialSockets + 1);
-        SocketHelper.setSockets(stack, currentSockets + 8);
+        // 槽位添加已经在assemble方法中完成，这里不需要额外操作
     }
 
     public static class Serializer implements RecipeSerializer<AddSocketsRecipe> {

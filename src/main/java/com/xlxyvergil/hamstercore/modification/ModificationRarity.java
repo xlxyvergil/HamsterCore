@@ -8,11 +8,11 @@ import net.minecraft.ChatFormatting;
  * 改装件稀有度定义
  */
 public enum ModificationRarity implements CodecProvider<ModificationRarity> {
-    COMMON("common", 0, ChatFormatting.WHITE),
-    UNCOMMON("uncommon", 1, ChatFormatting.YELLOW),
-    RARE("rare", 2, ChatFormatting.BLUE),
-    EPIC("epic", 3, ChatFormatting.DARK_PURPLE),
-    MYTHIC("mythic", 4, ChatFormatting.GOLD);
+    COMMON("common", 0, ChatFormatting.GRAY),
+    UNCOMMON("uncommon", 1, ChatFormatting.BLUE),
+    RARE("rare", 2, ChatFormatting.YELLOW),
+    EPIC("epic", 3, ChatFormatting.WHITE),
+    MYTHIC("mythic", 4, ChatFormatting.DARK_PURPLE);
 
     public static final Codec<ModificationRarity> CODEC = Codec.STRING.xmap(
         ModificationRarity::fromString,

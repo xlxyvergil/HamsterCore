@@ -3,8 +3,10 @@ package com.xlxyvergil.hamstercore.modification.recipe;
 import com.xlxyvergil.hamstercore.modification.ModificationInstance;
 import com.xlxyvergil.hamstercore.modification.ModificationItem;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
+import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
 import com.xlxyvergil.hamstercore.modification.SocketedModifications;
+import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -38,17 +40,63 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
         ItemStack base = container.getItem(BASE);
         ItemStack add = container.getItem(ADDITION);
 
-        // 基础物品必须有槽位
-        if (!SocketHelper.hasEmptySockets(base)) {
-            return false;
-        }
-
         // 添加物品必须是改装件
         if (!isModification(add)) {
             return false;
         }
 
-        return true;
+        // 检查改装件是否需要特殊槽位
+        String modId = ModificationItem.getModificationId(add);
+        if (modId == null || modId.isEmpty()) {
+            return false;
+        }
+
+        DynamicHolder<com.xlxyvergil.hamstercore.modification.Modification> modHolder = 
+            ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(modId));
+        if (modHolder == null || !modHolder.isBound()) {
+            return false;
+        }
+
+        boolean needsSpecialSocket = modHolder.get().useSpecialSocket();
+        
+        // 检查互斥组：获取新改装件的互斥组
+        java.util.List<String> newModGroups = modHolder.get().mutualExclusionGroups();
+        
+        // 获取所有已安装的改装件（特殊和通用）
+        List<ModificationInstance> allMods = new java.util.ArrayList<>();
+        allMods.addAll(SocketHelper.getSpecialModifications(base));
+        allMods.addAll(SocketHelper.getModifications(base).modifications());
+        
+        // 检查互斥组冲突
+        for (ModificationInstance existingMod : allMods) {
+            if (existingMod.isValid()) {
+                DynamicHolder<com.xlxyvergil.hamstercore.modification.Modification> existingModHolder = existingMod.getModification();
+                if (existingModHolder != null && existingModHolder.isBound()) {
+                    java.util.List<String> existingGroups = existingModHolder.get().mutualExclusionGroups();
+                    // 检查是否有交集
+                    for (String newGroup : newModGroups) {
+                        if (existingGroups.contains(newGroup)) {
+                            return false; // 互斥组冲突，不能安装
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 检查槽位是否可用
+        if (needsSpecialSocket) {
+            // 需要特殊槽位：检查是否有空特殊槽位
+            List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
+            for (ModificationInstance inst : specialMods) {
+                if (!inst.isValid()) {
+                    return true; // 有空位
+                }
+            }
+            return false; // 没有空特殊槽位
+        } else {
+            // 需要通用槽位：检查是否有空通用槽位
+            return SocketHelper.hasEmptySockets(base);
+        }
     }
 
     /**
@@ -66,33 +114,59 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
         ItemStack base = container.getItem(BASE).copy();
         ItemStack add = container.getItem(ADDITION).copy();
 
-        // 找到第一个空槽位
-        int slot = SocketHelper.getFirstEmptySocket(base);
-        if (slot < 0) {
-            return ItemStack.EMPTY;
-        }
-
-        // 获取当前改装件列表
-        SocketedModifications mods = SocketHelper.getModifications(base);
-        List<ModificationInstance> modificationList = new java.util.ArrayList<>(mods.modifications());
-
         // 获取改装件ID
         String modId = ModificationItem.getModificationId(add);
         if (modId == null || modId.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
-        // 创建新的改装件实例（保持原base的NBT）
+        DynamicHolder<com.xlxyvergil.hamstercore.modification.Modification> modHolder = 
+            ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(modId));
+        if (modHolder == null || !modHolder.isBound()) {
+            return ItemStack.EMPTY;
+        }
+
+        boolean needsSpecialSocket = modHolder.get().useSpecialSocket();
+        
+        // 创建新的改装件实例
         ModificationInstance newInst = new ModificationInstance(modId, java.util.UUID.randomUUID());
         
-        // 替换指定槽位的改装件
-        modificationList.set(slot, newInst);
+        if (needsSpecialSocket) {
+            // 安装到特殊槽位
+            List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
+            for (int i = 0; i < specialMods.size(); i++) {
+                if (!specialMods.get(i).isValid()) {
+                    specialMods.set(i, newInst);
+                    SocketHelper.setSpecialModifications(base, specialMods);
+                    newInst.applyAffixes(base, null);
+                    return base;
+                }
+            }
+        } else {
+            // 安装到通用槽位
+            int slot = SocketHelper.getFirstEmptySocket(base);
+            if (slot < 0) {
+                return ItemStack.EMPTY;
+            }
 
-        // 应用新改装件的词缀
-        SocketHelper.setModifications(base, modificationList);
-        new SocketedModifications(modificationList).applyAllModifications(base, null);
+            SocketedModifications mods = SocketHelper.getModifications(base);
+            List<ModificationInstance> modificationList = new java.util.ArrayList<>(mods.modifications());
+            
+            int sockets = SocketHelper.getSockets(base);
+            if (modificationList.size() < sockets) {
+                while (modificationList.size() < sockets) {
+                    modificationList.add(ModificationInstance.EMPTY);
+                }
+            }
 
-        return base;
+            modificationList.set(slot, newInst);
+            SocketHelper.setModifications(base, modificationList);
+            new SocketedModifications(modificationList).applyAllModifications(base, null);
+            
+            return base;
+        }
+
+        return ItemStack.EMPTY;
     }
 
     @Override
