@@ -67,7 +67,7 @@ public class ModificationItem extends Item implements ITabFiller {
         if (modification == null) {
             return super.isFoil(stack);
         }
-        return modification.rarity() == com.xlxyvergil.hamstercore.modification.ModificationRarity.MYTHIC;
+        return modification.rarity() == ModificationRarity.MYTHIC;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ModificationItem extends Item implements ITabFiller {
      * 创建改装件物品堆
      */
     public static ItemStack createModificationStack(Modification modification) {
-        ItemStack stack = new ItemStack(com.xlxyvergil.hamstercore.modification.ModificationItems.MODIFICATION.get());
+        ItemStack stack = new ItemStack(ModificationItems.MODIFICATION.get());
         setModification(stack, modification);
         return stack;
     }

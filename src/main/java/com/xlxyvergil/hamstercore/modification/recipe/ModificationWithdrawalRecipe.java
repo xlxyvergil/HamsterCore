@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.modification.recipe;
 
 import com.google.common.collect.Lists;
+import com.xlxyvergil.hamstercore.api.element.AffixAPI;
 import com.xlxyvergil.hamstercore.modification.ModificationInstance;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
@@ -73,7 +74,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         SocketedModifications normalMods = SocketHelper.getModifications(base);
         for (ModificationInstance mod : normalMods.modifications()) {
             if (mod.isValid()) {
-                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(out, mod.uuid());
+                AffixAPI.removeAffix(out, mod.uuid());
             }
         }
         
@@ -81,7 +82,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
         for (ModificationInstance mod : specialMods) {
             if (mod.isValid()) {
-                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(out, mod.uuid());
+                AffixAPI.removeAffix(out, mod.uuid());
             }
         }
         
@@ -169,7 +170,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         SocketedModifications originalNormalMods = SocketHelper.getModifications(base);
         for (ModificationInstance mod : originalNormalMods.modifications()) {
             if (mod.isValid()) {
-                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(base, mod.uuid());
+                AffixAPI.removeAffix(base, mod.uuid());
             }
         }
         
@@ -177,7 +178,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         List<ModificationInstance> originalSpecialMods = SocketHelper.getSpecialModifications(base);
         for (ModificationInstance mod : originalSpecialMods) {
             if (mod.isValid()) {
-                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(base, mod.uuid());
+                AffixAPI.removeAffix(base, mod.uuid());
             }
         }
         

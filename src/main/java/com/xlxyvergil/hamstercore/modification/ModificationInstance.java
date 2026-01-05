@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import com.xlxyvergil.hamstercore.api.element.AffixAPI;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -110,7 +111,7 @@ public record ModificationInstance(
         // 应用所有词缀 - 使用AffixAPI传递数据，由其他系统统一处理属性修饰符
         for (ModificationAffix affix : modification.affixes()) {
             // 使用AffixAPI添加词缀，由其他系统统一处理属性修饰符
-            com.xlxyvergil.hamstercore.api.element.AffixAPI.addAffix(
+            AffixAPI.addAffix(
                 stack,
                 affix.name(),
                 affix.type(),
@@ -131,7 +132,7 @@ public record ModificationInstance(
         }
 
         // 使用AffixAPI移除词缀，由其他系统统一处理属性修饰符
-        com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(stack, this.uuid);
+        AffixAPI.removeAffix(stack, this.uuid);
     }
 
 

@@ -2,18 +2,12 @@ package com.xlxyvergil.hamstercore.content.capability;
 
 import com.xlxyvergil.hamstercore.attribute.BaseAttributeModifierSystem;
 import com.xlxyvergil.hamstercore.attribute.DerivedAttributeModifierSystem;
-import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
 import com.xlxyvergil.hamstercore.content.capability.entity.*;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
 import com.xlxyvergil.hamstercore.network.*;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.UUID;
 
@@ -121,24 +115,12 @@ public class EntityCapabilityAttacher {
                 });
     }
 
-    private static void updateShieldCapabilityFromAttributes(LivingEntity entity) {
-        entity.getCapability(EntityShieldCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            updateShieldCapabilityFromAttributes(entity, cap);
-        });
-    }
-
     private static void updateShieldCapabilityFromAttributes(LivingEntity entity, EntityShieldCapability cap) {
         cap.setMaxShield((float) AttributeHelper.getShield(entity));
         cap.setRegenRate((float) AttributeHelper.getRegenRate(entity));
         cap.setRegenDelay((int) AttributeHelper.getRegenDelay(entity));
         cap.setRegenDelayDepleted((int) AttributeHelper.getDepletedRegenDelay(entity));
         cap.setImmunityTime((int) AttributeHelper.getImmunityTime(entity));
-    }
-
-    private static void updateArmorCapabilityFromAttributes(LivingEntity entity) {
-        entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            updateArmorCapabilityFromAttributes(entity, cap);
-        });
     }
 
     private static void updateArmorCapabilityFromAttributes(LivingEntity entity, EntityArmorCapability cap) {

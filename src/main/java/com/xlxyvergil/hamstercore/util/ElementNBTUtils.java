@@ -34,8 +34,12 @@ public class ElementNBTUtils {
         // 物理元素类型
         String[] physicalTypes = {"impact", "puncture", "slash"};
         for (String type : physicalTypes) {
-            if (allElements.containsKey(type)) {
-                elements.put(type, allElements.get(type));
+            // 检查完整匹配或后缀匹配
+            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
+                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
+                    elements.put(type, entry.getValue());
+                    break;
+                }
             }
         }
         
@@ -54,16 +58,24 @@ public class ElementNBTUtils {
         // 复合元素类型
         String[] combinedTypes = {"blast", "corrosive", "gas", "magnetic", "radiation", "viral"};
         for (String type : combinedTypes) {
-            if (allElements.containsKey(type)) {
-                elements.put(type, allElements.get(type));
+            // 检查完整匹配或后缀匹配
+            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
+                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
+                    elements.put(type, entry.getValue());
+                    break;
+                }
             }
         }
         
         // 基础元素类型
         String[] basicTypes = {"cold", "electricity", "heat", "toxin"};
         for (String type : basicTypes) {
-            if (allElements.containsKey(type)) {
-                elements.put(type, allElements.get(type));
+            // 检查完整匹配或后缀匹配
+            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
+                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
+                    elements.put(type, entry.getValue());
+                    break;
+                }
             }
         }
         
@@ -82,8 +94,12 @@ public class ElementNBTUtils {
         // 派系元素类型
         String[] factionTypes = {"grineer", "infested", "corpus", "orokin", "sentient", "murmum"};
         for (String type : factionTypes) {
-            if (allElements.containsKey(type)) {
-                elements.put(type, allElements.get(type));
+            // 检查完整匹配或后缀匹配
+            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
+                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
+                    elements.put(type, entry.getValue());
+                    break;
+                }
             }
         }
         
@@ -100,10 +116,14 @@ public class ElementNBTUtils {
         Map<String, Double> allElements = readAllElementValues(stack);
         
         // 暴击相关统计
-        String[] criticalTypes = {"critical_chance", "critical_damage", "trigger_chance"};
+        String[] criticalTypes = {"crit_chance", "crit_damage", "trigger_chance"};
         for (String type : criticalTypes) {
-            if (allElements.containsKey(type)) {
-                stats.put(type, allElements.get(type));
+            // 检查完整匹配或后缀匹配
+            for (Map.Entry<String, Double> entry : allElements.entrySet()) {
+                if (entry.getKey().equals(type) || entry.getKey().endsWith(":" + type)) {
+                    stats.put(type, entry.getValue());
+                    break;
+                }
             }
         }
         
@@ -123,7 +143,12 @@ public class ElementNBTUtils {
         
         List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
         for (ElementUsageData.AttributeModifierEntry entry : entries) {
-            if (entry.getName().equals(elementType)) {
+            // 检查elementType是否完全匹配
+            if (entry.getElementType().equals(elementType)) {
+                return entry.getAmount();
+            }
+            // 检查elementType的后缀是否匹配（支持直接使用属性名称匹配）
+            if (entry.getElementType().endsWith(":" + elementType)) {
                 return entry.getAmount();
             }
         }
@@ -137,7 +162,7 @@ public class ElementNBTUtils {
      * @return 暴击率值，如果不存在则返回0.0
      */
     public static double readCriticalChance(ItemStack stack) {
-        return readElementValue(stack, "critical_chance");
+        return readElementValue(stack, "crit_chance");
     }
     
     /**
@@ -146,7 +171,7 @@ public class ElementNBTUtils {
      * @return 暴击伤害值，如果不存在则返回0.0
      */
     public static double readCriticalDamage(ItemStack stack) {
-        return readElementValue(stack, "critical_damage");
+        return readElementValue(stack, "crit_damage");
     }
     
     /**
@@ -246,7 +271,7 @@ public class ElementNBTUtils {
         
         List<ElementUsageData.AttributeModifierEntry> entries = ElementUsageData.readElementDataFromItem(stack);
         for (ElementUsageData.AttributeModifierEntry entry : entries) {
-            values.put(entry.getName(), entry.getAmount());
+            values.put(entry.getElementType(), entry.getAmount());
         }
         
         return values;

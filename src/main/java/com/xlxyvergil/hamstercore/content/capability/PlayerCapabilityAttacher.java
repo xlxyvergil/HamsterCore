@@ -2,23 +2,14 @@ package com.xlxyvergil.hamstercore.content.capability;
 
 import com.xlxyvergil.hamstercore.attribute.BaseAttributeModifierSystem;
 import com.xlxyvergil.hamstercore.attribute.DerivedAttributeModifierSystem;
-import com.xlxyvergil.hamstercore.attribute.EntityAttributeRegistry;
 import com.xlxyvergil.hamstercore.attribute.PlayerLevelAttributeModifierSystem;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityArmorCapabilityProvider;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapability;
 import com.xlxyvergil.hamstercore.content.capability.entity.EntityShieldCapabilityProvider;
-import com.xlxyvergil.hamstercore.content.capability.entity.EntityHealthModifierCapabilityProvider;
-import com.xlxyvergil.hamstercore.level.PlayerLevelManager;
 import com.xlxyvergil.hamstercore.network.*;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.PacketDistributor;
 import com.xlxyvergil.hamstercore.util.AttributeHelper;
 
-import java.util.UUID;
 
 public class PlayerCapabilityAttacher {
     
@@ -62,7 +53,7 @@ public class PlayerCapabilityAttacher {
     }
     
     public static void syncPlayerCapabilitiesToClients(Player player) {
-        if (player.level().isClientSide() || !(player instanceof ServerPlayer serverPlayer)) {
+        if (player.level().isClientSide() || !(player instanceof ServerPlayer)) {
             return;
         }
         

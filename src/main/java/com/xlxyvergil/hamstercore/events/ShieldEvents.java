@@ -7,13 +7,11 @@ import com.xlxyvergil.hamstercore.network.EntityShieldSyncToClient;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -171,10 +169,7 @@ public class ShieldEvents {
         
         // 确定使用的恢复延迟
         int regenDelay = shieldCap.getCurrentShield() <= 0 ? shieldCap.getRegenDelayDepleted() : shieldCap.getRegenDelay();
-        
-        // 记录恢复前的护盾值
-        float oldShield = shieldCap.getCurrentShield();
-        
+                
         // 如果距离上次受伤超过了恢复延迟时间且护盾未满，则开始恢复
         // regenDelay现在是以毫秒为单位，需要转换为ticks进行比较 (1 tick = 50毫秒)
         long regenDelayInTicks = regenDelay / 50;

@@ -74,7 +74,7 @@ public record Modification(
      */
     public void addInformation(ItemStack stack, List<Component> tooltip) {
         // 只有当改装件是装备上的一部分时才显示"已安装"
-        if (stack.getItem() != com.xlxyvergil.hamstercore.modification.ModificationItems.MODIFICATION.get()) {
+        if (stack.getItem() != ModificationItems.MODIFICATION.get()) {
             tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
         }
         
