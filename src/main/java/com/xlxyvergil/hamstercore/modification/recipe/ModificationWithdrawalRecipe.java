@@ -67,6 +67,24 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         if (out.isEmpty()) {
             return ItemStack.EMPTY;
         }
+        
+        // 先移除所有已安装改装件对应的词缀
+        // 移除通用改装件词缀
+        SocketedModifications normalMods = SocketHelper.getModifications(base);
+        for (ModificationInstance mod : normalMods.modifications()) {
+            if (mod.isValid()) {
+                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(out, mod.uuid());
+            }
+        }
+        
+        // 移除特殊改装件词缀
+        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
+        for (ModificationInstance mod : specialMods) {
+            if (mod.isValid()) {
+                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(out, mod.uuid());
+            }
+        }
+        
         // 清空输出物品的改装件数据
         SocketHelper.setModifications(out, Lists.newArrayList());
         SocketHelper.setSpecialModifications(out, Lists.newArrayList());
@@ -146,6 +164,23 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
             }
         }
 
+        // 先移除原始物品上所有已安装改装件对应的词缀
+        // 移除通用改装件词缀
+        SocketedModifications originalNormalMods = SocketHelper.getModifications(base);
+        for (ModificationInstance mod : originalNormalMods.modifications()) {
+            if (mod.isValid()) {
+                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(base, mod.uuid());
+            }
+        }
+        
+        // 移除特殊改装件词缀
+        List<ModificationInstance> originalSpecialMods = SocketHelper.getSpecialModifications(base);
+        for (ModificationInstance mod : originalSpecialMods) {
+            if (mod.isValid()) {
+                com.xlxyvergil.hamstercore.api.element.AffixAPI.removeAffix(base, mod.uuid());
+            }
+        }
+        
         // 清空原始物品的改装件数据
         SocketHelper.setModifications(base, Lists.newArrayList());
         SocketHelper.setSpecialModifications(base, Lists.newArrayList());

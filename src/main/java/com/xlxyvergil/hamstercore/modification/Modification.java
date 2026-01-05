@@ -43,7 +43,7 @@ public record Modification(
         ModificationAffix.LIST_CODEC.fieldOf("affixes").forGetter(Modification::affixes),
         Codec.BOOL.optionalFieldOf("use_special_socket", false).forGetter(Modification::useSpecialSocket),
         Codec.STRING.listOf().optionalFieldOf("mutualExclusionGroups", List.of()).forGetter(Modification::mutualExclusionGroups),
-        Codec.STRING.xmap(UUID::fromString, UUID::toString).optionalFieldOf("uuid", UUID.randomUUID()).forGetter(Modification::uuid)
+        Codec.STRING.xmap(UUID::fromString, UUID::toString).fieldOf("uuid").forGetter(Modification::uuid)
     ).apply(inst, Modification::new));
 
     @Override

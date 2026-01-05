@@ -69,6 +69,12 @@ public class ModificationClient {
     public static void onTooltipColor(RenderTooltipEvent.Color e) {
         ItemStack stack = e.getItemStack();
         
+        // 检查当前是否是在渲染物品tooltip，而不是标签页或其他UI元素的tooltip
+        // 通过检查物品栈是否有效且不是空栈来判断
+        if (stack.isEmpty()) {
+            return;
+        }
+        
         if (needsLeftPage(stack)) {
             // 渲染右侧页面
             GuiGraphics guiGraphics = e.getGraphics();
@@ -108,6 +114,11 @@ public class ModificationClient {
             int rightPageWidth = calculateRightPageWidth(stack, font);
             int rightPageHeight = calculateRightPageHeight(rightPageElements, font);
             
+            // 提高渲染层级，确保显示在最顶层
+            PoseStack poseStack = guiGraphics.pose();
+            poseStack.pushPose();
+            poseStack.translate(0, 0, 300); // 设置更高的层级
+            
             // 使用原版tooltip的背景和边框颜色渲染右侧页面，高度根据实际内容调整
             guiGraphics.fillGradient(x - 3, y - 3, x + rightPageWidth + 3, y + rightPageHeight + 3, e.getBackgroundStart(), e.getBackgroundEnd());
             
@@ -123,6 +134,8 @@ public class ModificationClient {
             
             // 渲染右侧页面元素
             renderRightPageElements(rightPageElements, guiGraphics, font, x, y);
+            
+            poseStack.popPose();
         }
     }
     

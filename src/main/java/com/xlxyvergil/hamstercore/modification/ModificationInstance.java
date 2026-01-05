@@ -23,7 +23,7 @@ public record ModificationInstance(
     public static final String TAG_MODIFICATION_ID = "ModificationId";
     public static final String TAG_MODIFICATION_UUID = "ModificationUUID";
 
-    public static final ModificationInstance EMPTY = new ModificationInstance("", UUID.randomUUID());
+    public static final ModificationInstance EMPTY = new ModificationInstance("", UUID.fromString("00000000-0000-0000-0000-000000000000"));
 
     /**
      * 从 NBT 创建
@@ -33,8 +33,15 @@ public record ModificationInstance(
         if (id == null || id.isEmpty()) {
             return EMPTY;
         }
-        UUID uuid = tag.getUUID(TAG_MODIFICATION_UUID);
-        return new ModificationInstance(id, uuid);
+        
+        // 从改装件定义中获取UUID，而不是直接从NBT中读取
+        DynamicHolder<Modification> modHolder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(id));
+        if (modHolder.isBound()) {
+            UUID uuid = modHolder.get().uuid();
+            return new ModificationInstance(id, uuid);
+        }
+        
+        return EMPTY;
     }
 
     /**

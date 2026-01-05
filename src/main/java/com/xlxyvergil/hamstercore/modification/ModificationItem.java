@@ -128,23 +128,17 @@ public class ModificationItem extends Item implements ITabFiller {
         
         // 获取改装件定义
         Modification modification = getModificationDefinition(stack);
-        UUID uuid;
         
         if (modification != null) {
-            // 使用改装件定义中的UUID
-            uuid = modification.uuid();
+            // 只使用改装件定义中的UUID
+            UUID uuid = modification.uuid();
             // 更新物品标签中的UUID，确保一致性
             stack.getOrCreateTag().putUUID("ModificationUUID", uuid);
-        } else if (stack.getOrCreateTag().hasUUID("ModificationUUID")) {
-            // 如果没有改装件定义，但物品标签中有UUID，使用它
-            uuid = stack.getOrCreateTag().getUUID("ModificationUUID");
+            return new ModificationInstance(id, uuid);
         } else {
-            // 兜底：生成随机UUID
-            uuid = UUID.randomUUID();
-            stack.getOrCreateTag().putUUID("ModificationUUID", uuid);
+            // 如果没有改装件定义，返回空实例
+            return ModificationInstance.EMPTY;
         }
-        
-        return new ModificationInstance(id, uuid);
     }
 
     /**

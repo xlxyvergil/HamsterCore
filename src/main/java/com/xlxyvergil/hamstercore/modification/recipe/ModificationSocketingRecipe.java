@@ -128,8 +128,8 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
 
         boolean needsSpecialSocket = modHolder.get().useSpecialSocket();
         
-        // 创建新的改装件实例
-        ModificationInstance newInst = new ModificationInstance(modId, java.util.UUID.randomUUID());
+        // 创建新的改装件实例，使用改装件定义中的UUID
+        ModificationInstance newInst = new ModificationInstance(modId, modHolder.get().uuid());
         
         if (needsSpecialSocket) {
             // 安装到特殊槽位
