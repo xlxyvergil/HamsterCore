@@ -72,12 +72,14 @@ public class ModificationItem extends Item implements ITabFiller {
 
     @Override
     public void fillItemCategory(CreativeModeTab group, CreativeModeTab.Output out) {
-        ModificationRegistry.INSTANCE.getValues().stream()
-            .sorted((m1, m2) -> m1.id().compareTo(m2.id()))
-            .forEach(modification -> {
-                ItemStack stack = createModificationStack(modification);
-                out.accept(stack);
-            });
+        if (group == ModificationItems.MODIFICATION_TAB.get()) {
+            ModificationRegistry.INSTANCE.getValues().stream()
+                .sorted((m1, m2) -> m1.id().compareTo(m2.id()))
+                .forEach(modification -> {
+                    ItemStack stack = createModificationStack(modification);
+                    out.accept(stack);
+                });
+        }
     }
 
     /**

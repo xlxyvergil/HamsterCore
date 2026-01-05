@@ -17,7 +17,7 @@ public class PrecisionScrewdriverItem extends Item implements ITabFiller {
 
     @Override
     public void fillItemCategory(CreativeModeTab group, CreativeModeTab.Output out) {
-        if (group == ModificationItems.TOOLS_TAB.get()) {
+        if (group == ModificationItems.MODIFICATION_TAB.get()) {
             ItemStack stack = new ItemStack(this);
             out.accept(stack);
         }

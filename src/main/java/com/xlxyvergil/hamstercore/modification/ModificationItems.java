@@ -49,8 +49,8 @@ public class ModificationItems {
     public static void bootstrap() {
         // 使用 TabFillingRegistry 将物品注册到对应的创造模式标签页
         TabFillingRegistry.register(MODIFICATION, MODIFICATION_TAB.getKey());
-        TabFillingRegistry.register(TOOL_AUGMENTER, TOOLS_TAB.getKey());
-        TabFillingRegistry.register(SPECIALIZED_TOOL_AUGMENTER, TOOLS_TAB.getKey());
-        TabFillingRegistry.register(PRECISION_SCREWDRIVER, TOOLS_TAB.getKey());
+        TabFillingRegistry.register(TOOL_AUGMENTER, MODIFICATION_TAB.getKey());
+        TabFillingRegistry.register(SPECIALIZED_TOOL_AUGMENTER, MODIFICATION_TAB.getKey());
+        TabFillingRegistry.register(PRECISION_SCREWDRIVER, MODIFICATION_TAB.getKey());
     }
 }
