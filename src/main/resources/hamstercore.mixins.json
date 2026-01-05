@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "hamstercore.refmap.json",
   "mixins": [
+    "HamsterCoreModificationSmithingMenuMixin"
   ],
   "client": [
     "ClientMinecraftMixin",

@@ -177,8 +177,7 @@ public record ModificationInstance(
         Modification modification = modHolder.get();
         
         // 使用语言文件中的翻译键获取本地化名称
-        String modId = modification.id().toString();
-        String translationKey = "item." + modId.replace(':', '.');
+        String translationKey = "item.hamstercore.modification:" + modification.id().getPath();
         return Component.translatable(translationKey).withStyle(ChatFormatting.GREEN);
     }
 

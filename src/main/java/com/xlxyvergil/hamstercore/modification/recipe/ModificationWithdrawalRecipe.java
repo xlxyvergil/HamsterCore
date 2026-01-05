@@ -100,11 +100,12 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
 
     @Override
     public void onCraft(Container inv, Player player, ItemStack output) {
-        ItemStack base = inv.getItem(BASE);
+        // 使用output而不是base，因为base的NBT已经被assemble方法清空了
+        // output是assemble返回的物品堆，其中包含原始的改装件数据
         
         // 获取所有已安装的改装件（通用和特殊）
-        SocketedModifications normalMods = SocketHelper.getModifications(base);
-        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
+        SocketedModifications normalMods = SocketHelper.getModifications(output);
+        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(output);
 
         // 将通用改装件返还给玩家
         for (int i = 0; i < normalMods.size(); i++) {
@@ -131,10 +132,6 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
                 }
             }
         }
-
-        // 清除基础物品的改装件数据（防止无限循环）
-        SocketHelper.setModifications(base, Lists.newArrayList());
-        SocketHelper.setSpecialModifications(base, Lists.newArrayList());
     }
 
     public static class Serializer implements RecipeSerializer<ModificationWithdrawalRecipe> {
