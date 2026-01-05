@@ -62,25 +62,15 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
 
     @Override
     public ItemStack assemble(Container container, RegistryAccess registryAccess) {
-        ItemStack base = container.getItem(BASE).copy();
-
-        // 移除所有词缀（通用和特殊改装件）
-        SocketedModifications normalMods = SocketHelper.getModifications(base);
-        normalMods.removeAllAffixes(base);
-        
-        // 移除特殊改装件的词缀
-        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
-        for (ModificationInstance specialMod : specialMods) {
-            if (specialMod.isValid()) {
-                specialMod.removeAffixes(base);
-            }
+        ItemStack base = container.getItem(BASE);
+        ItemStack out = base.copy();
+        if (out.isEmpty()) {
+            return ItemStack.EMPTY;
         }
-
-        // 清除 NBT 中的改装件数据
-        SocketHelper.setModifications(base, Lists.newArrayList());
-        SocketHelper.setSpecialModifications(base, Lists.newArrayList());
-
-        return base;
+        // 清空输出物品的改装件数据
+        SocketHelper.setModifications(out, Lists.newArrayList());
+        SocketHelper.setSpecialModifications(out, Lists.newArrayList());
+        return out;
     }
 
     @Override
@@ -100,19 +90,40 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
 
     @Override
     public void onCraft(Container inv, Player player, ItemStack output) {
-        // 使用output而不是base，因为base的NBT已经被assemble方法清空了
-        // output是assemble返回的物品堆，其中包含原始的改装件数据
+        // 在Forge 1.20.1中，inputSlots可能不是标准Container
+        // 使用正确的槽位访问方式
+        ItemStack base = inv.getItem(BASE);
         
-        // 获取所有已安装的改装件（通用和特殊）
-        SocketedModifications normalMods = SocketHelper.getModifications(output);
-        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(output);
-
-        // 将通用改装件返还给玩家
+        // 如果获取不到，尝试使用反射或直接访问inputSlots
+        if (base.isEmpty() && inv.getItem(ADDITION).isEmpty()) {
+            // 尝试通过inputSlots直接访问槽位
+            try {
+                java.lang.reflect.Field slotsField = Container.class.getDeclaredField("inputSlots");
+                slotsField.setAccessible(true);
+                Object slots = slotsField.get(inv);
+                if (slots != null) {
+                    java.lang.reflect.Method getFirst = slots.getClass().getMethod("getFirst");
+                    Object firstSlot = getFirst.invoke(slots);
+                    if (firstSlot != null) {
+                        java.lang.reflect.Method getItem = firstSlot.getClass().getMethod("getItem");
+                        base = (ItemStack) getItem.invoke(firstSlot);
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略异常
+            }
+        }
+        
+        if (base.isEmpty()) {
+            return;
+        }
+        
+        // 获取通用改装件
+        SocketedModifications normalMods = SocketHelper.getModifications(base);
         for (int i = 0; i < normalMods.size(); i++) {
             ItemStack stack = normalMods.get(i).modificationStack();
             if (!stack.isEmpty()) {
                 if (!player.addItem(stack)) {
-                    // 如果玩家背包满了，掉落到地上
                     net.minecraft.world.entity.item.ItemEntity entity = new net.minecraft.world.entity.item.ItemEntity(
                         player.level(), player.getX(), player.getY(), player.getZ(), stack);
                     player.level().addFreshEntity(entity);
@@ -120,18 +131,24 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
             }
         }
         
-        // 将特殊改装件返还给玩家
+        // 获取特殊改装件
+        List<ModificationInstance> specialMods = SocketHelper.getSpecialModifications(base);
         for (ModificationInstance specialMod : specialMods) {
-            ItemStack stack = specialMod.modificationStack();
-            if (!stack.isEmpty()) {
-                if (!player.addItem(stack)) {
-                    // 如果玩家背包满了，掉落到地上
-                    net.minecraft.world.entity.item.ItemEntity entity = new net.minecraft.world.entity.item.ItemEntity(
-                        player.level(), player.getX(), player.getY(), player.getZ(), stack);
-                    player.level().addFreshEntity(entity);
+            if (specialMod.isValid()) {
+                ItemStack stack = specialMod.modificationStack();
+                if (!stack.isEmpty()) {
+                    if (!player.addItem(stack)) {
+                        net.minecraft.world.entity.item.ItemEntity entity = new net.minecraft.world.entity.item.ItemEntity(
+                            player.level(), player.getX(), player.getY(), player.getZ(), stack);
+                        player.level().addFreshEntity(entity);
+                    }
                 }
             }
         }
+
+        // 清空原始物品的改装件数据
+        SocketHelper.setModifications(base, Lists.newArrayList());
+        SocketHelper.setSpecialModifications(base, Lists.newArrayList());
     }
 
     public static class Serializer implements RecipeSerializer<ModificationWithdrawalRecipe> {
