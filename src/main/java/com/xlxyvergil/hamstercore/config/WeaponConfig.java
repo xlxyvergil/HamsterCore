@@ -27,7 +27,7 @@ public class WeaponConfig {
     
     // 默认特殊属性值 - 与ApothicAttributes的默认值保持一致
     private static final double DEFAULT_CRIT_CHANCE = 0.2; // 20%暴击率 (与ApothicAttributes默认值一致)
-    private static final double DEFAULT_CRIT_DAMAGE = 0.5;  // 0.5倍暴击伤害 (与ApothicAttributes默认值一致)
+    private static final double DEFAULT_CRIT_DAMAGE = 2.0;  // 2.0倍暴击伤害
     private static final double DEFAULT_TRIGGER_CHANCE = 0.2;   // 20%触发率
     
     // 默认物理元素占比
@@ -313,7 +313,7 @@ public class WeaponConfig {
             // 创建默认配置内容（只包含注释和示例）
             JsonObject defaultConfig = new JsonObject();
             defaultConfig.addProperty("_comment", "在此添加您想要应用元素属性的额外普通物品，格式如下:");
-            defaultConfig.addProperty("_example", "{\n  \"minecraft:diamond_sword\": {\n    \"elementData\": {\n      \"InitialModifiers\": [\n        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n        {\"name\": \"CRITICAL_CHANCE\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n      ]\n    }\n  }\n}");
+            defaultConfig.addProperty("_example", "{\n  \"minecraft:diamond_sword\": {\n    \"elementData\": {\n      \"InitialModifiers\": [\n        {\"name\": \"SLASH\", \"amount\": 5.0, \"operation\": \"ADDITION\"},\n        {\"name\": \"crit_chance\", \"amount\": 0.1, \"operation\": \"ADDITION\"}\n      ]\n    }\n  }\n}");
             
             // 写入配置文件
             Gson gson = new GsonBuilder().setPrettyPrinting().create();

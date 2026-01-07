@@ -59,8 +59,6 @@ public class ElementHelper {
             if (type.isPhysical()) {
                 physicalValues.put(typeName, value);
             } else if (type.getTypeCategory() == TypeCategory.SPECIAL || 
-                       type.getTypeCategory() == TypeCategory.CRITICAL_CHANCE || 
-                       type.getTypeCategory() == TypeCategory.CRITICAL_DAMAGE || 
                        type.getTypeCategory() == TypeCategory.TRIGGER_CHANCE) {
                 specialAndFactionValues.put(typeName, value);
             } else {

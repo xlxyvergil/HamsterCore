@@ -200,6 +200,7 @@ public class AttributeHelper {
         return entity.getAttribute(ALObjects.Attributes.CRIT_CHANCE.get()).getValue();
     }
     
+    
     /**
      * 获取实体的暴击伤害属性值
      * @param entity 实体

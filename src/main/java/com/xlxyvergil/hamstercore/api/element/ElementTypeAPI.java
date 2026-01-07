@@ -55,27 +55,7 @@ public class ElementTypeAPI {
         return ElementType.register(name, displayName, color, ElementType.TypeCategory.SPECIAL);
     }
 
-    /**
-     * 注册暴击率元素类型
-     * @param name 元素名称
-     * @param displayName 显示名称
-     * @param color 颜色
-     * @return 注册的元素类型
-     */
-    public static ElementType registerCriticalChanceElement(String name, String displayName, ChatFormatting color) {
-        return ElementType.register(name, displayName, color, ElementType.TypeCategory.CRITICAL_CHANCE);
-    }
 
-    /**
-     * 注册暴击伤害元素类型
-     * @param name 元素名称
-     * @param displayName 显示名称
-     * @param color 颜色
-     * @return 注册的元素类型
-     */
-    public static ElementType registerCriticalDamageElement(String name, String displayName, ChatFormatting color) {
-        return ElementType.register(name, displayName, color, ElementType.TypeCategory.CRITICAL_DAMAGE);
-    }
 
     /**
      * 注册触发率元素类型
@@ -197,23 +177,7 @@ public class ElementTypeAPI {
         return elementType.isSpecial();
     }
 
-    /**
-     * 检查元素类型是否为暴击率元素
-     * @param elementType 元素类型
-     * @return 是否为暴击率元素
-     */
-    public static boolean isCriticalChance(ElementType elementType) {
-        return elementType.isCriticalChance();
-    }
 
-    /**
-     * 检查元素类型是否为暴击伤害元素
-     * @param elementType 元素类型
-     * @return 是否为暴击伤害元素
-     */
-    public static boolean isCriticalDamage(ElementType elementType) {
-        return elementType.isCriticalDamage();
-    }
 
     /**
      * 检查元素类型是否为触发率元素
