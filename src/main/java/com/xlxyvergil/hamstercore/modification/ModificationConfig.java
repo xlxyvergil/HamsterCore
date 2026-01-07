@@ -58,12 +58,6 @@ public class ModificationConfig {
             LOOT_RULES.add(LootPatternMatcher.parse(s));
         }
 
-        // 临时调试输出
-        System.out.println("[HamsterCore Debug] Loaded Loot Rules: " + LOOT_RULES.size());
-        for (LootPatternMatcher rule : LOOT_RULES) {
-            System.out.println("[HamsterCore Debug] Rule: " + rule);
-        }
-
         // 保存配置文件（如果有更改）
         if (c.hasChanged()) {
             c.save();
