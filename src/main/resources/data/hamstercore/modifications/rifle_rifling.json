@@ -8,37 +8,37 @@
     "affixes": [
         {
             "type": "taa:bullet_gundamage_rifle",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "bullet_gundamage_rifle"
         },
         {
             "type": "taa:bullet_gundamage_smg",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "bullet_gundamage_smg"
         },
         {
             "type": "taa:bullet_gundamage_lmg",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "bullet_gundamage_lmg"
         },
         {
             "type": "taa:bullet_gundamage_rpg",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "bullet_gundamage_rpg"
         },
         {
             "type": "taa:bullet_gundamage_sniper",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "bullet_gundamage_sniper"
         },
         {
             "type": "attributeslib:arrow_damage",
-            "operation": "MULTIPLY_TOTAL",
+            "operation": "MULTIPLY_BASE",
             "value": 1.65,
             "name": "arrow_damage"
         }

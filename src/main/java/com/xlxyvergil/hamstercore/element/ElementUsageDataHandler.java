@@ -85,17 +85,10 @@ public class ElementUsageDataHandler {
     }
     
     /**
-     * 从字符串获取操作类型
+     * 获取操作类型（固定为加法）
      */
     private static AttributeModifier.Operation getOperationFromEntry(String operationString) {
-        switch (operationString.toUpperCase()) {
-            case "MULTIPLY_BASE":
-                return AttributeModifier.Operation.MULTIPLY_BASE;
-            case "MULTIPLY_TOTAL":
-                return AttributeModifier.Operation.MULTIPLY_TOTAL;
-            default:
-                return AttributeModifier.Operation.ADDITION;
-        }
+        return AttributeModifier.Operation.ADDITION;
     }
     
     /**

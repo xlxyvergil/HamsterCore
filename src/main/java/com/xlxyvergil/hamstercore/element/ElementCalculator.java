@@ -67,14 +67,14 @@ public class ElementCalculator {
     }
 
     /**
-     * 对同名修饰符进行合并计算（模拟Forge属性修饰符计算）
+     * 对同名修饰符进行合并计算（模拟Forge属性修饰符计算，但不+1）
      * @param modifiers 同名的修饰符列表
      * @return 合并计算后的值
      */
     private double calculateValueForName(List<InitialModifierEntry> modifiers) {
         double additionValue = 0.0;
         double multiplyBaseValue = 0.0; // MULTIPLY_BASE
-        double multiplyTotalValue = 0.0; // MULTIPLY_TOTAL
+        double multiplyTotalValue = 1.0; // MULTIPLY_TOTAL - 初始为1，连乘
 
         for (InitialModifierEntry entry : modifiers) {
             double amount = entry.getAmount();
@@ -88,7 +88,8 @@ public class ElementCalculator {
                     multiplyBaseValue += amount;
                     break;
                 case "MULTIPLY_TOTAL":
-                    multiplyTotalValue += amount;
+                    // MULTIPLY_TOTAL使用连乘，负数转为正数
+                    multiplyTotalValue *= Math.abs(amount);
                     break;
                 default:
                     additionValue += amount; // 默认为ADDITION
@@ -96,10 +97,11 @@ public class ElementCalculator {
             }
         }
 
-        // 计算最终值：(baseValue + additionValue) * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
-        // 对于初始值，baseValue为0，所以结果是: additionValue * (1 + multiplyBaseValue) * (1 + multiplyTotalValue)
-        double result = additionValue * (1 + multiplyBaseValue);
-        result = result * (1 + multiplyTotalValue);
+        // 计算最终值：(additionValue + multiplyBaseValue) * multiplyTotalValue
+        // 参考 Forge 公式但不需要 +1：result = (base + ΣADDITION) × (1 + ΣMULTIPLY_BASE) × Π(1 + MULTIPLY_TOTAL)
+        // 我们的公式（不需要+1）：result = (ΣADDITION) × (ΣMULTIPLY_BASE) × ΠMULTIPLY_TOTAL
+        double result = additionValue + multiplyBaseValue;
+        result = result * multiplyTotalValue;
 
         return result;
     }

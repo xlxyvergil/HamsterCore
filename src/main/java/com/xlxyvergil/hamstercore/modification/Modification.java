@@ -96,25 +96,13 @@ public record Modification(
             String attrKey = "attribute.name." + affix.type().replace(':', '.');
             Component attrName = Component.translatable(attrKey);
 
-            // 根据操作类型和值来格式化显示
+            // 根据数值正负来格式化显示
             double value = affix.value();
-            String operation = affix.operation();
             Component valueText;
 
-            if ("ADDITION".equals(operation)) {
-                // 加法操作：显示百分比，标明增加或减少
-                double percentValue = Math.abs(value) * 100;
-                String langKey = value >= 0 ? "hamstercore.modification.value.addition" : "hamstercore.modification.value.reduction";
-                valueText = Component.translatable(langKey, String.format("%.0f", percentValue));
-            } else if ("MULTIPLY_BASE".equals(operation) || "MULTIPLY_TOTAL".equals(operation)) {
-                // 乘法操作：显示百分比，标明增加或减少
-                double percentValue = Math.abs(value) * 100;
-                String langKey = value >= 0 ? "hamstercore.modification.value.multiply_increase" : "hamstercore.modification.value.multiply_decrease";
-                valueText = Component.translatable(langKey, String.format("%.0f", percentValue));
-            } else {
-                // 默认情况
-                valueText = Component.literal(String.format("%.2f", value));
-            }
+            double percentValue = Math.abs(value) * 100;
+            String langKey = value >= 0 ? "hamstercore.modification.value.increase" : "hamstercore.modification.value.decrease";
+            valueText = Component.translatable(langKey, String.format("%.0f", percentValue));
 
             tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
                 Component.translatable("%s: %s", attrName, valueText)).withStyle(ChatFormatting.GOLD));

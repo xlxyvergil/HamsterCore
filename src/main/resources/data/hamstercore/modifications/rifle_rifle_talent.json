@@ -8,8 +8,8 @@
     "affixes": [
         {
             "type": "hamstercore:trigger_chance",
-            "operation": "ADDITION",
-            "value": 0.9,
+            "operation": "MULTIPLY_BASE",
+            "value": 1.9,
             "name": "trigger_chance"
         }
     ],

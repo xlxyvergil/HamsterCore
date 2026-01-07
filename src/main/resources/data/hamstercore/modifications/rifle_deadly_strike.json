@@ -9,7 +9,7 @@
         {
             "type": "attributeslib:crit_chance",
             "operation": "MULTIPLY_TOTAL",
-            "value": 0.5,
+            "value": 1.5,
             "name": "crit_chance"
         }
     ],
