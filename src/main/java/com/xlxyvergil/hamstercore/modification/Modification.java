@@ -84,7 +84,19 @@ public record Modification(
             tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
         }
         
-        // 添加词缀信息
+        // 1. 显示改装件名称 variant
+        Component name = Component.translatable("item.hamstercore.modification:" + this.id().getPath());
+        tooltip.add(name.copy().withStyle(this.rarity.getColor()));
+        tooltip.add(Component.empty());
+        
+        // 2. 显示适用于 category里的分类
+        tooltip.add(Component.translatable("hamstercore.modification.socketable_into").withStyle(ChatFormatting.LIGHT_PURPLE));
+        tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+            Component.literal(this.category.getDisplayName())).withStyle(ChatFormatting.GREEN));
+        tooltip.add(Component.empty());
+        
+        // 3. 显示安装时 affixes里的属性
+        tooltip.add(Component.translatable("hamstercore.modification.when_modified").withStyle(ChatFormatting.GRAY));
         for (ModificationAffix affix : this.affixes) {
             String attrKey = "attribute.name." + affix.type().replace(':', '.');
             Component attrName = Component.translatable(attrKey);
@@ -92,19 +104,34 @@ public record Modification(
             tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
                 Component.translatable("%s: %s", attrName, valueText)).withStyle(ChatFormatting.GOLD));
         }
+        tooltip.add(Component.empty());
         
+        // 4. 显示稀有度 rarity
         tooltip.add(Component.translatable("hamstercore.modification.rarity." + this.rarity.name().toLowerCase())
                 .withStyle(this.rarity.getColor()));
         
-        // 显示槽位类型
+        // 5. 显示安装槽位 use_special_socket
         if (this.useSpecialSocket) {
             tooltip.add(Component.translatable("hamstercore.modification.special_socket").withStyle(ChatFormatting.BLUE));
         } else {
             tooltip.add(Component.translatable("hamstercore.modification.normal_socket").withStyle(ChatFormatting.GREEN));
         }
         
+        // 6. 显示互斥组 mutualExclusionGroups
+        if (!this.mutualExclusionGroups().isEmpty()) {
+            tooltip.add(Component.translatable("hamstercore.modification.mutual_exclusion_groups").withStyle(ChatFormatting.YELLOW));
+            for (String group : this.mutualExclusionGroups()) {
+                tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+                    Component.literal(group)).withStyle(ChatFormatting.YELLOW));
+            }
+        }
+        
+        // 显示唯一属性
         if (this.unique) {
             tooltip.add(Component.translatable("hamstercore.modification.unique").withStyle(ChatFormatting.GOLD));
         }
+        
+        // 添加mod名称
+        tooltip.add(Component.literal("HamsterCore").withStyle(ChatFormatting.BLUE));
     }
 }

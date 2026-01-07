@@ -3,7 +3,6 @@ package com.xlxyvergil.hamstercore.modification;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 已安装改装件集合
