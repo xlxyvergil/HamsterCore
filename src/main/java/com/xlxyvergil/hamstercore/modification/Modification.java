@@ -84,11 +84,6 @@ public record Modification(
             tooltip.add(Component.translatable("hamstercore.modification.installed").withStyle(ChatFormatting.GRAY));
         }
         
-        // 1. 显示改装件名称 variant
-        Component name = Component.translatable("item.hamstercore.modification:" + this.id().getPath());
-        tooltip.add(name.copy().withStyle(this.rarity.getColor()));
-        tooltip.add(Component.empty());
-        
         // 2. 显示适用于 category里的分类
         tooltip.add(Component.translatable("hamstercore.modification.socketable_into").withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
@@ -118,11 +113,23 @@ public record Modification(
         }
         
         // 6. 显示互斥组 mutualExclusionGroups
-        if (!this.mutualExclusionGroups().isEmpty()) {
+        java.util.Set<Component> mutualExclusions = new java.util.HashSet<>();
+        for (String group : this.mutualExclusionGroups()) {
+            // 查找所有同组的其他改装件
+            for (Modification otherMod : ModificationRegistry.INSTANCE.getValues()) {
+                if (otherMod != this && otherMod.mutualExclusionGroups().contains(group)) {
+                    // 添加其他改装件的名称
+                    Component modName = Component.translatable("item.hamstercore.modification:" + otherMod.id().getPath());
+                    mutualExclusions.add(modName);
+                }
+            }
+        }
+        
+        if (!mutualExclusions.isEmpty()) {
             tooltip.add(Component.translatable("hamstercore.modification.mutual_exclusion_groups").withStyle(ChatFormatting.YELLOW));
-            for (String group : this.mutualExclusionGroups()) {
+            for (Component modName : mutualExclusions) {
                 tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
-                    Component.literal(group)).withStyle(ChatFormatting.YELLOW));
+                    modName).withStyle(ChatFormatting.YELLOW));
             }
         }
         
@@ -130,8 +137,5 @@ public record Modification(
         if (this.unique) {
             tooltip.add(Component.translatable("hamstercore.modification.unique").withStyle(ChatFormatting.GOLD));
         }
-        
-        // 添加mod名称
-        tooltip.add(Component.literal("HamsterCore").withStyle(ChatFormatting.BLUE));
     }
 }

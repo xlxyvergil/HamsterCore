@@ -39,12 +39,6 @@ public class ModificationItems {
             .build();
     });
 
-    public static final RegistryObject<CreativeModeTab> TOOLS_TAB = R.tab("tools", () -> {
-        return CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.hamstercore.tools"))
-            .icon(() -> new ItemStack(TOOL_AUGMENTER.get()))
-            .build();
-    });
 
     public static void bootstrap() {
         // 使用 TabFillingRegistry 将物品注册到对应的创造模式标签页
