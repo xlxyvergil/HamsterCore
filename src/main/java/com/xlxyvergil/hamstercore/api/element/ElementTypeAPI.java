@@ -101,22 +101,6 @@ public class ElementTypeAPI {
     }
 
     /**
-     * 获取暴击率元素类型列表
-     * @return 暴击率元素类型列表
-     */
-    public static Collection<ElementType> getCriticalChanceElements() {
-        return ElementType.getCriticalChanceElements();
-    }
-
-    /**
-     * 获取暴击伤害元素类型列表
-     * @return 暴击伤害元素类型列表
-     */
-    public static Collection<ElementType> getCriticalDamageElements() {
-        return ElementType.getCriticalDamageElements();
-    }
-
-    /**
      * 获取触发率元素类型列表
      * @return 触发率元素类型列表
      */
