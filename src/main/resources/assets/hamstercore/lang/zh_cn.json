@@ -246,7 +246,6 @@
   "hamstercore.modification.value.multiply_decrease": "减少%s%%",
   "hamstercore.modification.normal_socket": "通用改装",
   "hamstercore.modification.special_socket": "特殊改装",
-  "hamstercore.modification.press_ctrl_shift": "按下Ctrl+Shift查看",
   "hamstercore.modification.mutual_exclusion_groups": "互斥组",
   "itemGroup.hamstercore.modifications": "改装件"
 }

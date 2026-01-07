@@ -2,8 +2,6 @@ package com.xlxyvergil.hamstercore.modification.recipe;
 
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
-import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
-import com.xlxyvergil.hamstercore.weapon.WeaponType;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +14,7 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.Level;
 
 /**
- * 打孔配方
+ * 
  */
 public class AddSocketsRecipe extends SmithingTransformRecipe implements ReactiveSmithingRecipe {
 
@@ -39,7 +37,7 @@ public class AddSocketsRecipe extends SmithingTransformRecipe implements Reactiv
         ItemStack base = container.getItem(BASE);
         ItemStack add = container.getItem(ADDITION);
 
-        // 检查添加物品是否是打孔符文
+        // 检查添加物品
         if (!this.getInput().test(add)) {
             return false;
         }

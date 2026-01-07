@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import dev.shadowsoffire.placebo.tabs.ITabFiller;
 
 /**
- * 卸载符文物品类 - Precision Screwdriver
+ *  Precision Screwdriver
  */
 public class PrecisionScrewdriverItem extends Item implements ITabFiller {
 
