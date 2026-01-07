@@ -72,11 +72,13 @@ public class ElementUsageDataHandler {
         // 获取操作类型
         AttributeModifier.Operation operation = getOperationFromEntry(entry.getOperation());
         
+        double adjustedAmount = adjustAttributeValue(entry);
+        
         // 直接使用Entry中存储的UUID和其他数据生成属性修饰符
         AttributeModifier modifier = new AttributeModifier(
             entry.getUuid(), // 使用Entry中存储的UUID
             entry.getName(), // 使用Entry中存储的名称
-            entry.getAmount(), // 使用Entry中存储的计算后数值
+            adjustedAmount, // 使用调整后的数值
             operation // 使用Entry中存储的操作类型
         );
         
@@ -103,5 +105,25 @@ public class ElementUsageDataHandler {
             // 如果失败，返回null
             return null;
         }
+    }
+    
+    /**
+     * 调整属性值，对特定属性进行特殊处理
+     */
+    private static double adjustAttributeValue(ElementUsageData.AttributeModifierEntry entry) {
+        String elementType = entry.getElementType();
+        double amount = entry.getAmount();
+        
+        // 检查是否为暴击相关属性
+        if (elementType.contains("crit_damage")) {
+            // 特殊处理 crit_damage：减去 1.5，使武器默认值 2.0 加上玩家默认 0.5 后为 2.0
+            // 这个处理始终应用，因为计算已经完成
+            amount -= 1.5;
+        } else if (elementType.contains("crit_chance")) {
+            // 特殊处理 crit_chance：减去 0.05
+            amount -= 0.05;
+        }
+        
+        return amount;
     }
 }

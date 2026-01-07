@@ -110,35 +110,6 @@ public class ElementCalculator {
         for (InitialModifierEntry entry : multiplyTotalEntries) {
             amt *= 1 + entry.getAmount();
         }
-
-        // 特殊处理 crit_damage：减去 1.5，使武器默认值 2.0 加上玩家默认 0.5 后为 2.0
-        // 检查是否有 crit_damage 相关的修饰符
-        boolean hasCritDamage = false;
-        for (InitialModifierEntry entry : modifiers) {
-            if (entry.getElementType().contains("crit_damage")) {
-                hasCritDamage = true;
-                break;
-            }
-        }
-        // 如果有 crit_damage 修饰符且没有其他修改，则减去 1.5
-        if (hasCritDamage && multiplyBaseEntries.isEmpty() && multiplyTotalEntries.isEmpty()) {
-            amt -= 1.5;
-        }
-
-        // 特殊处理 crit_chance：减去 0.05
-        // 检查是否有 crit_chance 相关的修饰符
-        boolean hasCritChance = false;
-        for (InitialModifierEntry entry : modifiers) {
-            if (entry.getElementType().contains("crit_chance")) {
-                hasCritChance = true;
-                break;
-            }
-        }
-        // 如果有 crit_chance 修饰符，则减去 0.05
-        if (hasCritChance) {
-            amt -= 0.05;
-        }
-
         return amt;
     }
 
