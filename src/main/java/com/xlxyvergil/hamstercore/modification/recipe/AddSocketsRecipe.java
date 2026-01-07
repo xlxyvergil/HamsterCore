@@ -4,6 +4,7 @@ import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
 import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
 import com.xlxyvergil.hamstercore.weapon.WeaponType;
+import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -112,7 +113,7 @@ public class AddSocketsRecipe extends SmithingTransformRecipe implements Reactiv
         @Override
         public AddSocketsRecipe fromJson(ResourceLocation pRecipeId, com.google.gson.JsonObject pJson) {
             com.google.gson.JsonObject inputObj = pJson.getAsJsonObject("input");
-            Ingredient item = net.minecraftforge.common.crafting.CraftingHelper.getIngredient(inputObj, false);
+            Ingredient item = CraftingHelper.getIngredient(inputObj, false);
             int maxSockets = pJson.get("max_sockets").getAsInt();
             return new AddSocketsRecipe(pRecipeId, item, maxSockets);
         }
