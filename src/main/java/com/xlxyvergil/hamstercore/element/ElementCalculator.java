@@ -125,6 +125,20 @@ public class ElementCalculator {
             amt -= 1.5;
         }
 
+        // 特殊处理 crit_chance：减去 0.05
+        // 检查是否有 crit_chance 相关的修饰符
+        boolean hasCritChance = false;
+        for (InitialModifierEntry entry : modifiers) {
+            if (entry.getElementType().contains("crit_chance")) {
+                hasCritChance = true;
+                break;
+            }
+        }
+        // 如果有 crit_chance 修饰符，则减去 0.05
+        if (hasCritChance) {
+            amt -= 0.05;
+        }
+
         return amt;
     }
 
