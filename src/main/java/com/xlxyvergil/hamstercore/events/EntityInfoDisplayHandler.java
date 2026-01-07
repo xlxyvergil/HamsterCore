@@ -67,9 +67,6 @@ public class EntityInfoDisplayHandler {
             // 获取基础伤害（FactionDamageHandler处理前的伤害）
             float baseDamage = event.getAmount();
             
-            // 使用ElementNBTUtils获取武器元素数据
-            Map<String, Double> specialAndFactionValues = new java.util.HashMap<>();
-            
             // 使用ElementDamageManager计算真实的伤害数据（现在不依赖缓存数据）
             ElementDamageManager.ElementDamageData damageData = 
                 ElementDamageManager.calculateElementDamage(player, target, baseDamage, weapon, targetFaction, armor);
@@ -195,10 +192,6 @@ public class EntityInfoDisplayHandler {
                     }
                 }
 
-                // 添加武器元素属性信息
-                // 使用ElementNBTUtils读取元素数据
-                Map<String, Double> combinedElements = ElementNBTUtils.readCombinedElements(weapon);
-                Map<String, Double> physicalElements = ElementNBTUtils.readPhysicalElements(weapon);
                 
                 // 检查是否有任何元素值
                 boolean hasElements = ElementNBTUtils.hasNonZeroElements(weapon);

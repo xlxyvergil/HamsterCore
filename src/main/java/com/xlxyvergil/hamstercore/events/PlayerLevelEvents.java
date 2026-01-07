@@ -6,8 +6,6 @@ import com.xlxyvergil.hamstercore.level.PlayerLevelManager;
 import com.xlxyvergil.hamstercore.level.PlayerLevelUpEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
