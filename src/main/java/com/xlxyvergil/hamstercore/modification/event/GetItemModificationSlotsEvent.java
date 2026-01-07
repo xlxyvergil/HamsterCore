@@ -5,7 +5,7 @@ import net.minecraftforge.eventbus.api.Event;
 
 
 /**
- * 获取物品改装槽位事件 - 模仿 Apotheosis 的 GetItemSocketsEvent
+ * 获取物品改装槽位事件
  */
 public class GetItemModificationSlotsEvent extends Event {
 

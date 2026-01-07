@@ -28,7 +28,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
- * 改装件模型类 - 模仿 Apotheosis 的 GemModel
+ * 改装件模型类
  * 根据改装件ID动态加载对应的JSON模型
  */
 @OnlyIn(Dist.CLIENT)

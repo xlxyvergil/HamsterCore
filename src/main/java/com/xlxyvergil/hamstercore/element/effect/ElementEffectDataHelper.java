@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.element.effect;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -11,7 +10,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 /**
  * 元素效果数据辅助类
  * 使用实体的PersistentData存储额外的效果数据（如伤害值、伤害源等）
- * 参考Apotheosis的实现方式
  */
 public class ElementEffectDataHelper {
 

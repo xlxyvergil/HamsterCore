@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.handler.modifier;
 
 /**
  * 元素属性值包装类
- * 参考TACZ的CacheValue设计
  */
 public class ElementPropertyValue<T> {
     private T value;

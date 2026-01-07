@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 简化版的 RenderUtils，参考 battery_shield 实现
+ * 简化版的 RenderUtils
  */
 @OnlyIn(Dist.CLIENT)
 public class RenderUtils {
@@ -27,7 +27,7 @@ public class RenderUtils {
     static int CLIP_WIDTH = 3;
 
     /**
-     * 渲染血条 - 参考 battery_shield 的 renderHealth
+     * 渲染血条 - 
      */
     public static void renderHealth(GuiGraphics guiGraphics, int x, int y, int width, int height, double value, double max) {
         renderHealth(guiGraphics, x, y, width, height, value, max, false);
@@ -105,7 +105,7 @@ public class RenderUtils {
     }
 
     /**
-     * 渲染护盾条 - 简化版本，参考 EntityShieldRenderer 的实现
+     * 渲染护盾条 - 简化版本，
      */
     public static void renderShieldBar(PoseStack poseStack, int x, int y, int width, int height, float currentShield, float maxShield) {
         if (maxShield <= 0) return;
@@ -130,7 +130,7 @@ public class RenderUtils {
     }
     
     /**
-     * 渲染护盾文字 - 参考 battery_shield 的方式
+     * 渲染护盾文字 - 
      */
     public static void renderShieldText(GuiGraphics guiGraphics, int x, int y, float value, float max) {
         if (max <= 0) return;

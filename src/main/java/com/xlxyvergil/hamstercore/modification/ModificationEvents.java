@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 改装件系统事件处理 - 模仿 Apotheosis 的 AdventureEvents
+ * 改装件系统事件处理
  */
 public class ModificationEvents {
 

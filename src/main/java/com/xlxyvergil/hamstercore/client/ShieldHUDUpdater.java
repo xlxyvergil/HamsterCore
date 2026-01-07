@@ -55,7 +55,7 @@ public class ShieldHUDUpdater {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, SHIELD_ICONS);
         
-        // 计算护盾条位置（参考Malum的实现方式）
+        // 计算护盾条位置
         int left = width / 2 - 91;  // 与原版生命值和饥饿值对齐
         
         // 获取玩家的护甲值

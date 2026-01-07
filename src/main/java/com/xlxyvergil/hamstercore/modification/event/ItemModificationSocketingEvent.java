@@ -7,7 +7,7 @@ import net.minecraftforge.eventbus.api.Event;
 import java.util.List;
 
 /**
- * 改装件安装事件 - 模仿 Apotheosis 的 ItemSocketingEvent
+ * 改装件安装事件
  */
 public class ItemModificationSocketingEvent extends Event {
 

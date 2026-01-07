@@ -15,7 +15,7 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.Level;
 
 /**
- * 打孔配方 - 模仿 Apotheosis 的 AddSocketsRecipe
+ * 打孔配方
  */
 public class AddSocketsRecipe extends SmithingTransformRecipe implements ReactiveSmithingRecipe {
 

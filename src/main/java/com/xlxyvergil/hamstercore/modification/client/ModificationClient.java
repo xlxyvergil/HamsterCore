@@ -34,7 +34,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * 改装系统客户端类 - 模仿 Apotheosis 的 AdventureModuleClient
+ * 改装系统客户端类
  * 处理改装系统的客户端事件注册和渲染
  */
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = HamsterCore.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)

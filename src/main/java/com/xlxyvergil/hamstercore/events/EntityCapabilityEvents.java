@@ -1,6 +1,7 @@
 package com.xlxyvergil.hamstercore.events;
 
 import com.xlxyvergil.hamstercore.HamsterCore;
+import com.xlxyvergil.hamstercore.config.ShieldConfig;
 import com.xlxyvergil.hamstercore.content.capability.EntityCapabilityAttacher;
 import com.xlxyvergil.hamstercore.content.capability.entity.*;
 import com.xlxyvergil.hamstercore.network.EntityArmorSyncToClient;
@@ -62,7 +63,7 @@ public class EntityCapabilityEvents {
      */
     private static boolean shouldHaveShieldCapability(LivingEntity entity) {
         // 加载护盾配置
-        com.xlxyvergil.hamstercore.config.ShieldConfig shieldConfig = com.xlxyvergil.hamstercore.config.ShieldConfig.load();
+        ShieldConfig shieldConfig = ShieldConfig.load();
         
         // 检查实体是否在entityBaseShields中明确配置了护盾值
         float baseShield = shieldConfig.getBaseShieldForEntity(entity.getType());

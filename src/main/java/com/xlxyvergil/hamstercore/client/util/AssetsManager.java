@@ -7,7 +7,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 /**
- * 简化版的 AssetsManager，参考 battery_shield 实现
+ * 简化版的 AssetsManager
+ * 用于加载和管理游戏中的图像资源
  */
 @OnlyIn(Dist.CLIENT)
 public class AssetsManager {

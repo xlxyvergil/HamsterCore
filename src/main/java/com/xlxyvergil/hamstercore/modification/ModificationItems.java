@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
- * 改装件物品注册类 - 模仿 Apotheosis 的 Adventure.Items
+ * 改装件物品注册类
  */
 public class ModificationItems {
 

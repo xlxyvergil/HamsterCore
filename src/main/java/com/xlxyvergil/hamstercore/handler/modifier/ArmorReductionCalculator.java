@@ -4,7 +4,6 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * 护甲减免计算器
- * 参考TACZ的DamageModifier设计模式
  */
 public class ArmorReductionCalculator {
     

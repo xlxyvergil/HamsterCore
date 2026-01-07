@@ -19,7 +19,7 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 /**
- * 安装配方 - 模仿 Apotheosis 的 SocketingRecipe
+ * 安装配方 
  */
 public class ModificationSocketingRecipe extends SmithingTransformRecipe {
 

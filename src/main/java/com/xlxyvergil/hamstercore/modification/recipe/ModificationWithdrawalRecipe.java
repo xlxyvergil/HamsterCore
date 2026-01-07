@@ -18,7 +18,7 @@ import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import net.minecraft.world.level.Level;
 
 /**
- * 卸载配方 - 模仿 Apotheosis 的 WithdrawalRecipe
+ * 卸载配方
  */
 public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implements ReactiveSmithingRecipe {
 
@@ -58,7 +58,7 @@ public class ModificationWithdrawalRecipe extends SmithingTransformRecipe implem
         if (stack.isEmpty()) {
             return false;
         }
-        return stack.getItem() == com.xlxyvergil.hamstercore.modification.ModificationItems.PRECISION_SCREWDRIVER.get();
+        return stack.getItem() == ModificationItems.PRECISION_SCREWDRIVER.get();
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * 改装件定义 - 模仿 Apotheosis 的 Gem
+ * 改装件定义
  */
 public record Modification(
     ResourceLocation id,

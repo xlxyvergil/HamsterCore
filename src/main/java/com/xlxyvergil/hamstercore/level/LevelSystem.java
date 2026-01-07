@@ -61,7 +61,7 @@ public class LevelSystem {
         
         // 输出调试日志
         
-        // 计算实体与出生点的水平距离（忽略Y轴），参考ScalingHealth的实现
+        // 计算实体与出生点的水平距离（忽略Y轴）
         double distance = Math.sqrt(entityPos.distSqr(spawnPoint));
         
         return distance;

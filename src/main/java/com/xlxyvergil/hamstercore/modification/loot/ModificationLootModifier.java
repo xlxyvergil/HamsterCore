@@ -2,7 +2,6 @@ package com.xlxyvergil.hamstercore.modification.loot;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.xlxyvergil.hamstercore.HamsterCore;
 import com.xlxyvergil.hamstercore.modification.ModificationConfig;
 import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

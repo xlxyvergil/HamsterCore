@@ -18,7 +18,7 @@ public class WeaponJudgeUtil {
     
     /**
      * 检查物品是否为武器或工具
-     * 首先排除slashblade:slashblade和modid为tacz的物品，然后参考Apotheosis的LootCategory系统识别机制
+     * 首先排除slashblade:slashblade和modid为tacz的物品，然后使用自定义的识别机制
      * 
      * 排除方法：
      * 1. 检查物品ID是否为slashblade:slashblade

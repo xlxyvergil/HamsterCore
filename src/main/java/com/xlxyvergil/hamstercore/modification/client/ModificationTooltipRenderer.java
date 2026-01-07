@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 改装件工具提示渲染器 - 模仿 Apotheosis 的 SocketTooltipRenderer
+ * 改装件工具提示渲染器
  * 显示装备上镶嵌的改装件
  */
 @OnlyIn(Dist.CLIENT)

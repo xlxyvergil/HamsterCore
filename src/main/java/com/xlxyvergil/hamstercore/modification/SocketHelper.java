@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
 /**
- * 槽位辅助类 - 模仿 Apotheosis 的 SocketHelper
+ * 槽位辅助类
  */
 public class SocketHelper {
 

@@ -25,7 +25,7 @@ public class ModificationConfig {
         String[] lootRules = c.getStringList(
             "Modification Loot Rules", 
             "modifications", 
-            new String[] { "minecraft:entities.*|0.05" },
+            new String[] { "entities.*|0.05" },
             "Loot Rules, in the form of Loot Table Matchers, permitting modifications to spawn in loot tables.\n" +
             "The format for these is domain:pattern|chance and domain is optional.\n" +
             "Domain is a modid, pattern is a regex string, and chance is a float 0..1 chance for the modification to spawn.\n" +

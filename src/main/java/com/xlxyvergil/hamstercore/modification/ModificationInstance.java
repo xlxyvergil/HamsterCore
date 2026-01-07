@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 /**
- * 改装件实例 - 模仿 Apotheosis 的 GemInstance
+ * 改装件实例
  */
 public record ModificationInstance(
     String modificationId,   // 改装件 ID

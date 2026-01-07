@@ -7,7 +7,6 @@ import java.util.List;
 
 /**
  * 元素修饰器接口
- * 参考TACZ的IAttachmentModifier设计
  *
  * @param <T> Json读取后处理的数据类型
  * @param <K> 元素缓存属性值

@@ -20,7 +20,7 @@ public class ToxinEffect extends ElementEffect {
     
     @Override
     public boolean isDurationEffectTick(int duration, int amplifier) {
-        // 每40 ticks（2秒）触发一次效果（参考Apotheosis的BleedingEffect实现）
+        // 每40 ticks（2秒）触发一次效果
         return duration % 40 == 0;
     }
     

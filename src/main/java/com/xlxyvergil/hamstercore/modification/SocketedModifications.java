@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 已安装改装件集合 - 模仿 Apotheosis 的 SocketedGems
+ * 已安装改装件集合
  */
 public class SocketedModifications {
     private final List<ModificationInstance> modifications;

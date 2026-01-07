@@ -13,7 +13,7 @@ import java.util.List;
 
 
 /**
- * 改装件注册表 - 完全模仿 Apotheosis 的 GemRegistry
+ * 改装件注册表
  */
 public class ModificationRegistry extends WeightedDynamicRegistry<Modification> {
 

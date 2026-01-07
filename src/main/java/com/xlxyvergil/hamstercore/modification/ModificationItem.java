@@ -16,7 +16,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
- * 改装件物品类 - 模仿 Apotheosis 的 GemItem
+ * 改装件物品类
  */
 public class ModificationItem extends Item implements ITabFiller {
     public static final String MODIFICATION = "modification";

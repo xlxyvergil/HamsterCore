@@ -12,8 +12,10 @@ import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvid
 import com.xlxyvergil.hamstercore.element.effect.ElementEffectRegistry;
 import com.xlxyvergil.hamstercore.events.PlayerCapabilityEvents;
 import com.xlxyvergil.hamstercore.level.LevelSystem;
+import com.xlxyvergil.hamstercore.modification.ModificationConfig;
 import com.xlxyvergil.hamstercore.modification.ModificationEvents;
 import com.xlxyvergil.hamstercore.modification.ModificationItems;
+import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
 import com.xlxyvergil.hamstercore.modification.loot.ModificationLootModifier;
 import com.xlxyvergil.hamstercore.modification.recipe.ModificationRecipeSerializers;
 import com.xlxyvergil.hamstercore.network.PacketHandler;
@@ -103,8 +105,8 @@ public class HamsterCore {
 
     private void setup(final FMLCommonSetupEvent event) {
         
-        // 注册事件监听器 - 模仿 Apotheosis 的实现
-        MinecraftForge.EVENT_BUS.register(new com.xlxyvergil.hamstercore.modification.ModificationEvents());
+        // 注册事件监听器
+        MinecraftForge.EVENT_BUS.register(new ModificationEvents());
 
         // 注册服务器启动事件监听器
         MinecraftForge.EVENT_BUS.addListener(this::onServerStarted);
@@ -116,16 +118,15 @@ public class HamsterCore {
         ClientConfig.load();
         
         // 加载改装系统配置
-        com.xlxyvergil.hamstercore.modification.ModificationConfig.load(config);
+        ModificationConfig.load(config);
         
         // 保存配置文件（如果有更改）
         if (config.hasChanged()) {
             config.save();
         }
 
-        // 注册改装件注册表 - 完全模仿 Apotheosis 的实现
         // 在 FMLCommonSetupEvent 中调用 registerToBus() 确保在资源加载前注册
-        com.xlxyvergil.hamstercore.modification.ModificationRegistry.INSTANCE.registerToBus();
+        ModificationRegistry.INSTANCE.registerToBus();
     }
     
     
@@ -201,7 +202,6 @@ public class HamsterCore {
      * 注册改装件战利品修改器
      */
     private void registerLootModifiers(final RegisterEvent event) {
-        // 使用Apotheosis的方式注册GlobalLootModifier
         if (event.getForgeRegistry() == (Object) ForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS.get()) {
             event.getForgeRegistry().register(
                 new ResourceLocation(HamsterCore.MODID, "modification_loot"),

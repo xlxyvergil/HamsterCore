@@ -5,7 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 反应式锻造配方接口 - 模仿 Apotheosis 的 ReactiveSmithingRecipe
+ * 反应式锻造配方接口
  * 允许配方在完成后执行额外操作
  */
 public interface ReactiveSmithingRecipe {
