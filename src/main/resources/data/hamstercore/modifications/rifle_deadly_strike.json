@@ -8,7 +8,7 @@
     "affixes": [
         {
             "type": "attributeslib:crit_chance",
-            "operation": "MULTIPLY_TOTAL",
+            "operation": "MULTIPLY_BASE",
             "value": 1.5,
             "name": "crit_chance"
         }

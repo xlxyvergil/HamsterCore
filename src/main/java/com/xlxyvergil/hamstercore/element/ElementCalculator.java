@@ -2,6 +2,7 @@ package com.xlxyvergil.hamstercore.element;
 
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,43 +68,50 @@ public class ElementCalculator {
     }
 
     /**
-     * 对同名修饰符进行合并计算（模拟Forge属性修饰符计算，但不+1）
+     * 对同名修饰符进行合并计算（完全采用Apotheosis的公式）
      * @param modifiers 同名的修饰符列表
      * @return 合并计算后的值
      */
     private double calculateValueForName(List<InitialModifierEntry> modifiers) {
-        double additionValue = 0.0;
-        double multiplyBaseValue = 0.0; // MULTIPLY_BASE
-        double multiplyTotalValue = 1.0; // MULTIPLY_TOTAL - 初始为1，连乘
+        // 分离基础值（ADDITION）和其他操作
+        double baseValue = 0.0;
+        List<InitialModifierEntry> multiplyBaseEntries = new ArrayList<>();
+        List<InitialModifierEntry> multiplyTotalEntries = new ArrayList<>();
 
         for (InitialModifierEntry entry : modifiers) {
-            double amount = entry.getAmount();
             String operation = entry.getOperation();
-
             switch (operation.toUpperCase()) {
                 case "ADDITION":
-                    additionValue += amount;
+                    baseValue += entry.getAmount();
                     break;
                 case "MULTIPLY_BASE":
-                    multiplyBaseValue += amount;
+                    multiplyBaseEntries.add(entry);
                     break;
                 case "MULTIPLY_TOTAL":
-                    // MULTIPLY_TOTAL使用连乘，负数转为正数
-                    multiplyTotalValue *= Math.abs(amount);
+                    multiplyTotalEntries.add(entry);
                     break;
                 default:
-                    additionValue += amount; // 默认为ADDITION
+                    baseValue += entry.getAmount(); // 默认为ADDITION
                     break;
             }
         }
 
-        // 计算最终值：(additionValue + multiplyBaseValue) * multiplyTotalValue
-        // 参考 Forge 公式但不需要 +1：result = (base + ΣADDITION) × (1 + ΣMULTIPLY_BASE) × Π(1 + MULTIPLY_TOTAL)
-        // 我们的公式（不需要+1）：result = (ΣADDITION) × (ΣMULTIPLY_BASE) × ΠMULTIPLY_TOTAL
-        double result = additionValue + multiplyBaseValue;
-        result = result * multiplyTotalValue;
+        // 按照 Apotheosis 的公式计算
+        double amt = baseValue;
 
-        return result;
+        // 处理 MULTIPLY_BASE：每个都乘原始的 baseValue，然后累加
+        // 公式：amt += amount * baseValue
+        for (InitialModifierEntry entry : multiplyBaseEntries) {
+            amt += entry.getAmount() * baseValue;
+        }
+
+        // 处理 MULTIPLY_TOTAL：连乘（每个乘 1 + amount）
+        // 公式：amt *= 1 + amount（负数会自动减少）
+        for (InitialModifierEntry entry : multiplyTotalEntries) {
+            amt *= 1 + entry.getAmount();
+        }
+
+        return amt;
     }
 
     /**

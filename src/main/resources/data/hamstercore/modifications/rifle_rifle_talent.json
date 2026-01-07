@@ -9,7 +9,7 @@
         {
             "type": "hamstercore:trigger_chance",
             "operation": "MULTIPLY_BASE",
-            "value": 1.9,
+            "value": 0.9,
             "name": "trigger_chance"
         }
     ],
