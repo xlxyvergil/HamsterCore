@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
 import dev.shadowsoffire.placebo.codec.CodecProvider;
+import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry.IDimensional;
 import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry.ILuckyWeighted;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -28,7 +29,7 @@ public record Modification(
     boolean useSpecialSocket,     // 是否使用特殊槽位，true为特殊槽位，false为普通槽位
     List<String> mutualExclusionGroups,  // 互斥组，同组改装件不能同时安装
     UUID uuid                           // 改装件UUID，用于词缀生成
-) implements CodecProvider<Modification>, ILuckyWeighted {
+) implements CodecProvider<Modification>, ILuckyWeighted, IDimensional {
 
     public static final Codec<Modification> CODEC = RecordCodecBuilder.create(inst -> inst.group(
         ResourceLocation.CODEC.fieldOf("variant").forGetter(Modification::id),
@@ -60,6 +61,11 @@ public record Modification(
     public float getQuality() {
         // 固定返回1.0f，因为我们不需要品质字段
         return 1.0f;
+    }
+    
+    @Override
+    public Set<ResourceLocation> getDimensions() {
+        return this.dimensions;
     }
 
     /**

@@ -81,7 +81,7 @@ public enum WeaponCategory {
                 return category;
             }
         }
-        return null;
+        return PRIMARY; // 默认返回PRIMARY，避免返回null
     }
     
     /**
@@ -94,7 +94,7 @@ public enum WeaponCategory {
                     return category;
                 }
             }
-            return null;
+            return PRIMARY; // 默认返回PRIMARY，避免返回null导致改装件加载失败
         },
         WeaponCategory::getName
     );
