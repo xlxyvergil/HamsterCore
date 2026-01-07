@@ -1,7 +1,13 @@
 package com.xlxyvergil.hamstercore.modification;
 
 import com.xlxyvergil.hamstercore.modification.event.ItemModificationSocketingEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
@@ -11,6 +17,45 @@ import java.util.List;
  * 改装件系统事件处理
  */
 public class ModificationEvents {
+
+    /**
+     * 处理怪物掉落改装件 - 参考Apotheosis实现
+     * 只对怪物(Monster)掉落，不包括村民等其他实体
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public void onMonsterDropModification(LivingDropsEvent event) {
+        // 检查是否是玩家击杀的
+        if (event.getSource().getEntity() instanceof ServerPlayer player) {
+            // 检查击杀的实体是否是怪物
+            if (event.getEntity() instanceof Monster) {
+                // 获取掉落概率
+                float chance = ModificationConfig.getModificationDropChance();
+
+                // 检查是否是Apotheosis的Boss（添加额外概率）
+                if (event.getEntity().getPersistentData().contains("apoth.boss")) {
+                    chance += ModificationConfig.getBossBonus();
+                }
+
+                if (player.getRandom().nextFloat() <= chance) {
+                    ItemStack modification = ModificationRegistry.createRandomModificationStack(
+                        player.getRandom(),
+                        (ServerLevel) event.getEntity().level(),
+                        player.getLuck()
+                    );
+
+                    if (!modification.isEmpty()) {
+                        event.getDrops().add(new ItemEntity(
+                            event.getEntity().level(),
+                            event.getEntity().getX(),
+                            event.getEntity().getY(),
+                            event.getEntity().getZ(),
+                            modification
+                        ));
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * 处理安装配方完成事件

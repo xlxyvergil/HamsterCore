@@ -34,6 +34,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 
@@ -95,6 +96,7 @@ public class HamsterCore {
         modEventBus.register(ModificationEvents.class);
         
         // 注册改装件战利品修改器
+        // 注意：RegisterEvent 应该在 modEventBus 上监听
         modEventBus.addListener(this::registerLootModifiers);
         
         // 初始化网络包
@@ -116,10 +118,14 @@ public class HamsterCore {
 
         // 加载客户端配置
         ClientConfig.load();
-        
+
         // 加载改装系统配置
-        ModificationConfig.load(config);
-        
+        try {
+            ModificationConfig.load(config);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load Modification config", e);
+        }
+
         // 保存配置文件（如果有更改）
         if (config.hasChanged()) {
             config.save();
@@ -201,7 +207,8 @@ public class HamsterCore {
     /**
      * 注册改装件战利品修改器
      */
-    private void registerLootModifiers(final RegisterEvent event) {
+    @SubscribeEvent
+    public void registerLootModifiers(final RegisterEvent event) {
         if (event.getForgeRegistry() == (Object) ForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS.get()) {
             event.getForgeRegistry().register("modification_loot", ModificationLootModifier.CODEC);
         }

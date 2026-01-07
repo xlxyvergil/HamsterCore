@@ -1,7 +1,7 @@
 {
     "variant": "hamstercore:rifle_deadly_strike",
     "weight": 100,
-    "dimensions": [],
+    "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
     "category": "primary",
     "unique": true,
     "rarity": "common",
@@ -9,7 +9,7 @@
         {
             "type": "attributeslib:crit_chance",
             "operation": "MULTIPLY_TOTAL",
-            "value": 1.5,
+            "value": 0.5,
             "name": "crit_chance"
         }
     ],
