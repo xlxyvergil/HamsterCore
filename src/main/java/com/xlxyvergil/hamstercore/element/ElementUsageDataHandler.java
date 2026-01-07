@@ -13,7 +13,6 @@ import java.util.List;
 
 /**
  * 元素使用数据处理器
- * 类似Apotheosis的词缀系统，处理将存储在物品NBT中的元素数据转换为实体属性
  * 通过ItemAttributeModifierEvent事件系统将元素属性应用到实体上
  */
 @Mod.EventBusSubscriber(modid = "hamstercore")

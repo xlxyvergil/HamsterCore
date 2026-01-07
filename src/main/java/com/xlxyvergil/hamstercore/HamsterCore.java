@@ -203,10 +203,7 @@ public class HamsterCore {
      */
     private void registerLootModifiers(final RegisterEvent event) {
         if (event.getForgeRegistry() == (Object) ForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS.get()) {
-            event.getForgeRegistry().register(
-                new ResourceLocation(HamsterCore.MODID, "modification_loot"),
-                ModificationLootModifier.CODEC
-            );
+            event.getForgeRegistry().register("modification_loot", ModificationLootModifier.CODEC);
         }
     }
 }

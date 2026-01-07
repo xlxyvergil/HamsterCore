@@ -9,15 +9,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import java.util.Set;
 
-// 完全参照Apotheosis的GemRegistry实现
 public class ModificationRegistry extends WeightedDynamicRegistry<Modification> {
 
     private static final Logger LOGGER = LogManager.getLogger("HamsterCore : Modification");
     public static final ModificationRegistry INSTANCE = new ModificationRegistry();
 
     public ModificationRegistry() {
-        super(LOGGER, "modifications", true, false); // 保持delayLoad=true，与Apotheosis一致
+        super(LOGGER, "modifications", true, false); // 保持delayLoad=true
     }
 
     @Override
@@ -31,12 +31,23 @@ public class ModificationRegistry extends WeightedDynamicRegistry<Modification> 
     @SafeVarargs
     public static ItemStack createRandomModificationStack(RandomSource rand, Level level, float luck, java.util.function.Predicate<Modification>... filter) {
         // 确保是ServerLevel
-        if (!(level instanceof ServerLevel)) {
+        if (!(level instanceof ServerLevel serverLevel)) {
             return ItemStack.EMPTY;
         }
         
+        // 组合所有过滤器，包括IDimensional检查
+        java.util.function.Predicate<Modification> finalFilter = mod -> {
+            // 检查所有传入的过滤器
+            for (java.util.function.Predicate<Modification> f : filter) {
+                if (!f.test(mod)) return false;
+            }
+            // 额外检查改装件的维度限制
+            Set<ResourceLocation> modDims = mod.getDimensions();
+            return modDims.isEmpty() || modDims.contains(serverLevel.dimension().location());
+        };
+        
         // 使用加权动态注册表的随机选择方法，自动处理权重、幸运值和过滤器
-        Modification mod = INSTANCE.getRandomItem(rand, luck, filter);
+        Modification mod = INSTANCE.getRandomItem(rand, luck, finalFilter);
         
         // 如果没有找到合适的改装件，返回空
         if (mod == null) return ItemStack.EMPTY;
@@ -53,4 +64,5 @@ public class ModificationRegistry extends WeightedDynamicRegistry<Modification> 
         ModificationItem.setModification(stack, modification);
         return stack;
     }
+    
 }

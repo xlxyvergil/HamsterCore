@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-// 完全复制Apotheosis的AdventureConfig结构，只修改我们需要的部分
 public class ModificationConfig {
     
     /**
@@ -43,9 +42,13 @@ public class ModificationConfig {
                 e.printStackTrace();
             }
         }
+        
+        // 保存配置文件（如果有更改）
+        if (c.hasChanged()) {
+            c.save();
+        }
     }
     
-    // 完全复制Apotheosis的LootPatternMatcher
     public static record LootPatternMatcher(String domain, Pattern pathRegex, float chance) {
 
         public boolean matches(ResourceLocation id) {

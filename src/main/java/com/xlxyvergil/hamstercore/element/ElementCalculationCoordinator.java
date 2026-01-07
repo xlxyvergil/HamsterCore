@@ -16,7 +16,7 @@ import java.util.UUID;
  * 协调元素计算流程，负责：
  * 1. 调用ElementCalculator从InitialModifiers层获取并计算数据
  * 2. 调用ElementCombinationModifier处理元素复合
- * 3. 将计算结果存储到物品的NBT中，类似Apotheosis的词缀系统
+ * 3. 将计算结果存储到物品的NBT中
  */
 public class ElementCalculationCoordinator {
     public static final ElementCalculationCoordinator INSTANCE = new ElementCalculationCoordinator();
