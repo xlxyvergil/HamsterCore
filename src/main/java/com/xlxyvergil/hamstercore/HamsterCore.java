@@ -26,6 +26,7 @@ import com.xlxyvergil.hamstercore.config.TacZConfigApplier;
 import com.xlxyvergil.hamstercore.config.WeaponItemIds;
 import com.xlxyvergil.hamstercore.config.TacZWeaponConfig;
 import com.xlxyvergil.hamstercore.config.SlashBladeWeaponConfig;
+import dev.shadowsoffire.placebo.config.Configuration;
 import dev.shadowsoffire.placebo.registry.DeferredHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -39,6 +40,9 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLPaths;
+
+import java.io.File;
 
 @Mod(HamsterCore.MODID)
 public class HamsterCore {
@@ -47,7 +51,21 @@ public class HamsterCore {
     // 使用与Apothic-Attributes相同的模式：在@Mod主类中创建DeferredHelper
     public static final DeferredHelper R = DeferredHelper.create(MODID);
     
-
+    // 配置文件相关
+    public static File configDir;
+    public static Configuration config;
+    
+    static {
+        // 初始化配置目录和文件
+        configDir = new File(FMLPaths.CONFIGDIR.get().toFile(), MODID);
+        config = new Configuration(new File(configDir, MODID + ".cfg"));
+        
+        // 确保配置目录存在
+        if (!configDir.exists()) {
+            configDir.mkdirs();
+        }
+    }
+    
     public HamsterCore() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -96,6 +114,14 @@ public class HamsterCore {
 
         // 加载客户端配置
         ClientConfig.load();
+        
+        // 加载改装系统配置
+        com.xlxyvergil.hamstercore.modification.ModificationConfig.load(config);
+        
+        // 保存配置文件（如果有更改）
+        if (config.hasChanged()) {
+            config.save();
+        }
 
         // 注册改装件注册表 - 完全模仿 Apotheosis 的实现
         // 在 FMLCommonSetupEvent 中调用 registerToBus() 确保在资源加载前注册
