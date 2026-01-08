@@ -22,5 +22,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Depleted Reload"
-  ]
+  ],
+  "uuid": "81cd121f-4ee2-4d79-9d48-e17e34f07b0e"
 }

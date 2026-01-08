@@ -22,5 +22,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Wildfire"
-  ]
+  ],
+  "uuid": "d424b1f8-71a1-4c1c-aad2-2944499966ab"
 }

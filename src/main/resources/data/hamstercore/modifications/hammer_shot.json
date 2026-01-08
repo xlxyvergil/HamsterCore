@@ -22,5 +22,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Hammer Shot"
-  ]
+  ],
+  "uuid": "d7c729bd-ba26-4aca-8c29-be8bcb095bd1"
 }

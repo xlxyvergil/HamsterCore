@@ -16,5 +16,6 @@
   "use_special_socket": true,
   "mutualExclusionGroups": [
     "Stabilizer"
-  ]
+  ],
+  "uuid": "7cc242e5-6e98-4c38-8da7-de592257e421"
 }

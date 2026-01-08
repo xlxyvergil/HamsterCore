@@ -19,5 +19,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Firestorm"
-  ]
+  ],
+  "uuid": "9813ab2f-f774-49ff-8452-a864cdddd118"
 }

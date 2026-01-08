@@ -19,5 +19,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "BaneofTheMurmur"
-  ]
+  ],
+  "uuid": "863d2d13-7d79-4e9c-a468-644eabe21fc3"
 }

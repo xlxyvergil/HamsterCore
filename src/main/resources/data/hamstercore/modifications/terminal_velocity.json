@@ -22,5 +22,6 @@
   "use_special_socket": true,
   "mutualExclusionGroups": [
     "Terminal Velocity"
-  ]
+  ],
+  "uuid": "054b61ce-71a1-4c1c-aad2-b8de435d7f40"
 }

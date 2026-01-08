@@ -16,5 +16,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Target Acquired"
-  ]
+  ],
+  "uuid": "054b61ce-71a1-4c1c-aad2-2944499966ab"
 }

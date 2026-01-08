@@ -22,5 +22,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "High Voltage"
-  ]
+  ],
+  "uuid": "72f31b99-2df6-48c7-a52a-2119d122e12e"
 }

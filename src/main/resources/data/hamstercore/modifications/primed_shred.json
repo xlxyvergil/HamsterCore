@@ -31,5 +31,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Shred"
-  ]
+  ],
+  "uuid": "64f00946-2275-437e-a5b0-b8de435d7f40"
 }

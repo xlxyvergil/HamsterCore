@@ -19,5 +19,6 @@
   "use_special_socket": true,
   "mutualExclusionGroups": [
     "Hush"
-  ]
+  ],
+  "uuid": "58aa6f86-090d-4886-b876-86d2a3eb9ce6"
 }

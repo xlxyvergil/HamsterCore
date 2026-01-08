@@ -19,5 +19,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Rupture"
-  ]
+  ],
+  "uuid": "9f2f1f2f-9e01-418d-9e01-8b593831128e"
 }

@@ -19,5 +19,6 @@
   "use_special_socket": false,
   "mutualExclusionGroups": [
     "Magazine Warp"
-  ]
+  ],
+  "uuid": "c7fde491-61f0-4780-9ddb-4640ee16c4cc"
 }
