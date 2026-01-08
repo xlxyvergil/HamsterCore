@@ -9,7 +9,7 @@
     {
       "type": "taa:recoil",
       "name": "recoil",
-      "value": 6,
+      "value": -0.6,
       "operation": "MULTIPLY_BASE"
     }
   ],

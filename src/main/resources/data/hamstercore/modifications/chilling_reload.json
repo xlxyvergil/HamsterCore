@@ -15,7 +15,7 @@
     {
       "type": "taa:reload_time",
       "name": "reload_time",
-      "value": 4,
+      "value": -0.4,
       "operation": "MULTIPLY_BASE"
     }
   ],
