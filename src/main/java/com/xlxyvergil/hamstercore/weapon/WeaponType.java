@@ -13,7 +13,7 @@ public enum WeaponType {
     SMG("smg", WeaponCategory.PRIMARY, true),
     LMG("lmg", WeaponCategory.PRIMARY, true),
     RPG("rpg", WeaponCategory.PRIMARY, true),
-    SHOTGUN("shotgun", WeaponCategory.PRIMARY, true),
+    SHOTGUN("shotgun", WeaponCategory.SHOTGUN_CATEGORY, true),
     SNIPER("sniper", WeaponCategory.PRIMARY, true),
     RANGED("ranged", WeaponCategory.PRIMARY, true),
     

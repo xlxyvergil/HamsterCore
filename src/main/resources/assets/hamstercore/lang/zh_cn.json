@@ -272,7 +272,6 @@
   "item.hamstercore.modification:tainted_mag": "腐败弹匣",
   "item.hamstercore.modification:target_acquired": "锁定目标",
   "item.hamstercore.modification:depleted_reload": "耗竭装填",
-  "item.hamstercore.modification:thunderbolt": "雷火",
   "item.hamstercore.modification:terminal_velocity": "极限速度",
   "item.hamstercore.modification:vile_precision": "极恶精准",
   "item.hamstercore.modification:stabilizer": "稳定",
@@ -300,6 +299,7 @@
   "weapon.category.primary": "主要武器",
   "weapon.category.assault_rifle": "突击步枪",
   "weapon.category.sniper": "狙击枪",
+  "weapon.category.shotgun": "霰弹枪",
   "weapon.category.bow": "弓箭",
   "weapon.category.secondary": "次要武器",
   "weapon.category.melee": "近战武器"

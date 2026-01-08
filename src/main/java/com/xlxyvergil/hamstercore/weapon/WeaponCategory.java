@@ -23,6 +23,10 @@ public enum WeaponCategory {
     SNIPER_CATEGORY("sniper", 
             Arrays.asList(WeaponType.SNIPER)),
     
+    // 霰弹枪
+    SHOTGUN_CATEGORY("shotgun", 
+            Arrays.asList(WeaponType.SHOTGUN)),
+    
     // 弓箭（除了tacz外的所有远程）
     BOW("bow", 
             Arrays.asList(WeaponType.RANGED)),
