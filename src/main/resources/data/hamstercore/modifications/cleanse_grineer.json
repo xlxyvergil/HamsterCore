@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Grineer"]
+  "mutualExclusionGroups": [
+    "Cleanse Grineer"
+  ],
+  "uuid": "ad0cc471-c752-4174-901d-f9652c2470ec"
 }

@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_cleanse_orokin",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Orokin"]
+  "mutualExclusionGroups": [
+    "Cleanse Orokin"
+  ],
+  "uuid": "6e82657b-fe46-49a0-b3c0-18739a14e930"
 }

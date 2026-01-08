@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_cleanse_the_murmur",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse The Murmur"]
+  "mutualExclusionGroups": [
+    "Cleanse The Murmur"
+  ],
+  "uuid": "ee0343b1-3a2b-45a3-bd88-80d0b02f3a44"
 }

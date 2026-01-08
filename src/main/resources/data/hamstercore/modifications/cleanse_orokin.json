@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Orokin"]
+  "mutualExclusionGroups": [
+    "Cleanse Orokin"
+  ],
+  "uuid": "231dfb2e-a384-41c2-9db4-3107cdfc1cc4"
 }

@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_cleanse_grineer",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Grineer"]
+  "mutualExclusionGroups": [
+    "Cleanse Grineer"
+  ],
+  "uuid": "8cb27791-5610-47f2-8f5f-0cd664a20970"
 }

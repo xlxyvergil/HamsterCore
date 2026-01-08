@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_ammo_stock",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Ammo Stock"]
+  "mutualExclusionGroups": [
+    "Ammo Stock"
+  ],
+  "uuid": "7066b282-6d74-4646-a163-4752d25d6bf6"
 }

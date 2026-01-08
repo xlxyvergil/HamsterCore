@@ -14,6 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["collision_force"],
-  "UUID": "84b964ac-89e1-4446-8b1b-491b2481264f"
+  "mutualExclusionGroups": [
+    "collision_force"
+  ],
+  "uuid": "84b964ac-89e1-4446-8b1b-491b2481264f"
 }

@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Corpus"]
+  "mutualExclusionGroups": [
+    "Cleanse Corpus"
+  ],
+  "uuid": "e9766323-55bd-422f-b713-3981fbdeb103"
 }

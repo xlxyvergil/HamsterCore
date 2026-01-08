@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Critical Deceleration"]
+  "mutualExclusionGroups": [
+    "Critical Deceleration"
+  ],
+  "uuid": "c62d9044-60db-4c14-b551-8f2348b22234"
 }

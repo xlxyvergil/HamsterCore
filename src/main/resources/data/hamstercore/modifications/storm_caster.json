@@ -1,21 +1,21 @@
 {
-    "variant": "hamstercore:storm_caster",
-    "weight": 50,
-    "dimensions": [],
-    "category": "primary",
-    "unique": true,
-    "rarity": "uncommon",
-    "affixes": [
-        {
-            "type": "hamstercore:electricity",
-            "operation": "ADDITION",
-            "value": 0.9,
-            "name": "electricity"
-        }
-    ],
-    "use_special_socket": false,
-    "mutualExclusionGroups": [
-        "rifle_caster_group"
-    ],
-    "uuid": "c0a15102-35e1-4a7f-8564-7f05259e6cbe"
+  "variant": "hamstercore:storm_caster",
+  "weight": 50,
+  "dimensions": [],
+  "category": "primary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "operation": "ADDITION",
+      "value": 0.9,
+      "name": "electricity"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "rifle_caster_group"
+  ],
+  "uuid": "c0a15102-35e1-4a7f-8564-7f05259e6cbe"
 }

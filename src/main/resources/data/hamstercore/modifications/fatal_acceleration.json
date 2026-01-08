@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": true,
-  "mutualExclusionGroups": ["Fatal Acceleration"]
+  "mutualExclusionGroups": [
+    "Fatal Acceleration"
+  ],
+  "uuid": "928253ac-a6de-41e5-8a6d-68f78ebc1887"
 }

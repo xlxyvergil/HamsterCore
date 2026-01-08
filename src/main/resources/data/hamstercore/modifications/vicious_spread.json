@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Vicious Spread"]
+  "mutualExclusionGroups": [
+    "Vicious Spread"
+  ],
+  "uuid": "2dc8d28f-f1ce-43f9-aaf8-b3ecb3829e71"
 }

@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Incendiary Coat"]
+  "mutualExclusionGroups": [
+    "Incendiary Coat"
+  ],
+  "uuid": "fac65c22-016c-4bf1-a21d-634225704623"
 }

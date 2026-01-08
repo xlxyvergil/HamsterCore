@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Burdened Magazine"]
+  "mutualExclusionGroups": [
+    "Burdened Magazine"
+  ],
+  "uuid": "7ef2be10-37e3-4f01-a469-645a502c320e"
 }

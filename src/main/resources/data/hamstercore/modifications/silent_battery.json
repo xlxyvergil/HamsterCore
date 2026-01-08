@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": true,
-  "mutualExclusionGroups": ["Silent Battery"]
+  "mutualExclusionGroups": [
+    "Silent Battery"
+  ],
+  "uuid": "0f02ee90-ce1b-467a-ac22-7c73bca9dc9c"
 }

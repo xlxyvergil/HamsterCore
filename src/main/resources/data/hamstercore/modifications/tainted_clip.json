@@ -23,5 +23,5 @@
   "mutualExclusionGroups": [
     "tainted_clip"
   ],
-  "UUID": "d3071ffc-d484-45fc-94c5-bea1b6e9fc23"
+  "uuid": "d3071ffc-d484-45fc-94c5-bea1b6e9fc23"
 }

@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Ravage"]
+  "mutualExclusionGroups": [
+    "Ravage"
+  ],
+  "uuid": "10584655-651e-41c8-8810-32a8ee6c1939"
 }

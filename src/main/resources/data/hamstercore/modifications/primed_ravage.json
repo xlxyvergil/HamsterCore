@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_ravage",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Ravage"]
+  "mutualExclusionGroups": [
+    "Ravage"
+  ],
+  "uuid": "119afdda-41a6-4b9b-b58a-4e9c32f17dde"
 }

@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Hell's Chamber"]
+  "mutualExclusionGroups": [
+    "Hell's Chamber"
+  ],
+  "uuid": "d0be6866-755a-4543-8238-32be97f366f7"
 }

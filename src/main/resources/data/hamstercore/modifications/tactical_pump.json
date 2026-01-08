@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Tactical Pump"]
+  "mutualExclusionGroups": [
+    "Tactical Pump"
+  ],
+  "uuid": "c4937951-5756-4ab0-a312-53122cd16597"
 }

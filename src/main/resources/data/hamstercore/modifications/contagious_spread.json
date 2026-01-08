@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Contagious Spread"]
+  "mutualExclusionGroups": [
+    "Contagious Spread"
+  ],
+  "uuid": "66c66eed-1122-4c70-8fbc-3e445dc32229"
 }

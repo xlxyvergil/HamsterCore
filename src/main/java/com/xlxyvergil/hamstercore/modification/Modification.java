@@ -119,6 +119,16 @@ public record Modification(
                     Operation op = Operation.valueOf(affix.operation());
                     TooltipFlag flag = TooltipFlag.Default.NORMAL;
                     valueText = formattableAttr.toValueComponent(op, value, flag);
+                    
+                    // 对于IFormattableAttribute，直接使用其格式化的结果，因为它已经包含了百分号
+                    // 获取前缀的翻译键
+                    String langKey = value >= 0 ? "hamstercore.modification.value.increase_prefix" : "hamstercore.modification.value.decrease_prefix";
+                    Component prefix = Component.translatable(langKey);
+                    Component finalValueText = Component.literal(prefix.getString() + valueText.getString());
+                    
+                    tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+                        Component.translatable("%s: %s", attrName, finalValueText)).withStyle(ChatFormatting.GOLD));
+                    continue;
                 } else {
                     // 对于未实现IFormattableAttribute的属性，使用标准格式化
                     double percentValue = Math.abs(value) * 100;

@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:shredder",
   "weight": 100,
-  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "common",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Shredder"]
+  "mutualExclusionGroups": [
+    "Shredder"
+  ],
+  "uuid": "ad7daa41-3684-4edb-b266-dbf3ef41a16e"
 }

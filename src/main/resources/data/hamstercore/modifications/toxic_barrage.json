@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Toxic Barrage"]
+  "mutualExclusionGroups": [
+    "Toxic Barrage"
+  ],
+  "uuid": "503ce09e-23d4-4185-9683-9f548fee7ee4"
 }

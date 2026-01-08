@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Sweeping Serration"]
+  "mutualExclusionGroups": [
+    "Sweeping Serration"
+  ],
+  "uuid": "f890d55e-abe0-4af1-a063-6b08320351a8"
 }

@@ -1,21 +1,21 @@
 {
-    "variant": "hamstercore:split_chamber",
-    "weight": 20,
-    "dimensions": [],
-    "category": "primary",
-    "unique": true,
-    "rarity": "rare",
-    "affixes": [
-        {
-            "type": "taa:bullet_count",
-            "operation": "MULTIPLY_BASE",
-            "value": 0.9,
-            "name": "bullet_count"
-        }
-    ],
-    "use_special_socket": false,
-    "mutualExclusionGroups": [
-        "rifle_chamber_group"
-    ],
-    "uuid": "72bf94c4-545c-40d4-ad76-7769580539c9"
+  "variant": "hamstercore:split_chamber",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:bullet_count",
+      "operation": "MULTIPLY_BASE",
+      "value": 0.9,
+      "name": "bullet_count"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "rifle_chamber_group"
+  ],
+  "uuid": "72bf94c4-545c-40d4-ad76-7769580539c9"
 }

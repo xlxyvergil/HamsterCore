@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Ammo Stock"]
+  "mutualExclusionGroups": [
+    "Ammo Stock"
+  ],
+  "uuid": "310b19ba-469f-4698-9186-18391c4c05f1"
 }

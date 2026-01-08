@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Full Contact"]
+  "mutualExclusionGroups": [
+    "Full Contact"
+  ],
+  "uuid": "0409824d-8067-4614-a8aa-13fff46b2401"
 }

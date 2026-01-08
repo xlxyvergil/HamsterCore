@@ -321,6 +321,8 @@
   "hamstercore.modification.dot_prefix": "• %s",
   "hamstercore.modification.value.increase": "增加%s%%",
   "hamstercore.modification.value.decrease": "减少%s%%",
+  "hamstercore.modification.value.increase_prefix": "增加",
+  "hamstercore.modification.value.decrease_prefix": "减少",
   "hamstercore.modification.normal_socket": "通用改装",
   "hamstercore.modification.special_socket": "特殊改装",
   "hamstercore.modification.mutual_exclusion_groups": "互斥组",

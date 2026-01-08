@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse The Murmur"]
+  "mutualExclusionGroups": [
+    "Cleanse The Murmur"
+  ],
+  "uuid": "b62366c6-1311-47e8-b39f-10e3ad5539be"
 }

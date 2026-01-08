@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Chilling Grasp"]
+  "mutualExclusionGroups": [
+    "Chilling Grasp"
+  ],
+  "uuid": "cdaaa3ba-c2a7-4e3b-bec7-3e4d2b0cc9f0"
 }

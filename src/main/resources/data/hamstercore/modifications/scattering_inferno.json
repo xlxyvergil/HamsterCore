@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Scattering Inferno"]
+  "mutualExclusionGroups": [
+    "Scattering Inferno"
+  ],
+  "uuid": "52432b7d-8cc6-4740-8124-19244a0643ab"
 }

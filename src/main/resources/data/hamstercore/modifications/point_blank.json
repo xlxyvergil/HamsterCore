@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Point Blank"]
+  "mutualExclusionGroups": [
+    "Point Blank"
+  ],
+  "uuid": "3c61d0cd-9562-4f68-a81c-b734c2829706"
 }

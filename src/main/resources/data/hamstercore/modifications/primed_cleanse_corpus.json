@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_cleanse_corpus",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "epic",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Corpus"]
+  "mutualExclusionGroups": [
+    "Cleanse Corpus"
+  ],
+  "uuid": "86303231-ebcc-4c35-8763-9c7adc42e946"
 }

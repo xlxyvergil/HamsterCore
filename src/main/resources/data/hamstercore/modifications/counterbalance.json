@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": true,
-  "mutualExclusionGroups": ["Counterbalance"]
+  "mutualExclusionGroups": [
+    "Counterbalance"
+  ],
+  "uuid": "f612c9ac-f1eb-4f0b-9192-ffc87eed5e8b"
 }

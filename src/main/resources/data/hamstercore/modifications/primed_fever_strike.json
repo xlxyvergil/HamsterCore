@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:primed_fever_strike",
   "weight": 10,
-  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
   "category": "melee",
   "unique": true,
   "rarity": "epic",
@@ -14,6 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["fever_strike"],
-  "UUID": "c2eb061b-ecae-416f-ac6e-4c80e66b5963"
+  "mutualExclusionGroups": [
+    "fever_strike"
+  ],
+  "uuid": "c2eb061b-ecae-416f-ac6e-4c80e66b5963"
 }

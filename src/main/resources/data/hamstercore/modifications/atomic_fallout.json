@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Atomic Fallout"]
+  "mutualExclusionGroups": [
+    "Atomic Fallout"
+  ],
+  "uuid": "1e982ffa-f053-4a17-8009-056947b1bd04"
 }

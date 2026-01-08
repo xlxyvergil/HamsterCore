@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Cleanse Infested"]
+  "mutualExclusionGroups": [
+    "Cleanse Infested"
+  ],
+  "uuid": "73b3e157-83ac-4f3f-b843-a4afeaf9f5b7"
 }

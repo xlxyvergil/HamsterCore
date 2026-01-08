@@ -6,10 +6,22 @@
   "unique": true,
   "rarity": "rare",
   "affixes": [
-    { "type": "hamstercore:trigger_chance", "name": "trigger_chance", "value": 0.6, "operation": "MULTIPLY_BASE" },
-    { "type": "hamstercore:electricity", "name": "electricity", "value": 0.6, "operation": "ADDITION" }
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:electricity",
+      "name": "electricity",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["voltaic_strike"],
-  "UUID": "49fe48e4-5202-4ec5-a4ff-222437c37ae8"
+  "mutualExclusionGroups": [
+    "voltaic_strike"
+  ],
+  "uuid": "49fe48e4-5202-4ec5-a4ff-222437c37ae8"
 }

@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:reach",
   "weight": 100,
-  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
   "category": "melee",
   "unique": true,
   "rarity": "common",
@@ -14,6 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["reach"],
-  "UUID": "88bf36ba-17b0-4b47-8a77-33337bf2ff29"
+  "mutualExclusionGroups": [
+    "reach"
+  ],
+  "uuid": "88bf36ba-17b0-4b47-8a77-33337bf2ff29"
 }

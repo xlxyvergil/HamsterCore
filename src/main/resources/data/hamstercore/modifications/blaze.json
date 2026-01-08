@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Blaze"]
+  "mutualExclusionGroups": [
+    "Blaze"
+  ],
+  "uuid": "3582e2ca-f2af-432f-b8a5-98c7f927e69e"
 }

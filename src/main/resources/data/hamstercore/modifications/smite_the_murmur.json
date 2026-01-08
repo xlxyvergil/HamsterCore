@@ -6,9 +6,16 @@
   "unique": true,
   "rarity": "uncommon",
   "affixes": [
-    { "type": "hamstercore:murmur", "name": "murmur", "value": 1.3, "operation": "ADDITION" }
+    {
+      "type": "hamstercore:murmur",
+      "name": "murmur",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["smite_the_murmur"],
-  "UUID": "6a9496b2-73a9-4e22-b181-416972c52875"
+  "mutualExclusionGroups": [
+    "smite_the_murmur"
+  ],
+  "uuid": "6a9496b2-73a9-4e22-b181-416972c52875"
 }

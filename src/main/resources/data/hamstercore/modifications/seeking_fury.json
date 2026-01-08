@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Seeking Fury"]
+  "mutualExclusionGroups": [
+    "Seeking Fury"
+  ],
+  "uuid": "c1140e22-ea1f-4d86-9511-5d6a3932a302"
 }

@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Chilling Reload"]
+  "mutualExclusionGroups": [
+    "Chilling Reload"
+  ],
+  "uuid": "3cc0f955-9f86-45d8-b595-ac277d7f9b00"
 }

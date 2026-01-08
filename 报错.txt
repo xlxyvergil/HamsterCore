@@ -1,0 +1,140 @@
+Codec failure for type modifications, message: No key uuid in MapLike[{"variant":"hamstercore:fatal_acceleration","weight":50,"dimensions":[],"category":"shotgun","unique":true,"rarity":"uncommon","affixes":[{"type":"taa:ammo_speed","name":"ammo_speed","value":0.4,"operation":"MULTIPLY_BASE"}],"use_special_socket":true,"mutualExclusionGroups":["Fatal Acceleration"]}]
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Failed parsing modifications file hamstercore:fatal_acceleration.
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Underlying Exception: 
+java.lang.RuntimeException: No key uuid in MapLike[{"variant":"hamstercore:fatal_acceleration","weight":50,"dimensions":[],"category":"shotgun","unique":true,"rarity":"uncommon","affixes":[{"type":"taa:ammo_speed","name":"ammo_speed","value":0.4,"operation":"MULTIPLY_BASE"}],"use_special_socket":true,"mutualExclusionGroups":["Fatal Acceleration"]}]
+        at com.mojang.serialization.DataResult.lambda$getOrThrow$5(DataResult.java:101) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.datafixers.util.Either$Right.map(Either.java:99) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.serialization.DataResult.getOrThrow(DataResult.java:93) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.lambda$apply$0(DynamicRegistry.java:140) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at java.util.HashMap.forEach(HashMap.java:1421) ~[?:?] {re:mixin}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.apply(DynamicRegistry.java:136) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.m_5787_(DynamicRegistry.java:62) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:computing_frames,re:classloading,pl:mixin:A}
+        at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?] {}
+        at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?] {}
+        at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading,pl:accesstransformer:B}
+        at net.minecraft.Util.m_214652_(Util.java:783) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.Util.m_214679_(Util.java:772) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.server.Main.main(Main.java:166) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+        at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+        at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {re:mixin}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:103) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonServerLaunchHandler.lambda$makeService$0(CommonServerLaunchHandler.java:27) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+[01:27:04] [main/ERROR] [placebo/]: Codec failure for type modifications, message: No key uuid in MapLike[{"variant":"hamstercore:primed_expel_corpus","weight":10,"dimensions":["minecraft:the_nether","minecraft:the_end"],"category":"secondary","unique":true,"rarity":"epic","affixes":[{"type":"hamstercore:corpus","name":"corpus","value":1.55,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["expel_corpus"],"UUID":"fb881b02-a053-4daa-a92a-62328602192d"}]
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Failed parsing modifications file hamstercore:primed_expel_corpus.
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Underlying Exception: 
+java.lang.RuntimeException: No key uuid in MapLike[{"variant":"hamstercore:primed_expel_corpus","weight":10,"dimensions":["minecraft:the_nether","minecraft:the_end"],"category":"secondary","unique":true,"rarity":"epic","affixes":[{"type":"hamstercore:corpus","name":"corpus","value":1.55,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["expel_corpus"],"UUID":"fb881b02-a053-4daa-a92a-62328602192d"}]
+        at com.mojang.serialization.DataResult.lambda$getOrThrow$5(DataResult.java:101) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.datafixers.util.Either$Right.map(Either.java:99) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.serialization.DataResult.getOrThrow(DataResult.java:93) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.lambda$apply$0(DynamicRegistry.java:140) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at java.util.HashMap.forEach(HashMap.java:1421) ~[?:?] {re:mixin}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.apply(DynamicRegistry.java:136) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.m_5787_(DynamicRegistry.java:62) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:computing_frames,re:classloading,pl:mixin:A}
+        at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?] {}
+        at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?] {}
+        at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading,pl:accesstransformer:B}
+        at net.minecraft.Util.m_214652_(Util.java:783) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.Util.m_214679_(Util.java:772) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.server.Main.main(Main.java:166) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+        at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+        at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {re:mixin}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:103) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonServerLaunchHandler.lambda$makeService$0(CommonServerLaunchHandler.java:27) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+[01:27:04] [main/ERROR] [placebo/]: Codec failure for type modifications, message: No key uuid in MapLike[{"variant":"hamstercore:primed_cleanse_orokin","weight":10,"dimensions":["minecraft:the_nether","minecraft:the_end"],"category":"shotgun","unique":true,"rarity":"epic","affixes":[{"type":"hamstercore:orokin","name":"orokin","value":1.55,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["Cleanse Orokin"]}]
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Failed parsing modifications file hamstercore:primed_cleanse_orokin.
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Underlying Exception: 
+java.lang.RuntimeException: No key uuid in MapLike[{"variant":"hamstercore:primed_cleanse_orokin","weight":10,"dimensions":["minecraft:the_nether","minecraft:the_end"],"category":"shotgun","unique":true,"rarity":"epic","affixes":[{"type":"hamstercore:orokin","name":"orokin","value":1.55,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["Cleanse Orokin"]}]
+        at com.mojang.serialization.DataResult.lambda$getOrThrow$5(DataResult.java:101) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.datafixers.util.Either$Right.map(Either.java:99) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.serialization.DataResult.getOrThrow(DataResult.java:93) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.lambda$apply$0(DynamicRegistry.java:140) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at java.util.HashMap.forEach(HashMap.java:1421) ~[?:?] {re:mixin}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.apply(DynamicRegistry.java:136) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.m_5787_(DynamicRegistry.java:62) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:computing_frames,re:classloading,pl:mixin:A}
+        at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?] {}
+        at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?] {}
+        at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading,pl:accesstransformer:B}
+        at net.minecraft.Util.m_214652_(Util.java:783) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.Util.m_214679_(Util.java:772) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.server.Main.main(Main.java:166) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+        at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+        at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {re:mixin}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:103) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonServerLaunchHandler.lambda$makeService$0(CommonServerLaunchHandler.java:27) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+
+
+[MCSMANAGER] The instantaneous output content is too long and has been rejected....
+
+ator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}
+[01:27:04] [main/ERROR] [placebo/]: Codec failure for type modifications, message: No key uuid in MapLike[{"variant":"hamstercore:smite_orokin","weight":50,"dimensions":[],"category":"melee","unique":true,"rarity":"uncommon","affixes":[{"type":"hamstercore:orokin","name":"orokin","value":1.3,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["smite_orokin"],"UUID":"6afcea5d-f40f-417b-8ae7-81c825afb81c"}]
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Failed parsing modifications file hamstercore:smite_orokin.
+[01:27:04] [main/ERROR] [HamsterCore : Modification/]: Underlying Exception: 
+java.lang.RuntimeException: No key uuid in MapLike[{"variant":"hamstercore:smite_orokin","weight":50,"dimensions":[],"category":"melee","unique":true,"rarity":"uncommon","affixes":[{"type":"hamstercore:orokin","name":"orokin","value":1.3,"operation":"ADDITION"}],"use_special_socket":false,"mutualExclusionGroups":["smite_orokin"],"UUID":"6afcea5d-f40f-417b-8ae7-81c825afb81c"}]
+        at com.mojang.serialization.DataResult.lambda$getOrThrow$5(DataResult.java:101) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.datafixers.util.Either$Right.map(Either.java:99) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at com.mojang.serialization.DataResult.getOrThrow(DataResult.java:93) ~[datafixerupper-6.0.8.jar%2377!/:?] {}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.lambda$apply$0(DynamicRegistry.java:140) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at java.util.HashMap.forEach(HashMap.java:1421) ~[?:?] {re:mixin}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.apply(DynamicRegistry.java:136) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at dev.shadowsoffire.placebo.reload.DynamicRegistry.m_5787_(DynamicRegistry.java:62) ~[Placebo-1.20.1-8.6.3.jar%23166!/:8.6.3] {re:classloading}
+        at net.minecraft.server.packs.resources.SimplePreparableReloadListener.m_10789_(SimplePreparableReloadListener.java:13) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:computing_frames,re:classloading,pl:mixin:A}
+        at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?] {}
+        at java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?] {}
+        at net.minecraft.server.packs.resources.SimpleReloadInstance.m_143940_(SimpleReloadInstance.java:69) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading,pl:accesstransformer:B}
+        at net.minecraft.Util.m_214652_(Util.java:783) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.Util.m_214679_(Util.java:772) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:mixin,re:classloading,pl:mixin:APP:kubejs-common.mixins.json:UtilMixin,pl:mixin:A}
+        at net.minecraft.server.Main.main(Main.java:166) ~[server-1.20.1-20230612.114412-srg.jar%23173!/:?] {re:classloading}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:?] {}
+        at jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[?:?] {}
+        at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:?] {}
+        at java.lang.reflect.Method.invoke(Method.java:569) ~[?:?] {re:mixin}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:111) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:103) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at net.minecraftforge.fml.loading.targets.CommonServerLaunchHandler.lambda$makeService$0(CommonServerLaunchHandler.java:27) ~[fmlloader-1.20.1-47.4.10.jar%2369!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.run(Launcher.java:108) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.Launcher.main(Launcher.java:78) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) ~[modlauncher-10.0.9.jar%2355!/:?] {}
+        at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:141) ~[bootstraplauncher-1.1.2.jar:?] {}

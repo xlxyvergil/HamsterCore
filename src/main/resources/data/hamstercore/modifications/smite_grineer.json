@@ -6,9 +6,16 @@
   "unique": true,
   "rarity": "uncommon",
   "affixes": [
-    { "type": "hamstercore:grineer", "name": "grineer", "value": 1.3, "operation": "ADDITION" }
+    {
+      "type": "hamstercore:grineer",
+      "name": "grineer",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["smite_grineer"],
-  "UUID": "5f5567ea-ebe5-4f0b-8bde-65caf48703f8"
+  "mutualExclusionGroups": [
+    "smite_grineer"
+  ],
+  "uuid": "5f5567ea-ebe5-4f0b-8bde-65caf48703f8"
 }

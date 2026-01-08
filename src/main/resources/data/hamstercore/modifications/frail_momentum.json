@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Frail Momentum"]
+  "mutualExclusionGroups": [
+    "Frail Momentum"
+  ],
+  "uuid": "385d1856-eae1-4145-8b74-bf7ea1da2fcb"
 }

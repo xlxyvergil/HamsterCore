@@ -293,6 +293,8 @@
   "hamstercore.modification.dot_prefix": "• %s",
   "hamstercore.modification.value.increase": "+%s%%",
   "hamstercore.modification.value.decrease": "-%s%%",
+  "hamstercore.modification.value.increase_prefix": "+",
+  "hamstercore.modification.value.decrease_prefix": "-",
   "hamstercore.modification.normal_socket": "General Modification",
   "hamstercore.modification.special_socket": "Special Modification",
   "hamstercore.modification.mutual_exclusion_groups": "Mutual Exclusion Groups",

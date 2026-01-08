@@ -14,6 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["north_wind"],
-  "UUID": "4f835c5f-d025-4b85-ba66-5f747f068533"
+  "mutualExclusionGroups": [
+    "north_wind"
+  ],
+  "uuid": "4f835c5f-d025-4b85-ba66-5f747f068533"
 }

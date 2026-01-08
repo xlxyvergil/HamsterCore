@@ -1,14 +1,24 @@
 {
   "variant": "hamstercore:organ_shatter",
   "weight": 100,
-  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
   "category": "melee",
   "unique": true,
   "rarity": "common",
   "affixes": [
-    { "type": "attributeslib:crit_damage", "name": "crit_damage", "value": 0.9, "operation": "MULTIPLY_BASE" }
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["organ_shatter"],
-  "UUID": "7f0b6398-3b26-4b40-9541-d382eb5e4888"
+  "mutualExclusionGroups": [
+    "organ_shatter"
+  ],
+  "uuid": "7f0b6398-3b26-4b40-9541-d382eb5e4888"
 }

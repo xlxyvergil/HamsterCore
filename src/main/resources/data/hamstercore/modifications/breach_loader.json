@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Breach Loader"]
+  "mutualExclusionGroups": [
+    "Breach Loader"
+  ],
+  "uuid": "98298209-6bcd-4e1a-8e1e-360bb2f8675c"
 }

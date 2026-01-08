@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Frigid Blast"]
+  "mutualExclusionGroups": [
+    "Frigid Blast"
+  ],
+  "uuid": "a59c6025-dc51-47f5-8c80-0f0652b8f0ee"
 }

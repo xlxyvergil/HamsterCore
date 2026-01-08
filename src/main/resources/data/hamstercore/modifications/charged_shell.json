@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Charged Shell"]
+  "mutualExclusionGroups": [
+    "Charged Shell"
+  ],
+  "uuid": "ae748d7a-8d21-4993-9b5d-e08b43a0dcc4"
 }

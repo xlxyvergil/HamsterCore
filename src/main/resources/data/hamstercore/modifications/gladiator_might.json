@@ -14,6 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["gladiator_might"],
-  "UUID": "4c5a4cbc-4df0-4f3f-a1e6-e3307d8cd54b"
+  "mutualExclusionGroups": [
+    "gladiator_might"
+  ],
+  "uuid": "4c5a4cbc-4df0-4f3f-a1e6-e3307d8cd54b"
 }

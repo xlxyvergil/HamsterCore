@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Accelerated Blast"]
+  "mutualExclusionGroups": [
+    "Accelerated Blast"
+  ],
+  "uuid": "9050335b-c446-4aca-9662-10b772b2ba99"
 }

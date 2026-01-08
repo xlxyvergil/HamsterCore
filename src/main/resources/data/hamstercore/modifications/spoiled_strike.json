@@ -6,10 +6,22 @@
   "unique": true,
   "rarity": "rare",
   "affixes": [
-    { "type": "minecraft:generic.attack_damage", "name": "generic.attack_damage", "value": 1.0, "operation": "MULTIPLY_BASE" },
-    { "type": "minecraft:generic.attack_speed", "name": "generic.attack_speed", "value": -0.2, "operation": "MULTIPLY_BASE" }
+    {
+      "type": "minecraft:generic.attack_damage",
+      "name": "generic.attack_damage",
+      "value": 1.0,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "minecraft:generic.attack_speed",
+      "name": "generic.attack_speed",
+      "value": -0.2,
+      "operation": "MULTIPLY_BASE"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["spoiled_strike"],
-  "UUID": "5659cb42-8dfb-458b-9d1e-ce32d4f9e316"
+  "mutualExclusionGroups": [
+    "spoiled_strike"
+  ],
+  "uuid": "5659cb42-8dfb-458b-9d1e-ce32d4f9e316"
 }

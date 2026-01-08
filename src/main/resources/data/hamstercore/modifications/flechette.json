@@ -1,7 +1,10 @@
 {
   "variant": "hamstercore:flechette",
   "weight": 100,
-  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
   "category": "shotgun",
   "unique": true,
   "rarity": "common",
@@ -14,5 +17,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Flechette"]
+  "mutualExclusionGroups": [
+    "Flechette"
+  ],
+  "uuid": "c66b57b6-f3c0-4861-b649-d430148b9d4e"
 }

@@ -6,10 +6,22 @@
   "unique": true,
   "rarity": "rare",
   "affixes": [
-    { "type": "hamstercore:trigger_chance", "name": "trigger_chance", "value": 0.6, "operation": "MULTIPLY_BASE" },
-    { "type": "hamstercore:toxin", "name": "toxin", "value": 0.6, "operation": "ADDITION" }
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:toxin",
+      "name": "toxin",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["virulent_scourge"],
-  "UUID": "6d5ea630-7400-4f51-b706-d4f72fb6096b"
+  "mutualExclusionGroups": [
+    "virulent_scourge"
+  ],
+  "uuid": "6d5ea630-7400-4f51-b706-d4f72fb6096b"
 }

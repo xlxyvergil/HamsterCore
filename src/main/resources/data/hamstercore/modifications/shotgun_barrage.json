@@ -14,5 +14,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Shotgun Barrage"]
+  "mutualExclusionGroups": [
+    "Shotgun Barrage"
+  ],
+  "uuid": "e3c389b0-f3fc-4c93-9a93-5a15384d5f44"
 }

@@ -20,5 +20,8 @@
     }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["Shell Shock"]
+  "mutualExclusionGroups": [
+    "Shell Shock"
+  ],
+  "uuid": "b7f7525a-ca01-4db2-ac2b-99168f12d3e1"
 }

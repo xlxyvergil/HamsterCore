@@ -6,10 +6,22 @@
   "unique": true,
   "rarity": "rare",
   "affixes": [
-    { "type": "hamstercore:trigger_chance", "name": "trigger_chance", "value": 0.6, "operation": "MULTIPLY_BASE" },
-    { "type": "hamstercore:heat", "name": "heat", "value": 0.6, "operation": "ADDITION" }
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:heat",
+      "name": "heat",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
   ],
   "use_special_socket": false,
-  "mutualExclusionGroups": ["volcanic_edge"],
-  "UUID": "147bbbf4-2af6-4bf2-a4c1-c8a4b624c169"
+  "mutualExclusionGroups": [
+    "volcanic_edge"
+  ],
+  "uuid": "147bbbf4-2af6-4bf2-a4c1-c8a4b624c169"
 }
