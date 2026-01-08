@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:pathogen_rounds",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:toxin",
+      "name": "toxin",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "pathogen_rounds"
+  ],
+  "UUID": "856fc2bc-e2bb-4e5c-a971-da4242d3e52e"
+}

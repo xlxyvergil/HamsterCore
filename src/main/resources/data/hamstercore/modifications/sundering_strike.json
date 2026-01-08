@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:sundering_strike",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:puncture",
+      "name": "puncture",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["sundering_strike"],
+  "UUID": "d76e3148-19c5-49fc-b2fe-b755ae710be6"
+}

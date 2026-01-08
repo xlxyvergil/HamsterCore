@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:suppress",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "taa:silencenew",
+      "name": "silencenew",
+      "value": -1,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "suppress"
+  ],
+  "UUID": "863736fe-3e91-40e3-baf3-961562a2716d"
+}

@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:magnetic_might",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:magnetic",
+      "name": "magnetic",
+      "value": 0.6,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.4,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "magnetic_might"
+  ],
+  "UUID": "6f9337d7-88d8-495c-9cb7-9d69c4e44e30"
+}

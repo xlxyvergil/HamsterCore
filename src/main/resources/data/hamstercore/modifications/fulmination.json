@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:fulmination",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:explosion_radius",
+      "name": "explosion_radius",
+      "value": 0.24,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "fulmination"
+  ],
+  "UUID": "e8e94d62-1d92-46c9-bf85-a5be3a7b84a4"
+}

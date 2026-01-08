@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:convulsion",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "name": "electricity",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "convulsion"
+  ],
+  "UUID": "35b04a99-ada8-49e9-9cfb-ad7d46654b5b"
+}

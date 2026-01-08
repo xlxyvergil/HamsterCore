@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:accelerated_isotope",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.4,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:radiation",
+      "name": "radiation",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "accelerated_isotope"
+  ],
+  "UUID": "09f77ee9-c1ec-46eb-a22e-faa0bd350e18"
+}

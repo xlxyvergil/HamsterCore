@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:expel_orokin",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:orokin",
+      "name": "orokin",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_orokin"
+  ],
+  "UUID": "6465c440-514b-4ada-8907-4aee892feea3"
+}

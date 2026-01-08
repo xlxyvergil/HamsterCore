@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:pressure_point",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    { "type": "minecraft:generic.attack_damage", "name": "generic.attack_damage", "value": 1.2, "operation": "MULTIPLY_BASE" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["pressure_point"],
+  "UUID": "ff5399cc-3347-49cb-a8aa-d958c349971f"
+}

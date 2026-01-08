@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:expel_grineer",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:grineer",
+      "name": "grineer",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_grineer"
+  ],
+  "UUID": "28d84714-5096-4284-b7ca-01b9c5bb6506"
+}

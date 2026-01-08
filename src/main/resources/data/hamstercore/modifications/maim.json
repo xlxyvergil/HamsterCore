@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:maim",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "name": "slash",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "maim"
+  ],
+  "UUID": "95a39588-77f6-445d-8873-3e54b769919e"
+}

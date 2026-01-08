@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:hornet_strike",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": 2.2,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "hornet_strike"
+  ],
+  "UUID": "1b035923-d380-42cc-aff9-76ccaebf74c3"
+}

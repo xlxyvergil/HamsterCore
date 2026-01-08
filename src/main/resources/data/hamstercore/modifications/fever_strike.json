@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:fever_strike",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:toxin",
+      "name": "toxin",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["fever_strike"],
+  "UUID": "3bdc06d0-50c8-40f9-b751-1fdf4ad2ddff"
+}

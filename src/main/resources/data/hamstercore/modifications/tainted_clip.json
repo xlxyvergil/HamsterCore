@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:tainted_clip",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": -0.3,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "tainted_clip"
+  ],
+  "UUID": "d3071ffc-d484-45fc-94c5-bea1b6e9fc23"
+}

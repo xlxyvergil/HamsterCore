@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_expel_corpus",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:corpus",
+      "name": "corpus",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_corpus"
+  ],
+  "UUID": "fb881b02-a053-4daa-a92a-62328602192d"
+}

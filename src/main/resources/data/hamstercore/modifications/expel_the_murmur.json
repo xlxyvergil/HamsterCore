@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:expel_the_murmur",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:murmur",
+      "name": "murmur",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_the_murmur"
+  ],
+  "UUID": "676b0650-f390-4705-9a91-9db166f83417"
+}

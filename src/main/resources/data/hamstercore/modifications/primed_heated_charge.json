@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_heated_charge",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:heat",
+      "name": "heat",
+      "value": 1.65,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "heated_charge"
+  ],
+  "UUID": "84fdd315-9b8b-4c8b-85a4-e196793a7c6e"
+}

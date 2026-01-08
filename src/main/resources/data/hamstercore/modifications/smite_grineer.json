@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:smite_grineer",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    { "type": "hamstercore:grineer", "name": "grineer", "value": 1.3, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_grineer"],
+  "UUID": "5f5567ea-ebe5-4f0b-8bde-65caf48703f8"
+}

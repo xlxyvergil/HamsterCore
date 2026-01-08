@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:no_return",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:puncture",
+      "name": "puncture",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "no_return"
+  ],
+  "UUID": "87fa2d2e-c097-4220-8c53-ebe6424eccaf"
+}

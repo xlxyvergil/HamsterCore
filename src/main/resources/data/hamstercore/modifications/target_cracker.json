@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:target_cracker",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "target_cracker"
+  ],
+  "UUID": "b0247108-c5dc-43ea-9a2c-46ac83e10c36"
+}

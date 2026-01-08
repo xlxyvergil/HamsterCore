@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:primed_fury",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "minecraft:generic.attack_speed",
+      "name": "generic.attack_speed",
+      "value": 0.55,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["fury"],
+  "UUID": "f85904da-27b0-4f49-8c77-3d2fff9915c4"
+}

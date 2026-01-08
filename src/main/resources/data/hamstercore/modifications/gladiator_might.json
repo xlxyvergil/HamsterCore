@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:gladiator_might",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["gladiator_might"],
+  "UUID": "4c5a4cbc-4df0-4f3f-a1e6-e3307d8cd54b"
+}

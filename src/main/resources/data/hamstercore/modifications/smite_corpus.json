@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:smite_corpus",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    { "type": "hamstercore:corpus", "name": "corpus", "value": 1.3, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_corpus"],
+  "UUID": "78647585-5174-4366-aabc-8302df2c78ee"
+}

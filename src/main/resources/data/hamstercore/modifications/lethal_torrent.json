@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:lethal_torrent",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_count",
+      "name": "bullet_count",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "lethal_torrent"
+  ],
+  "UUID": "cb86c293-c916-4e9e-8af1-bdf6bca45cfe"
+}

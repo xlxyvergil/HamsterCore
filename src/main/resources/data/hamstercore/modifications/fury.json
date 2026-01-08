@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:fury",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "minecraft:generic.attack_speed",
+      "name": "generic.attack_speed",
+      "value": 0.2,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["fury"],
+  "UUID": "e61e74a2-442f-42fd-87e1-8ed4a10f75b4"
+}

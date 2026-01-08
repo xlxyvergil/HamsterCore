@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:shocking_touch",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "name": "electricity",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["shocking_touch"],
+  "UUID": "234c85d9-eedf-4b81-8f04-df3a4131eee5"
+}

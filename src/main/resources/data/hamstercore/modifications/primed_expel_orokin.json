@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_expel_orokin",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:orokin",
+      "name": "orokin",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_orokin"
+  ],
+  "UUID": "d2703ef2-5c85-4a9d-aa4f-706094728593"
+}

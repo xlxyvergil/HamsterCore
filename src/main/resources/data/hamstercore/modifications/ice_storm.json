@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:ice_storm",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.4,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:cold",
+      "name": "cold",
+      "value": 0.4,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "ice_storm"
+  ],
+  "UUID": "b7bf6d06-2b70-4f63-a95f-2b74fba571ea"
+}

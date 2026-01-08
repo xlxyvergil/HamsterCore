@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:buzz_kill",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "name": "slash",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["buzz_kill"],
+  "UUID": "3ef8a2b5-3c35-4634-b887-e6b237207bb6"
+}

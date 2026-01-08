@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:hollow_point",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "hollow_point"
+  ],
+  "UUID": "0113746f-330b-4735-b536-873c7b243a5b"
+}

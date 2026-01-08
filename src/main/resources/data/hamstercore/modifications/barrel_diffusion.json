@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:barrel_diffusion",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:bullet_count",
+      "name": "bullet_count",
+      "value": 1.2,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "barrel_diffusion"
+  ],
+  "UUID": "395bc328-2124-4516-aa79-7dd5ebb88fe6"
+}

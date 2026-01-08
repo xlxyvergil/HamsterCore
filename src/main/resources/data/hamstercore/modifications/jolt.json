@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:jolt",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "name": "electricity",
+      "value": 0.6,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "jolt"
+  ],
+  "UUID": "8e1102f2-db17-439d-a0a8-a700bf4620fc"
+}

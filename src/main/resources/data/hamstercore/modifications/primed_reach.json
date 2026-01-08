@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:primed_reach",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "minecraft:player.entity_interaction_range",
+      "name": "player.entity_interaction_range",
+      "value": 3,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["reach"],
+  "UUID": "9109bc0a-8a60-40dc-9ed8-064af71b39a3"
+}

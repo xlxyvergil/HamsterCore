@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:primed_smite_orokin",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "hamstercore:orokin", "name": "orokin", "value": 1.55, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_orokin"],
+  "UUID": "d6849ba6-28f6-4de6-9e12-a52e3157056b"
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:deep_freeze",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:cold",
+      "name": "cold",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "deep_freeze"
+  ],
+  "UUID": "3e1aea24-c4e5-4fa6-84d2-2a7684b44315"
+}

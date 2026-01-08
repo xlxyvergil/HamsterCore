@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:melee_prowess",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["melee_prowess"],
+  "UUID": "b14d65d9-2753-423f-95b3-5d1b8e490711"
+}

@@ -1,0 +1,15 @@
+{
+  "variant": "hamstercore:vicious_frost",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    { "type": "hamstercore:trigger_chance", "name": "trigger_chance", "value": 0.6, "operation": "MULTIPLY_BASE" },
+    { "type": "hamstercore:cold", "name": "cold", "value": 0.6, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["vicious_frost"],
+  "UUID": "16c132c5-c504-44e2-800e-2080b40a0297"
+}

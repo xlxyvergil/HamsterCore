@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_fulmination",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:explosion_radius",
+      "name": "explosion_radius",
+      "value": 0.44,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "fulmination"
+  ],
+  "UUID": "bd4b0a0f-9f2d-4b19-b410-fd6c17a2dc23"
+}

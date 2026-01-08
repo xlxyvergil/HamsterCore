@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:expel_infested",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:infested",
+      "name": "infested",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_infested"
+  ],
+  "UUID": "74f4bab5-ce43-4f12-907a-7f20871229e8"
+}

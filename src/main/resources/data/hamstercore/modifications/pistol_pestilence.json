@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:pistol_pestilence",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:toxin",
+      "name": "toxin",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "pistol_pestilence"
+  ],
+  "UUID": "509acd13-1769-46df-a98a-cd4881cea1f3"
+}

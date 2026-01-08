@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:primed_smite_the_murmur",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "hamstercore:murmur", "name": "murmur", "value": 1.55, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_the_murmur"],
+  "UUID": "09e5f89a-75c2-4102-a8d2-eb3415081767"
+}

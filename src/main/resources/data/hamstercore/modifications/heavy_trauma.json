@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:heavy_trauma",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:impact",
+      "name": "impact",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["heavy_trauma"],
+  "UUID": "f223ad28-769c-4830-8262-13961c3d84a4"
+}

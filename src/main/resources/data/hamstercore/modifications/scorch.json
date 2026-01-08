@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:scorch",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:heat",
+      "name": "heat",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "scorch"
+  ],
+  "UUID": "070f8e90-92d0-4e00-8e46-6f35599bc6b3"
+}

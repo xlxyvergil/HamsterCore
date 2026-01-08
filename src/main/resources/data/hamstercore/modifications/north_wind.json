@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:north_wind",
+  "weight": 50,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:cold",
+      "name": "cold",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["north_wind"],
+  "UUID": "4f835c5f-d025-4b85-ba66-5f747f068533"
+}

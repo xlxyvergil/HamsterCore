@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:gunslinger",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.72,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "gunslinger"
+  ],
+  "UUID": "c0066b84-b3c6-41b9-9ce0-cd1e762c5941"
+}

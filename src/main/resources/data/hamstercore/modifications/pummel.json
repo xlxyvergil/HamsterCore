@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:pummel",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:impact",
+      "name": "impact",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "pummel"
+  ],
+  "UUID": "3ac27b67-b408-4fc2-9cf1-ca775d21da71"
+}

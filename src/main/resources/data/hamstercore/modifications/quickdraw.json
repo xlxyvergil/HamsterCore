@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:quickdraw",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 4.8,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "quickdraw"
+  ],
+  "UUID": "2ead567a-db09-47ce-bfc0-fd9f4aea0d62"
+}

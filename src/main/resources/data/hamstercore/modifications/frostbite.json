@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:frostbite",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:cold",
+      "name": "cold",
+      "value": 0.6,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "frostbite"
+  ],
+  "UUID": "4787ec8f-3bbb-4cfe-9370-722d2020d557"
+}

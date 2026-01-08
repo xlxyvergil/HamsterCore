@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:primed_smite_grineer",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "hamstercore:grineer", "name": "grineer", "value": 1.55, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_grineer"],
+  "UUID": "ba71e2e3-4702-4d3c-8d70-d54367bf16ec"
+}

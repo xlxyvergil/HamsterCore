@@ -1,0 +1,15 @@
+{
+  "variant": "hamstercore:sacrificial_steel",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "attributeslib:crit_chance", "name": "crit_chance", "value": 4.4, "operation": "MULTIPLY_BASE" },
+    { "type": "hamstercore:sentient", "name": "sentient", "value": 0.33, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["true_steel"],
+  "UUID": "2f58a1cd-1c65-4619-b9a4-7a0fd7961cd5"
+}

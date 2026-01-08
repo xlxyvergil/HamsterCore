@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:primed_fever_strike",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:toxin",
+      "name": "toxin",
+      "value": 1.65,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["fever_strike"],
+  "UUID": "c2eb061b-ecae-416f-ac6e-4c80e66b5963"
+}

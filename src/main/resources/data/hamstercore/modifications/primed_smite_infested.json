@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:primed_smite_infested",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "hamstercore:infested", "name": "infested", "value": 1.55, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_infested"],
+  "UUID": "c5afa23c-37be-422d-8957-1ce1b6690a72"
+}

@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:primed_smite_corpus",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "hamstercore:corpus", "name": "corpus", "value": 1.55, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["smite_corpus"],
+  "UUID": "bf75f8ee-bcaf-4175-b2f0-6e6e5d2aa50a"
+}

@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_slip_magazine",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.55,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "slip_magazine"
+  ],
+  "UUID": "81c4d21b-da5a-42cf-9726-9400d668b10b"
+}

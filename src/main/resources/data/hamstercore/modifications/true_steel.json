@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:true_steel",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    { "type": "attributeslib:crit_chance", "name": "crit_chance", "value": 2.4, "operation": "MULTIPLY_BASE" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["true_steel"],
+  "UUID": "da2c1b50-496d-4191-a4c3-40ed2789a400"
+}

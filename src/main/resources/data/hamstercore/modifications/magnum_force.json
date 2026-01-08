@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:magnum_force",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": 1.65,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:inaccuracy",
+      "name": "inaccuracy",
+      "value": -0.55,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "magnum_force"
+  ],
+  "UUID": "55c4eda0-d5fd-4597-af67-0a6a4ce30954"
+}

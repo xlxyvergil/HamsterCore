@@ -1,0 +1,27 @@
+{
+  "variant": "hamstercore:anemic_agility",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "anemic_agility"
+  ],
+  "UUID": "b2e9f942-58fe-40eb-a7b0-07738c2262c3"
+}

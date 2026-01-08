@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:seeker",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:pierce",
+      "name": "pierce",
+      "value": 2.1,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "seeker"
+  ],
+  "UUID": "55c034ed-cc30-4c40-8e6e-846c58ee8aae"
+}

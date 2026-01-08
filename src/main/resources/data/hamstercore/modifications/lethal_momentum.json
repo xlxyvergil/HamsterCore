@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:lethal_momentum",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:ammo_speed",
+      "name": "ammo_speed",
+      "value": 0.4,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "lethal_momentum"
+  ],
+  "UUID": "b918ac27-0f77-44e0-a8a1-9fd4ea7b8eef"
+}

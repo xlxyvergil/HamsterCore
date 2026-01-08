@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:slip_magazine",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.3,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "slip_magazine"
+  ],
+  "UUID": "15efb3a8-9f2c-412e-be6f-ca3e4b0d9d5d"
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:steady_hands",
+  "weight": 20,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:recoil",
+      "name": "recoil",
+      "value": 6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "steady_hands"
+  ],
+  "UUID": "4f45b318-2d79-4557-a373-3249ca799fd4"
+}

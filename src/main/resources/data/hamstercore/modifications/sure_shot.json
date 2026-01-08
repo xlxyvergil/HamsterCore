@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:sure_shot",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "sure_shot"
+  ],
+  "UUID": "a7115e7c-0ea7-4987-8d58-a2678955a0e4"
+}

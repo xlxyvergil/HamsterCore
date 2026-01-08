@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:heated_charge",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:heat",
+      "name": "heat",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "heated_charge"
+  ],
+  "UUID": "a244069a-c253-42b9-a2cb-6ce7afc6203f"
+}

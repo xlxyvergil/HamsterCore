@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:reach",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "minecraft:player.entity_interaction_range",
+      "name": "player.entity_interaction_range",
+      "value": 1.1,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["reach"],
+  "UUID": "88bf36ba-17b0-4b47-8a77-33337bf2ff29"
+}

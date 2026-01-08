@@ -1,0 +1,14 @@
+{
+  "variant": "hamstercore:gladiator_vice",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    { "type": "minecraft:generic.attack_speed", "name": "generic.attack_speed", "value": 0.3, "operation": "MULTIPLY_BASE" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["gladiator_vice"],
+  "UUID": "d0758458-3379-44a5-8d42-b840baef64f1"
+}

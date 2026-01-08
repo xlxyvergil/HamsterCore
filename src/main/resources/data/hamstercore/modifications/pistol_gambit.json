@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:pistol_gambit",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_chance",
+      "name": "crit_chance",
+      "value": 1.2,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "pistol_gambit"
+  ],
+  "UUID": "2de6c404-16d9-4086-a0b1-0b5e482170b2"
+}

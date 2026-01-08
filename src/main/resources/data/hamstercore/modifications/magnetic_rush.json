@@ -1,0 +1,15 @@
+{
+  "variant": "hamstercore:magnetic_rush",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    { "type": "hamstercore:magnetic", "name": "magnetic", "value": 0.6, "operation": "ADDITION" },
+    { "type": "minecraft:generic.attack_speed", "name": "generic.attack_speed", "value": 0.2, "operation": "MULTIPLY_BASE" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["magnetic_rush"],
+  "UUID": "c5000450-f197-4e96-90fc-7ee80a060353"
+}

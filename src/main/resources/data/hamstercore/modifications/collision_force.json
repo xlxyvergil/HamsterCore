@@ -1,0 +1,19 @@
+{
+  "variant": "hamstercore:collision_force",
+  "weight": 20,
+  "dimensions": [],
+  "category": "melee",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:impact",
+      "name": "impact",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["collision_force"],
+  "UUID": "84b964ac-89e1-4446-8b1b-491b2481264f"
+}

@@ -1,0 +1,15 @@
+{
+  "variant": "hamstercore:sacrificial_pressure",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "melee",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    { "type": "minecraft:generic.attack_damage", "name": "generic.attack_damage", "value": 1.1, "operation": "MULTIPLY_BASE" },
+    { "type": "hamstercore:sentient", "name": "sentient", "value": 0.33, "operation": "ADDITION" }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["pressure_point"],
+  "UUID": "14fbb617-76ac-419a-a1e3-bc1998ee46fe"
+}

@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_expel_infested",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:infested",
+      "name": "infested",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_infested"
+  ],
+  "UUID": "e0e3d0c2-5a5b-4ecd-9197-cfa5609809cc"
+}

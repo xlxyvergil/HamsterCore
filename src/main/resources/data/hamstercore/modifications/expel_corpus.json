@@ -1,0 +1,21 @@
+{
+  "variant": "hamstercore:expel_corpus",
+  "weight": 50,
+  "dimensions": [],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:corpus",
+      "name": "corpus",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_corpus"
+  ],
+  "UUID": "404c6720-1409-41dd-9a2e-9d78b792a0f0"
+}

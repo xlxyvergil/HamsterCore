@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:primed_expel_the_murmur",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "secondary",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:murmur",
+      "name": "murmur",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "expel_the_murmur"
+  ],
+  "UUID": "372be4cd-e29e-45b8-b6c8-2892aaf983f6"
+}
