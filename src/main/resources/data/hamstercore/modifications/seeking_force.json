@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:seeking_force",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:pierce",
+      "name": "pierce",
+      "value": 2.1,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Seeking Force"]
+}

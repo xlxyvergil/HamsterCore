@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:chilling_grasp",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:cold",
+      "name": "cold",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Chilling Grasp"]
+}

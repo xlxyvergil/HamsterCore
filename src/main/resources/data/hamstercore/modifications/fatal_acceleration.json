@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:fatal_acceleration",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:ammo_speed",
+      "name": "ammo_speed",
+      "value": 0.4,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": ["Fatal Acceleration"]
+}

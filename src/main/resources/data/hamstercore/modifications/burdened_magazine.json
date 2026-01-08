@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:burdened_magazine",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": -0.18,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Burdened Magazine"]
+}

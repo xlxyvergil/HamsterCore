@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:critical_deceleration",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_chance",
+      "name": "crit_chance",
+      "value": 2,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": -0.2,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Critical Deceleration"]
+}

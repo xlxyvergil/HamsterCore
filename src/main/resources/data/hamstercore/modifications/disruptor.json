@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:disruptor",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "hamstercore:impact",
+      "name": "impact",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Disruptor"]
+}

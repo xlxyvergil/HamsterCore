@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:silent_battery",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:silencenew",
+      "name": "silencenew",
+      "value": -1,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": ["Silent Battery"]
+}

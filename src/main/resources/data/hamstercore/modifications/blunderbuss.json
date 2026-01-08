@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:blunderbuss",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_chance",
+      "name": "crit_chance",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Blunderbuss"]
+}

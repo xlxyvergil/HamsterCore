@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:shotgun_barrage",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Shotgun Barrage"]
+}

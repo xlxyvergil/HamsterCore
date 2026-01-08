@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:breach_loader",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:puncture",
+      "name": "puncture",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Breach Loader"]
+}

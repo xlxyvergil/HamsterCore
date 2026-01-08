@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:counterbalance",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:recoil",
+      "name": "recoil",
+      "value": 6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": ["Counterbalance"]
+}

@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:primed_cleanse_corpus",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:corpus",
+      "name": "corpus",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Cleanse Corpus"]
+}

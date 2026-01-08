@@ -1,0 +1,24 @@
+{
+  "variant": "hamstercore:vicious_spread",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_shotgun",
+      "name": "bullet_gundamage_shotgun",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:inaccuracy",
+      "name": "inaccuracy",
+      "value": -0.55,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Vicious Spread"]
+}

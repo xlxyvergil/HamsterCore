@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:ammo_stock",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Ammo Stock"]
+}

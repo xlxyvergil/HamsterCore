@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:primed_tactical_pump",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 10,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Tactical Pump"]
+}

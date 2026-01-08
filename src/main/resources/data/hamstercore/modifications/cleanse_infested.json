@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:cleanse_infested",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:infested",
+      "name": "infested",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Cleanse Infested"]
+}

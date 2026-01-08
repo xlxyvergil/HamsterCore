@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:shredder",
+  "weight": 100,
+  "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "name": "slash",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Shredder"]
+}

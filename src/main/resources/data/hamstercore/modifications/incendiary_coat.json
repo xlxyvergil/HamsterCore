@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:incendiary_coat",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:heat",
+      "name": "heat",
+      "value": 0.9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Incendiary Coat"]
+}

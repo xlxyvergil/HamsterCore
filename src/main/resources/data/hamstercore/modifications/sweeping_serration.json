@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:sweeping_serration",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "name": "slash",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Sweeping Serration"]
+}

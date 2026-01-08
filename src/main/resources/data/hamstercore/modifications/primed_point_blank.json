@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:primed_point_blank",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_shotgun",
+      "name": "bullet_gundamage_shotgun",
+      "value": 1.65,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Point Blank"]
+}

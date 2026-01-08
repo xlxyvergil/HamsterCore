@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:primed_charged_shell",
+  "weight": 10,
+  "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:electricity",
+      "name": "electricity",
+      "value": 1.65,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Charged Shell"]
+}

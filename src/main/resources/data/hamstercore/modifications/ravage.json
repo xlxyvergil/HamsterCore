@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:ravage",
+  "weight": 20,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Ravage"]
+}

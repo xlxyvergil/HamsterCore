@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:tactical_pump",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Tactical Pump"]
+}

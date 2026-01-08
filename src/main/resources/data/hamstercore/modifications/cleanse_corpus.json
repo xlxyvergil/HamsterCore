@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:cleanse_corpus",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "hamstercore:corpus",
+      "name": "corpus",
+      "value": 1.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Cleanse Corpus"]
+}

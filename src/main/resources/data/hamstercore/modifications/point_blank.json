@@ -1,0 +1,18 @@
+{
+  "variant": "hamstercore:point_blank",
+  "weight": 50,
+  "dimensions": [],
+  "category": "shotgun",
+  "unique": true,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_shotgun",
+      "name": "bullet_gundamage_shotgun",
+      "value": 0.9,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": ["Point Blank"]
+}
