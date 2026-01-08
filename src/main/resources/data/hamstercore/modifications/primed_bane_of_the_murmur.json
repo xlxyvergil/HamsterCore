@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:primed_bane_of_the_murmur",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "hamstercore:murmur",
+      "name": "murmur",
+      "value": 1.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "BaneofTheMurmur"
+  ]
+}

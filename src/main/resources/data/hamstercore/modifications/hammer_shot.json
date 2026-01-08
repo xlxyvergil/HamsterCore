@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:hammer_shot",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_damage",
+      "name": "crit_damage",
+      "value": 0.6,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "hamstercore:trigger_chance",
+      "name": "trigger_chance",
+      "value": 0.8,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Hammer Shot"
+  ]
+}

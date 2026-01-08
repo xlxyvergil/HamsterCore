@@ -1,0 +1,35 @@
+{
+  "variant": "hamstercore:primed_shred",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.55,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "attributeslib:draw_speed",
+      "name": "draw_speed",
+      "value": 1.1,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "taa:pierce",
+      "name": "pierce",
+      "value": 2.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Shred"
+  ]
+}

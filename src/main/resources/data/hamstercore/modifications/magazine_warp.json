@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:magazine_warp",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.3,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Magazine Warp"
+  ]
+}

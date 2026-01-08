@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:critical_delay",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "attributeslib:crit_chance",
+      "name": "crit_chance",
+      "value": 2,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": -0.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "rifle_strike_group"
+  ]
+}

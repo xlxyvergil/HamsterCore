@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:terminal_velocity",
+  "weight": 50,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "uncommon",
+  "affixes": [
+    {
+      "type": "taa:ammo_speed",
+      "name": "ammo_speed",
+      "value": 0.6,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "attributeslib:arrow_velocity",
+      "name": "arrow_velocity",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "Terminal Velocity"
+  ]
+}

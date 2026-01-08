@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:primed_magazine_warp",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.55,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Magazine Warp"
+  ]
+}

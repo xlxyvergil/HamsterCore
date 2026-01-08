@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "hamstercore:textures/item/modification/primed_bane_of_corpus"
+  }
+}

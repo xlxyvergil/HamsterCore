@@ -1,0 +1,20 @@
+{
+  "variant": "hamstercore:vile_precision",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:recoil",
+      "name": "recoil",
+      "value": 9,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "Vile Precision"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "variant": "hamstercore:metal_auger",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:pierce",
+      "name": "pierce",
+      "value": 2.1,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Metal Auger"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "variant": "hamstercore:vile_acceleration",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:rounds_per_minute",
+      "name": "rounds_per_minute",
+      "value": 0.9,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "taa:bullet_gundamage_rifle",
+      "name": "bullet_gundamage_rifle",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_smg",
+      "name": "bullet_gundamage_smg",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_lmg",
+      "name": "bullet_gundamage_lmg",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_rpg",
+      "name": "bullet_gundamage_rpg",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_sniper",
+      "name": "bullet_gundamage_sniper",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_shotgun",
+      "name": "bullet_gundamage_shotgun",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "attributeslib:arrow_damage",
+      "name": "arrow_damage",
+      "value": -0.15,
+      "operation": "MULTIPLY_BASE"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Vile Acceleration"
+  ]
+}

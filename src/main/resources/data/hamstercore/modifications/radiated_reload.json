@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:radiated_reload",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 4,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "hamstercore:radiation",
+      "name": "radiation",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Radiated Reload"
+  ]
+}

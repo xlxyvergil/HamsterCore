@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:primed_fast_hands",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 5.5,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Fast Hands"
+  ]
+}

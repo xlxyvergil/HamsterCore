@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:tainted_mag",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": 0.66,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": -0.33,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Tainted Mag"
+  ]
+}

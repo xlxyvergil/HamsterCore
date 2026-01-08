@@ -1,0 +1,26 @@
+{
+  "variant": "hamstercore:depleted_reload",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:magazine_capacity",
+      "name": "magazine_capacity",
+      "value": -0.6,
+      "operation": "ADDITION"
+    },
+    {
+      "type": "taa:reload_time",
+      "name": "reload_time",
+      "value": 4.8,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Depleted Reload"
+  ]
+}

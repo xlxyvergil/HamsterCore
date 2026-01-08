@@ -1,0 +1,20 @@
+{
+  "variant": "hamstercore:stabilizer",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:recoil",
+      "name": "recoil",
+      "value": 6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "Stabilizer"
+  ]
+}

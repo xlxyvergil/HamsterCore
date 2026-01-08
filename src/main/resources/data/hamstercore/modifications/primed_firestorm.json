@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:primed_firestorm",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:explosion_radius",
+      "name": "explosion_radius",
+      "value": 0.44,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Firestorm"
+  ]
+}

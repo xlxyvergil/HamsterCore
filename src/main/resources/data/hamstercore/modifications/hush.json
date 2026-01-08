@@ -1,0 +1,23 @@
+{
+  "variant": "hamstercore:hush",
+  "weight": 100,
+  "dimensions": [
+    "minecraft:overworld",
+    "minecraft:the_nether"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "common",
+  "affixes": [
+    {
+      "type": "taa:silence",
+      "name": "silence",
+      "value": -1,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": true,
+  "mutualExclusionGroups": [
+    "Hush"
+  ]
+}

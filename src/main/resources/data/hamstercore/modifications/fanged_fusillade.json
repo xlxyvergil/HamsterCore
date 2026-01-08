@@ -1,0 +1,20 @@
+{
+  "variant": "hamstercore:fanged_fusillade",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "hamstercore:slash",
+      "name": "slash",
+      "value": 1.2,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Fanged Fusillade"
+  ]
+}

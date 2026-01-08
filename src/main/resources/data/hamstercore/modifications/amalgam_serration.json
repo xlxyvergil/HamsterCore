@@ -1,0 +1,71 @@
+{
+  "variant": "hamstercore:amalgam_serration",
+  "weight": 10,
+  "dimensions": [
+    "minecraft:the_nether",
+    "minecraft:the_end"
+  ],
+  "category": "primary",
+  "unique": false,
+  "rarity": "epic",
+  "affixes": [
+    {
+      "type": "taa:bullet_gundamage_rifle",
+      "name": "bullet_gundamage_rifle",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_smg",
+      "name": "bullet_gundamage_smg",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_lmg",
+      "name": "bullet_gundamage_lmg",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_rpg",
+      "name": "bullet_gundamage_rpg",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_sniper",
+      "name": "bullet_gundamage_sniper",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_pistol",
+      "name": "bullet_gundamage_pistol",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:bullet_gundamage_shotgun",
+      "name": "bullet_gundamage_shotgun",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "attributeslib:arrow_damage",
+      "name": "arrow_damage",
+      "value": 1.55,
+      "operation": "MULTIPLY_BASE"
+    },
+    {
+      "type": "taa:move_speed",
+      "name": "move_speed",
+      "value": 0.25,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "rifle_barrel_group"
+  ]
+}

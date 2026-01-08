@@ -1,0 +1,20 @@
+{
+  "variant": "hamstercore:target_acquired",
+  "weight": 20,
+  "dimensions": [],
+  "category": "primary",
+  "unique": false,
+  "rarity": "rare",
+  "affixes": [
+    {
+      "type": "taa:headshot_multiplier",
+      "name": "headshot_multiplier",
+      "value": 0.6,
+      "operation": "ADDITION"
+    }
+  ],
+  "use_special_socket": false,
+  "mutualExclusionGroups": [
+    "Target Acquired"
+  ]
+}
