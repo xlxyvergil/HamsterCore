@@ -1,0 +1,21 @@
+{
+    "variant": "hamstercore:hellfire",
+    "weight": 50,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "hamstercore:heat",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "heat"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_fire_group"
+    ],
+    "uuid": "fd69a75d-7b09-4570-8ec5-ff24a8a2e46f"
+}

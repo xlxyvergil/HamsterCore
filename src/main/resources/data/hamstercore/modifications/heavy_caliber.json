@@ -1,0 +1,57 @@
+{
+    "variant": "hamstercore:heavy_caliber",
+    "weight": 20,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "rare",
+    "affixes": [
+        {
+            "type": "taa:bullet_gundamage_rifle",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_rifle"
+        },
+        {
+            "type": "taa:bullet_gundamage_smg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_smg"
+        },
+        {
+            "type": "taa:bullet_gundamage_lmg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_lmg"
+        },
+        {
+            "type": "taa:bullet_gundamage_rpg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_rpg"
+        },
+        {
+            "type": "taa:bullet_gundamage_sniper",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_sniper"
+        },
+        {
+            "type": "taa:inaccuracy",
+            "operation": "MULTIPLY_BASE",
+            "value": -0.55,
+            "name": "inaccuracy"
+        },
+        {
+            "type": "attributeslib:arrow_damage",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "arrow_damage"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_caliber_group"
+    ],
+    "uuid": "93de5d45-c7af-415d-b490-4b0ec81b521c"
+}

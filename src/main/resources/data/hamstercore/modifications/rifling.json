@@ -1,0 +1,51 @@
+{
+    "variant": "hamstercore:rifling",
+    "weight": 50,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "uncommon",
+    "affixes": [
+        {
+            "type": "taa:bullet_gundamage_rifle",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_rifle"
+        },
+        {
+            "type": "taa:bullet_gundamage_smg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_smg"
+        },
+        {
+            "type": "taa:bullet_gundamage_lmg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_lmg"
+        },
+        {
+            "type": "taa:bullet_gundamage_rpg",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_rpg"
+        },
+        {
+            "type": "taa:bullet_gundamage_sniper",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "bullet_gundamage_sniper"
+        },
+        {
+            "type": "attributeslib:arrow_damage",
+            "operation": "MULTIPLY_BASE",
+            "value": 1.65,
+            "name": "arrow_damage"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_barrel_group"
+    ],
+    "uuid": "12d64e18-b0bb-4b6a-a2f1-7d6961c4a385"
+}

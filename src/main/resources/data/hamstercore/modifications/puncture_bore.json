@@ -1,0 +1,21 @@
+{
+    "variant": "hamstercore:puncture_bore",
+    "weight": 20,
+    "dimensions": [],
+    "category": "primary",
+    "unique": true,
+    "rarity": "rare",
+    "affixes": [
+        {
+            "type": "hamstercore:puncture",
+            "operation": "ADDITION",
+            "value": 1.2,
+            "name": "puncture"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_bore_group"
+    ],
+    "uuid": "02a854e4-777f-4193-99b8-ff842b63c610"
+}

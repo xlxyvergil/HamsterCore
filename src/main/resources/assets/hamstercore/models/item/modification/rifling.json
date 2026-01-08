@@ -1,0 +1,6 @@
+{
+  "parent": "hamstercore:item/modification",
+  "textures": {
+    "layer0": "hamstercore:item/modification/rifling"
+  }
+}

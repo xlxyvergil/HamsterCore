@@ -1,0 +1,21 @@
+{
+    "variant": "hamstercore:cold_slug_prime",
+    "weight": 10,
+    "dimensions": ["minecraft:the_nether", "minecraft:the_end"],
+    "category": "primary",
+    "unique": true,
+    "rarity": "epic",
+    "affixes": [
+        {
+            "type": "hamstercore:cold",
+            "operation": "ADDITION",
+            "value": 1.65,
+            "name": "cold"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_cold_slug_group"
+    ],
+    "uuid": "aa3ad859-fa41-4133-a4b6-264bb8c06bd1"
+}

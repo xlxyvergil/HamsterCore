@@ -1,0 +1,21 @@
+{
+    "variant": "hamstercore:serrated_link",
+    "weight": 100,
+    "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+    "category": "primary",
+    "unique": true,
+    "rarity": "common",
+    "affixes": [
+        {
+            "type": "hamstercore:slash",
+            "operation": "ADDITION",
+            "value": 0.9,
+            "name": "slash"
+        }
+    ],
+    "use_special_socket": false,
+    "mutualExclusionGroups": [
+        "rifle_link_group"
+    ],
+    "uuid": "de20e242-0d70-43ff-b767-e23781e8deb2"
+}
