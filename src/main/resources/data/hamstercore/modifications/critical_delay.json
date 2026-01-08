@@ -16,7 +16,7 @@
       "type": "taa:rounds_per_minute",
       "name": "rounds_per_minute",
       "value": -0.2,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,

@@ -10,7 +10,7 @@
       "type": "taa:headshot_multiplier",
       "name": "headshot_multiplier",
       "value": 0.6,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,

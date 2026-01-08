@@ -10,19 +10,19 @@
       "type": "taa:rounds_per_minute",
       "name": "rounds_per_minute",
       "value": 0.3,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     },
     {
       "type": "attributeslib:draw_speed",
       "name": "draw_speed",
       "value": 0.6,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     },
     {
       "type": "taa:pierce",
       "name": "pierce",
       "value": 1.2,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,

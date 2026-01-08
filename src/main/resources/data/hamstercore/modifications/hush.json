@@ -13,7 +13,7 @@
       "type": "taa:silencenew",
       "name": "silencenew",
       "value": -1,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": true,

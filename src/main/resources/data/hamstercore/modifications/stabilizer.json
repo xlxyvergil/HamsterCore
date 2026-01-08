@@ -10,7 +10,7 @@
       "type": "taa:recoil",
       "name": "recoil",
       "value": 6,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": true,

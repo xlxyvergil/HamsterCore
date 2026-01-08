@@ -61,7 +61,7 @@
       "type": "taa:move_speed",
       "name": "move_speed",
       "value": 0.25,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,

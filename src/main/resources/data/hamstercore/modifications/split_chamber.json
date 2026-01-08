@@ -8,7 +8,7 @@
     "affixes": [
         {
             "type": "taa:bullet_count",
-            "operation": "ADDITION",
+            "operation": "MULTIPLY_BASE",
             "value": 0.9,
             "name": "bullet_count"
         }

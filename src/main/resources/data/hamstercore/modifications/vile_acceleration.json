@@ -10,7 +10,7 @@
       "type": "taa:rounds_per_minute",
       "name": "rounds_per_minute",
       "value": 0.9,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     },
     {
       "type": "taa:bullet_gundamage_rifle",

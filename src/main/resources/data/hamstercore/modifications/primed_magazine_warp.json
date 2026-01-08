@@ -13,7 +13,7 @@
       "type": "taa:magazine_capacity",
       "name": "magazine_capacity",
       "value": 0.55,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,

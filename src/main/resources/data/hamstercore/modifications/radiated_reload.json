@@ -10,13 +10,13 @@
       "type": "taa:reload_time",
       "name": "reload_time",
       "value": 4,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     },
     {
       "type": "hamstercore:radiation",
       "name": "radiation",
       "value": 0.6,
-      "operation": "ADDITION"
+      "operation": "MULTIPLY_BASE"
     }
   ],
   "use_special_socket": false,
