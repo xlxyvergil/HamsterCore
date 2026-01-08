@@ -1,7 +1,7 @@
 {
     "variant": "hamstercore:rifle_cold_slug",
     "weight": 50,
-    "dimensions": ["minecraft:overworld", "minecraft:the_nether"],
+    "dimensions": [],
     "category": "primary",
     "unique": true,
     "rarity": "uncommon",
