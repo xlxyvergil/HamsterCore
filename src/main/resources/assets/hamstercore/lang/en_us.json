@@ -245,5 +245,22 @@
   "hamstercore.modification.normal_socket": "General Modification",
   "hamstercore.modification.special_socket": "Special Modification",
   "hamstercore.modification.mutual_exclusion_groups": "Mutual Exclusion Groups",
-  "itemGroup.hamstercore.modifications": "Modifications"
+  "itemGroup.hamstercore.modifications": "Modifications",
+  
+  "weapon.type.rifle": "Rifle",
+  "weapon.type.smg": "SMG",
+  "weapon.type.lmg": "LMG",
+  "weapon.type.rpg": "RPG",
+  "weapon.type.shotgun": "Shotgun",
+  "weapon.type.sniper": "Sniper",
+  "weapon.type.ranged": "Ranged",
+  "weapon.type.pistol": "Pistol",
+  "weapon.type.melee": "Melee",
+  
+  "weapon.category.primary": "Primary",
+  "weapon.category.assault_rifle": "Assault Rifle",
+  "weapon.category.sniper": "Sniper",
+  "weapon.category.bow": "Bow",
+  "weapon.category.secondary": "Secondary",
+  "weapon.category.melee": "Melee"
 }

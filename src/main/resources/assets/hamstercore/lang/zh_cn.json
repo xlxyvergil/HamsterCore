@@ -285,5 +285,22 @@
   "hamstercore.modification.normal_socket": "通用改装",
   "hamstercore.modification.special_socket": "特殊改装",
   "hamstercore.modification.mutual_exclusion_groups": "互斥组",
-  "itemGroup.hamstercore.modifications": "改装件"
+  "itemGroup.hamstercore.modifications": "改装件",
+  
+  "weapon.type.rifle": "步枪",
+  "weapon.type.smg": "冲锋枪",
+  "weapon.type.lmg": "机枪",
+  "weapon.type.rpg": "重型武器",
+  "weapon.type.shotgun": "霰弹枪",
+  "weapon.type.sniper": "狙击枪",
+  "weapon.type.ranged": "远程武器",
+  "weapon.type.pistol": "手枪",
+  "weapon.type.melee": "近战武器",
+  
+  "weapon.category.primary": "主要武器",
+  "weapon.category.assault_rifle": "突击步枪",
+  "weapon.category.sniper": "狙击枪",
+  "weapon.category.bow": "弓箭",
+  "weapon.category.secondary": "次要武器",
+  "weapon.category.melee": "近战武器"
 }

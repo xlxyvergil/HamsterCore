@@ -95,7 +95,7 @@ public record Modification(
         // 显示具体的武器类型
         for (WeaponType weaponType : this.category.getAllowedTypes()) {
             tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
-                Component.literal(weaponType.getDisplayName())).withStyle(ChatFormatting.GREEN));
+                weaponType.getDisplayName()).withStyle(ChatFormatting.GREEN));
         }
         tooltip.add(Component.empty());
         
@@ -122,7 +122,7 @@ public record Modification(
                 } else {
                     // 对于未实现IFormattableAttribute的属性，使用标准格式化
                     double percentValue = Math.abs(value) * 100;
-                    String formattedValue = String.format("%.0f%%", percentValue);
+                    String formattedValue = String.format("%.0f", percentValue);
                     valueText = Component.literal(formattedValue);
                 }
                 

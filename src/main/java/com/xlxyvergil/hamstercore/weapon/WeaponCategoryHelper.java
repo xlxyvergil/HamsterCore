@@ -1,5 +1,6 @@
 package com.xlxyvergil.hamstercore.weapon;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class WeaponCategoryHelper {
      * @param stack 物品栈
      * @return 分类显示名称，如果不是武器则返回null
      */
-    public static String getWeaponCategoryDisplayName(ItemStack stack) {
+    public static Component getWeaponCategoryDisplayName(ItemStack stack) {
         WeaponType type = WeaponTypeDetector.detectWeaponType(stack);
         if (type == null) {
             return null;
@@ -89,7 +90,7 @@ public class WeaponCategoryHelper {
      * @param stack 物品栈
      * @return 类型显示名称，如果不是武器则返回null
      */
-    public static String getWeaponTypeDisplayName(ItemStack stack) {
+    public static Component getWeaponTypeDisplayName(ItemStack stack) {
         WeaponType type = WeaponTypeDetector.detectWeaponType(stack);
         if (type == null) {
             return null;

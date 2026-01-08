@@ -3,6 +3,7 @@ package com.xlxyvergil.hamstercore.weapon;
 import com.mojang.serialization.Codec;
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.network.chat.Component;
 
 /**
  * 武器分类枚举
@@ -10,37 +11,35 @@ import java.util.List;
  */
 public enum WeaponCategory {
     // 主要武器 - 远程武器（步枪类）
-    PRIMARY("primary", "主要武器", 
+    PRIMARY("primary", 
             Arrays.asList(WeaponType.RIFLE, WeaponType.SMG, WeaponType.LMG, 
                     WeaponType.RPG, WeaponType.SNIPER, WeaponType.RANGED)),
     
     // 突击步枪
-    ASSAULT_RIFLE("assault_rifle", "突击步枪", 
+    ASSAULT_RIFLE("assault_rifle", 
             Arrays.asList(WeaponType.RIFLE, WeaponType.SMG, WeaponType.LMG)),
     
     // 狙击枪
-    SNIPER_CATEGORY("sniper", "狙击枪", 
+    SNIPER_CATEGORY("sniper", 
             Arrays.asList(WeaponType.SNIPER)),
     
     // 弓箭（除了tacz外的所有远程）
-    BOW("bow", "弓箭", 
+    BOW("bow", 
             Arrays.asList(WeaponType.RANGED)),
     
     // 次要武器 - 手枪
-    SECONDARY("secondary", "次要武器", 
+    SECONDARY("secondary", 
             Arrays.asList(WeaponType.PISTOL)),
     
     // 近战武器
-    MELEE("melee", "近战武器", 
+    MELEE("melee", 
             Arrays.asList(WeaponType.MELEE));
     
     private final String name;
-    private final String displayName;
     private final List<WeaponType> allowedTypes;
     
-    WeaponCategory(String name, String displayName, List<WeaponType> allowedTypes) {
+    WeaponCategory(String name, List<WeaponType> allowedTypes) {
         this.name = name;
-        this.displayName = displayName;
         this.allowedTypes = allowedTypes;
     }
     
@@ -52,10 +51,17 @@ public enum WeaponCategory {
     }
     
     /**
+     * 获取分类显示名称的翻译键
+     */
+    public String getTranslationKey() {
+        return "weapon.category." + this.name;
+    }
+    
+    /**
      * 获取分类显示名称
      */
-    public String getDisplayName() {
-        return displayName;
+    public Component getDisplayName() {
+        return Component.translatable(this.getTranslationKey());
     }
     
     /**
