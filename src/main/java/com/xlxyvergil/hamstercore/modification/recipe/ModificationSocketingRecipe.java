@@ -6,6 +6,8 @@ import com.xlxyvergil.hamstercore.modification.ModificationItems;
 import com.xlxyvergil.hamstercore.modification.ModificationRegistry;
 import com.xlxyvergil.hamstercore.modification.SocketHelper;
 import com.xlxyvergil.hamstercore.modification.SocketedModifications;
+import com.xlxyvergil.hamstercore.weapon.WeaponCategoryHelper;
+
 import dev.shadowsoffire.placebo.reload.DynamicHolder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
@@ -58,6 +60,11 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
         }
 
         boolean needsSpecialSocket = modHolder.get().useSpecialSocket();
+        
+        // 检查改装件是否适用于该武器
+        if (!WeaponCategoryHelper.canApplyModification(modHolder.get().category(), base)) {
+            return false;
+        }
         
         // 检查互斥组：获取新改装件的互斥组
         java.util.List<String> newModGroups = modHolder.get().mutualExclusionGroups();

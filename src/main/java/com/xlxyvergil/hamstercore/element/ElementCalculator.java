@@ -59,8 +59,21 @@ public class ElementCalculator {
             String elementType = entry.getKey();
             List<InitialModifierEntry> modifiers = entry.getValue();
             
+            // 获取属性的默认值，默认为1.0
+            double defaultValue = 1.0;
+            try {
+                // 尝试获取属性对象
+                net.minecraft.resources.ResourceLocation rl = new net.minecraft.resources.ResourceLocation(elementType);
+                net.minecraft.world.entity.ai.attributes.Attribute attribute = net.minecraftforge.registries.ForgeRegistries.ATTRIBUTES.getValue(rl);
+                if (attribute != null) {
+                    defaultValue = attribute.getDefaultValue();
+                }
+            } catch (Exception e) {
+                // 如果获取属性失败，使用默认值1.0
+            }
+            
             // 对同类型修饰符进行合并计算（模拟Forge属性修饰符计算）
-            double calculatedValue = calculateValueForName(modifiers);
+            double calculatedValue = calculateValueForName(modifiers, defaultValue);
             elementValues.put(elementType, calculatedValue);
         }
 
@@ -70,11 +83,12 @@ public class ElementCalculator {
     /**
      * 对同名修饰符进行合并计算（完全采用Apotheosis的公式）
      * @param modifiers 同名的修饰符列表
+     * @param defaultValue 属性的默认值
      * @return 合并计算后的值
      */
-    private double calculateValueForName(List<InitialModifierEntry> modifiers) {
+    private double calculateValueForName(List<InitialModifierEntry> modifiers, double defaultValue) {
         // 分离基础值（ADDITION）和其他操作
-        double baseValue = 0.0;
+        double additionValue = 0.0;
         List<InitialModifierEntry> multiplyBaseEntries = new ArrayList<>();
         List<InitialModifierEntry> multiplyTotalEntries = new ArrayList<>();
 
@@ -82,7 +96,7 @@ public class ElementCalculator {
             String operation = entry.getOperation();
             switch (operation.toUpperCase()) {
                 case "ADDITION":
-                    baseValue += entry.getAmount();
+                    additionValue += entry.getAmount();
                     break;
                 case "MULTIPLY_BASE":
                     multiplyBaseEntries.add(entry);
@@ -91,18 +105,18 @@ public class ElementCalculator {
                     multiplyTotalEntries.add(entry);
                     break;
                 default:
-                    baseValue += entry.getAmount(); // 默认为ADDITION
+                    additionValue += entry.getAmount(); // 默认为ADDITION
                     break;
             }
         }
 
         // 按照 Apotheosis 的公式计算
-        double amt = baseValue;
+        double amt = defaultValue + additionValue;
 
         // 处理 MULTIPLY_BASE：每个都乘原始的 baseValue，然后累加
-        // 公式：amt += amount * baseValue
+        // 公式：amt += amount * defaultValue
         for (InitialModifierEntry entry : multiplyBaseEntries) {
-            amt += entry.getAmount() * baseValue;
+            amt += entry.getAmount() * defaultValue;
         }
 
         // 处理 MULTIPLY_TOTAL：连乘（每个乘 1 + amount）

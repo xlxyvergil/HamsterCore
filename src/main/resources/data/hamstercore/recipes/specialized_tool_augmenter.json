@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "WPW",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "W": {
+      "tag": "minecraft:planks"
+    },
+    "P": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "result": {
+    "item": "hamstercore:specialized_tool_augmenter",
+    "count": 1
+  }
+}

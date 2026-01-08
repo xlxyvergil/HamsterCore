@@ -3,13 +3,19 @@ package com.xlxyvergil.hamstercore.modification;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.xlxyvergil.hamstercore.weapon.WeaponCategory;
+import com.xlxyvergil.hamstercore.weapon.WeaponType;
+import dev.shadowsoffire.attributeslib.api.IFormattableAttribute;
 import dev.shadowsoffire.placebo.codec.CodecProvider;
 import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry.IDimensional;
 import dev.shadowsoffire.placebo.reload.WeightedDynamicRegistry.ILuckyWeighted;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.Set;
@@ -86,26 +92,47 @@ public record Modification(
         
         // 2. 显示适用于 category里的分类
         tooltip.add(Component.translatable("hamstercore.modification.socketable_into").withStyle(ChatFormatting.LIGHT_PURPLE));
-        tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
-            Component.literal(this.category.getDisplayName())).withStyle(ChatFormatting.GREEN));
+        // 显示具体的武器类型
+        for (WeaponType weaponType : this.category.getAllowedTypes()) {
+            tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+                Component.literal(weaponType.getDisplayName())).withStyle(ChatFormatting.GREEN));
+        }
         tooltip.add(Component.empty());
         
         // 3. 显示安装时 affixes里的属性
         tooltip.add(Component.translatable("hamstercore.modification.when_modified").withStyle(ChatFormatting.GRAY));
         for (ModificationAffix affix : this.affixes) {
-            String attrKey = "attribute.name." + affix.type().replace(':', '.');
-            Component attrName = Component.translatable(attrKey);
-
-            // 根据数值正负来格式化显示
-            double value = affix.value();
-            Component valueText;
-
-            double percentValue = Math.abs(value) * 100;
-            String langKey = value >= 0 ? "hamstercore.modification.value.increase" : "hamstercore.modification.value.decrease";
-            valueText = Component.translatable(langKey, String.format("%.0f", percentValue));
-
-            tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
-                Component.translatable("%s: %s", attrName, valueText)).withStyle(ChatFormatting.GOLD));
+            // 根据affix.type()获取Attribute实例
+            ResourceLocation attrRl = ResourceLocation.parse(affix.type());
+            Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrRl);
+            
+            if (attribute != null) {
+                // 使用Attribute的descriptionId作为翻译键，这是最准确的方式
+                Component attrName = Component.translatable(attribute.getDescriptionId());
+                
+                double value = affix.value();
+                Component valueText;
+                
+                // 检查Attribute是否实现了IFormattableAttribute接口
+                if (attribute instanceof IFormattableAttribute formattableAttr) {
+                    // 使用IFormattableAttribute格式化属性值
+                    Operation op = Operation.valueOf(affix.operation());
+                    TooltipFlag flag = TooltipFlag.Default.NORMAL;
+                    valueText = formattableAttr.toValueComponent(op, value, flag);
+                } else {
+                    // 对于未实现IFormattableAttribute的属性，使用标准格式化
+                    double percentValue = Math.abs(value) * 100;
+                    String formattedValue = String.format("%.0f%%", percentValue);
+                    valueText = Component.literal(formattedValue);
+                }
+                
+                // 根据数值正负添加前缀
+                String langKey = value >= 0 ? "hamstercore.modification.value.increase" : "hamstercore.modification.value.decrease";
+                Component finalValueText = Component.translatable(langKey, valueText.getString());
+                
+                tooltip.add(Component.translatable("hamstercore.modification.dot_prefix",
+                    Component.translatable("%s: %s", attrName, finalValueText)).withStyle(ChatFormatting.GOLD));
+            }
         }
         tooltip.add(Component.empty());
         
