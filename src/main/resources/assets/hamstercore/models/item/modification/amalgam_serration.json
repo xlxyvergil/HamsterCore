@@ -1,6 +1,6 @@
 {
-  "parent": "item/generated",
+  "parent": "hamstercore:item/modification",
   "textures": {
-    "layer0": "hamstercore:textures/item/modification/amalgam_serration"
+    "layer0": "hamstercore:item/modification/amalgam_serration"
   }
 }

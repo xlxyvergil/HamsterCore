@@ -10,8 +10,8 @@
   "rarity": "common",
   "affixes": [
     {
-      "type": "taa:silence",
-      "name": "silence",
+      "type": "taa:silencenew",
+      "name": "silencenew",
       "value": -1,
       "operation": "ADDITION"
     }

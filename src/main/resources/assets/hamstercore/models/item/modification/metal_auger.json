@@ -1,6 +1,6 @@
 {
-  "parent": "item/generated",
+  "parent": "hamstercore:item/modification",
   "textures": {
-    "layer0": "hamstercore:textures/item/modification/metal_auger"
+    "layer0": "hamstercore:item/modification/metal_auger"
   }
 }

@@ -1,6 +1,6 @@
 {
-  "parent": "item/generated",
+  "parent": "hamstercore:item/modification",
   "textures": {
-    "layer0": "hamstercore:textures/item/modification/firestorm"
+    "layer0": "hamstercore:item/modification/firestorm"
   }
 }
