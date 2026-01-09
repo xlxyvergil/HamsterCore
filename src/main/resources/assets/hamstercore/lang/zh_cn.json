@@ -150,6 +150,8 @@
   "attribute.name.hamstercore.orokin": "奥罗金增伤",
   "attribute.name.hamstercore.sentient": "灵煞增伤",
   "attribute.name.hamstercore.murmur": "低语者增伤",
+  "attribute.name.attributeslib.crit_chance": "暴击率",
+  "attribute.name.attributeslib.crit_damage": "暴击伤害",
   "effect.hamstercore.impact": "冲击",
   "effect.hamstercore.impact.description": "造成击退效果",
   "effect.hamstercore.slash": "切割",

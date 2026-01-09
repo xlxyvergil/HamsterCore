@@ -22,7 +22,7 @@ public class PlayerCapabilityEvents {
         if (event.getObject() instanceof Player player) {
             // 附加玩家等级能力（我们的玩家等级系统）
             event.addCapability(
-                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("hamstercore", "player_level"),
+                new net.minecraft.resources.ResourceLocation("hamstercore", "player_level"),
                 new PlayerLevelCapabilityProvider()
             );
             

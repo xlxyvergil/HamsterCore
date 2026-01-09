@@ -51,10 +51,11 @@ public class ModificationModel implements BakedModel {
     public BakedModel resolve(BakedModel original, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
         String id = ModificationItem.getModificationId(stack);
         if (id != null && !id.isEmpty()) {
-            DynamicHolder<Modification> holder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(id));
+            ResourceLocation resourceLocation = new ResourceLocation(id);
+            DynamicHolder<Modification> holder = ModificationRegistry.INSTANCE.holder(resourceLocation);
+
             if (holder.isBound()) {
-                // 加载对应的改装件模型
-                return Minecraft.getInstance().getModelManager().getModel(ResourceLocation.parse(HamsterCore.MODID + ":item/modification/" + holder.getId().getPath()));
+                return Minecraft.getInstance().getModelManager().getModel(new ResourceLocation(HamsterCore.MODID + ":item/modification/" + holder.getId().getPath()));
             }
         }
         return original;

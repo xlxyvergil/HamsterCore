@@ -103,7 +103,7 @@ public record Modification(
         tooltip.add(Component.translatable("hamstercore.modification.when_modified").withStyle(ChatFormatting.GRAY));
         for (ModificationAffix affix : this.affixes) {
             // 根据affix.type()获取Attribute实例
-            ResourceLocation attrRl = ResourceLocation.parse(affix.type());
+            ResourceLocation attrRl = new ResourceLocation(affix.type());
             Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(attrRl);
             
             if (attribute != null && attribute instanceof IFormattableAttribute formattableAttr) {

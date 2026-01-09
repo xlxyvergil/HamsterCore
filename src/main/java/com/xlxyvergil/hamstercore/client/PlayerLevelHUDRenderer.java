@@ -20,9 +20,9 @@ public class PlayerLevelHUDRenderer {
     
     // 经验条纹理资源位置
     private static final ResourceLocation EXPERIENCE_BAR = 
-        ResourceLocation.fromNamespaceAndPath(HamsterCore.MODID, "textures/gui/experience_bar.png");
+        new ResourceLocation(HamsterCore.MODID, "textures/gui/experience_bar.png");
     private static final ResourceLocation EXPERIENCE_FRAME = 
-        ResourceLocation.fromNamespaceAndPath(HamsterCore.MODID, "textures/gui/experience_frame.png");
+        new ResourceLocation(HamsterCore.MODID, "textures/gui/experience_frame.png");
     
     // 数字格式化方法，防止数字过长
     private static String formatNumber(int number) {

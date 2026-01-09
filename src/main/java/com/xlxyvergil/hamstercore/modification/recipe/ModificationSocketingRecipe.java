@@ -54,7 +54,7 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
         }
 
         DynamicHolder<com.xlxyvergil.hamstercore.modification.Modification> modHolder = 
-            ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(modId));
+            ModificationRegistry.INSTANCE.holder(new ResourceLocation(modId));
         if (modHolder == null || !modHolder.isBound()) {
             return false;
         }
@@ -128,7 +128,7 @@ public class ModificationSocketingRecipe extends SmithingTransformRecipe {
         }
 
         DynamicHolder<com.xlxyvergil.hamstercore.modification.Modification> modHolder = 
-            ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(modId));
+            ModificationRegistry.INSTANCE.holder(new ResourceLocation(modId));
         if (modHolder == null || !modHolder.isBound()) {
             return ItemStack.EMPTY;
         }

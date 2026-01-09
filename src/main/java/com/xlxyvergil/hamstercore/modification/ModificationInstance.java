@@ -35,7 +35,7 @@ public record ModificationInstance(
         }
         
         // 从改装件定义中获取UUID，而不是直接从NBT中读取
-        DynamicHolder<Modification> modHolder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(id));
+        DynamicHolder<Modification> modHolder = ModificationRegistry.INSTANCE.holder(new ResourceLocation(id));
         if (modHolder.isBound()) {
             UUID uuid = modHolder.get().uuid();
             return new ModificationInstance(id, uuid);
@@ -77,7 +77,7 @@ public record ModificationInstance(
         if (this.modificationId.isEmpty()) {
             return false;
         }
-        DynamicHolder<Modification> modHolder = ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(this.modificationId));
+        DynamicHolder<Modification> modHolder = ModificationRegistry.INSTANCE.holder(new ResourceLocation(this.modificationId));
         return modHolder.isBound();
     }
 
@@ -89,7 +89,7 @@ public record ModificationInstance(
         if (!this.isValid()) {
             return null;
         }
-        return ModificationRegistry.INSTANCE.holder(ResourceLocation.parse(this.modificationId));
+        return ModificationRegistry.INSTANCE.holder(new ResourceLocation(this.modificationId));
     }
 
     /**
