@@ -1,6 +1,5 @@
 package com.xlxyvergil.hamstercore.network;
 
-import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapability;
 import com.xlxyvergil.hamstercore.content.capability.PlayerLevelCapabilityProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -47,11 +46,13 @@ public class PlayerLevelSyncToClient {
     }
 
     public static void sync(Player player) {
-        player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
-                new PlayerLevelSyncToClient(player.getId(), cap.serializeNBT())
-            );
-        });
+        if (player instanceof net.minecraft.server.level.ServerPlayer) {
+            player.getCapability(PlayerLevelCapabilityProvider.CAPABILITY).ifPresent(cap -> {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
+                    new PlayerLevelSyncToClient(player.getId(), cap.serializeNBT())
+                );
+            });
+        }
     }
 }

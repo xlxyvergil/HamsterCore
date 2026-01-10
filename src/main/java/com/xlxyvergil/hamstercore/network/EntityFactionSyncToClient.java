@@ -47,11 +47,13 @@ public class EntityFactionSyncToClient {
     }
 
     public static void sync(LivingEntity entity) {
-        entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new EntityFactionSyncToClient(entity.getId(), cap.getFaction())
-            );
-        });
+        if (entity.level() instanceof net.minecraft.server.level.ServerLevel) {
+            entity.getCapability(EntityFactionCapabilityProvider.CAPABILITY).ifPresent(cap -> {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                    new EntityFactionSyncToClient(entity.getId(), cap.getFaction())
+                );
+            });
+        }
     }
 }

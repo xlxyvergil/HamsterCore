@@ -45,11 +45,13 @@ public class EntityArmorSyncToClient {
     }
 
     public static void sync(LivingEntity entity) {
-        entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new EntityArmorSyncToClient(entity.getId(), cap.getArmor())
-            );
-        });
+        if (entity.level() instanceof net.minecraft.server.level.ServerLevel) {
+            entity.getCapability(EntityArmorCapabilityProvider.CAPABILITY).ifPresent(cap -> {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                    new EntityArmorSyncToClient(entity.getId(), cap.getArmor())
+                );
+            });
+        }
     }
 }

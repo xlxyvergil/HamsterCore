@@ -53,11 +53,13 @@ public class EntityHealthModifierSyncToClient {
     }
 
     public static void sync(LivingEntity entity) {
-        entity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(cap -> {
-            PacketHandler.NETWORK.send(
-                PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new EntityHealthModifierSyncToClient(entity.getId(), cap.getHealthModifier(), cap.isInitialized())
-            );
-        });
+        if (entity.level() instanceof net.minecraft.server.level.ServerLevel) {
+            entity.getCapability(EntityHealthModifierCapabilityProvider.CAPABILITY).ifPresent(cap -> {
+                PacketHandler.NETWORK.send(
+                    PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                    new EntityHealthModifierSyncToClient(entity.getId(), cap.getHealthModifier(), cap.isInitialized())
+                );
+            });
+        }
     }
 }

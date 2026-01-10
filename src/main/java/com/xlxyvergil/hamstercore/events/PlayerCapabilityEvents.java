@@ -148,6 +148,16 @@ public class PlayerCapabilityEvents {
         }
     }
     
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (!event.getEntity().level().isClientSide()) {
+            Player player = event.getEntity();
+            
+            // 维度切换时同步玩家等级和经验数据到客户端
+            PlayerCapabilityAttacher.syncPlayerCapabilitiesToClients(player);
+        }
+    }
+    
     // 添加玩家数据保存事件处理
     @SubscribeEvent
     public static void onPlayerSave(PlayerEvent.SaveToFile event) {
